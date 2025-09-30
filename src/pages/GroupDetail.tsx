@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import AddExpenseDialog from "@/components/AddExpenseDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   DollarSign,
   ArrowLeft,
@@ -43,10 +41,13 @@ const GroupDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [openAddExpense, setOpenAddExpense] = useState(false);
-  const [expenseTitle, setExpenseTitle] = useState("");
-  const [expenseAmount, setExpenseAmount] = useState("");
   const [groupName, setGroupName] = useState("Test");
   const [isEditingName, setIsEditingName] = useState(false);
+
+  // Mock members data
+  const members = [
+    { id: "member-1", name: "tuan hoang" },
+  ];
 
   // Mock data
   const [expenses, setExpenses] = useState<Expense[]>([
@@ -65,31 +66,19 @@ const GroupDetail = () => {
   const totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0);
   const completedCount = expenses.filter((e) => e.isCompleted).length;
 
-  const handleAddExpense = () => {
-    if (!expenseTitle.trim() || !expenseAmount) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
-      return;
-    }
-
+  const handleAddExpense = (expenseData: any) => {
     const newExpense: Expense = {
       id: Date.now().toString(),
-      title: expenseTitle,
-      amount: parseFloat(expenseAmount),
+      title: expenseData.description,
+      amount: expenseData.amount,
       paidBy: "tuan hoang",
-      splitWith: ["tuan hoang"],
-      date: new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
+      splitWith: expenseData.members.map((id: string) => members.find(m => m.id === id)?.name || "").filter(Boolean),
+      date: expenseData.date,
       isCompleted: false,
       isMine: true,
     };
 
     setExpenses([...expenses, newExpense]);
-    setOpenAddExpense(false);
-    setExpenseTitle("");
-    setExpenseAmount("");
     toast.success("Thêm chi phí thành công!");
   };
 
@@ -164,43 +153,13 @@ const GroupDetail = () => {
       <div className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
         {/* Action Buttons */}
         <div className="flex gap-3">
-          <Dialog open={openAddExpense} onOpenChange={setOpenAddExpense}>
-            <DialogTrigger asChild>
-              <Button className="flex-1 h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700">
-                <Plus className="w-5 h-5" />
-                Thêm chi phí
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Thêm chi phí mới</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="expense-title">Tiêu đề</Label>
-                  <Input
-                    id="expense-title"
-                    placeholder="VD: Ăn trưa"
-                    value={expenseTitle}
-                    onChange={(e) => setExpenseTitle(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="expense-amount">Số tiền (VNĐ)</Label>
-                  <Input
-                    id="expense-amount"
-                    type="number"
-                    placeholder="500000"
-                    value={expenseAmount}
-                    onChange={(e) => setExpenseAmount(e.target.value)}
-                  />
-                </div>
-                <Button onClick={handleAddExpense} className="w-full">
-                  Thêm chi phí
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button 
+            className="flex-1 h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+            onClick={() => setOpenAddExpense(true)}
+          >
+            <Plus className="w-5 h-5" />
+            Thêm chi phí
+          </Button>
 
           <Button
             variant="default"
@@ -430,6 +389,14 @@ const GroupDetail = () => {
           </Card>
         </div>
       </div>
+
+      {/* Add Expense Dialog */}
+      <AddExpenseDialog
+        open={openAddExpense}
+        onOpenChange={setOpenAddExpense}
+        onAddExpense={handleAddExpense}
+        members={members}
+      />
 
       {/* Floating Action Buttons */}
       <div className="fixed bottom-6 left-4 right-4 flex justify-between max-w-4xl mx-auto">
