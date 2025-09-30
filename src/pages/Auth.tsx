@@ -51,6 +51,7 @@ const Auth = () => {
       }
     } else {
       toast.success("Đăng nhập thành công!");
+      navigate("/groups");
     }
   };
 

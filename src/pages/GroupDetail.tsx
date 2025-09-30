@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AddExpenseDialog from "@/components/AddExpenseDialog";
 import ExpenseDetailDialog from "@/components/ExpenseDetailDialog";
+import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,6 @@ import {
   Plus,
   Share2,
   Settings,
-  LogOut,
   Receipt,
   Users,
   Clock,
@@ -169,9 +169,7 @@ const GroupDetail = () => {
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Settings className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <LogOut className="w-5 h-5" />
-              </Button>
+              <LogoutButton />
             </div>
           </div>
         </div>
