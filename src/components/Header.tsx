@@ -27,9 +27,11 @@ const Header = () => {
           </a>
         </nav>
 
-        <Button variant="outline" size="sm">
-          Dùng thử ngay
-        </Button>
+        <a href="/groups">
+          <Button variant="outline" size="sm">
+            Dùng thử ngay
+          </Button>
+        </a>
       </div>
     </header>
   );

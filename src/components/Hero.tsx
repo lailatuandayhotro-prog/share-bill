@@ -25,13 +25,17 @@ const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Button variant="hero" size="lg" className="gap-2">
-              Xem tính năng
-              <ArrowRight className="w-5 h-5" />
-            </Button>
-            <Button variant="outline" size="lg">
-              Dùng thử miễn phí
-            </Button>
+            <a href="#features">
+              <Button variant="hero" size="lg" className="gap-2">
+                Xem tính năng
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </a>
+            <a href="/groups">
+              <Button variant="outline" size="lg">
+                Dùng thử miễn phí
+              </Button>
+            </a>
           </div>
 
           <div className="pt-12">
