@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +7,9 @@ import { DollarSign, UserPlus, Plus, Search, Users, Clock, Crown } from "lucide-
 import { useNavigate } from "react-router-dom";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { LogoutButton } from "@/components/LogoutButton";
 
 interface Group {
   id: string;
@@ -19,44 +22,112 @@ interface Group {
 
 const Groups = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [openJoinDialog, setOpenJoinDialog] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [joinCode, setJoinCode] = useState("");
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data
-  const [groups, setGroups] = useState<Group[]>([
-    {
-      id: "test-group",
-      name: "Test",
-      creator: "tuan hoang",
-      memberCount: 1,
-      createdAt: "29/9/2025",
-      isOwner: true,
-    },
-  ]);
+  useEffect(() => {
+    fetchGroups();
+  }, [user]);
 
-  const handleCreateGroup = () => {
+  const fetchGroups = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: groupMembers, error } = await supabase
+        .from('group_members')
+        .select(`
+          group_id,
+          groups (
+            id,
+            name,
+            owner_id,
+            created_at
+          )
+        `)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name');
+
+      const profileMap = new Map(profiles?.map(p => [p.id, p.full_name]) || []);
+
+      const groupsWithMembers = await Promise.all(
+        (groupMembers || []).map(async (gm: any) => {
+          const { count } = await supabase
+            .from('group_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('group_id', gm.groups.id);
+
+          return {
+            id: gm.groups.id,
+            name: gm.groups.name,
+            creator: profileMap.get(gm.groups.owner_id) || "Unknown",
+            memberCount: count || 0,
+            createdAt: new Date(gm.groups.created_at).toLocaleDateString("vi-VN"),
+            isOwner: gm.groups.owner_id === user.id,
+          };
+        })
+      );
+
+      setGroups(groupsWithMembers);
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+      toast.error("Không thể tải danh sách nhóm");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateGroup = async () => {
     if (!newGroupName.trim()) {
       toast.error("Vui lòng nhập tên nhóm");
       return;
     }
+
+    if (!user) {
+      toast.error("Vui lòng đăng nhập");
+      return;
+    }
     
-    const newGroup: Group = {
-      id: `group-${Date.now()}`,
-      name: newGroupName,
-      creator: "tuan hoang",
-      memberCount: 1,
-      createdAt: new Date().toLocaleDateString("vi-VN"),
-      isOwner: true,
-    };
-    
-    setGroups([...groups, newGroup]);
-    setOpenCreateDialog(false);
-    setNewGroupName("");
-    toast.success("Tạo nhóm thành công!");
-    navigate(`/groups/${newGroup.id}`);
+    try {
+      const { data: group, error: groupError } = await supabase
+        .from('groups')
+        .insert({
+          name: newGroupName,
+          owner_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (groupError) throw groupError;
+
+      const { error: memberError } = await supabase
+        .from('group_members')
+        .insert({
+          group_id: group.id,
+          user_id: user.id,
+          role: 'owner',
+        });
+
+      if (memberError) throw memberError;
+
+      setOpenCreateDialog(false);
+      setNewGroupName("");
+      toast.success("Tạo nhóm thành công!");
+      navigate(`/groups/${group.id}`);
+    } catch (error) {
+      console.error('Error creating group:', error);
+      toast.error("Không thể tạo nhóm");
+    }
   };
 
   const handleJoinGroup = () => {
@@ -80,13 +151,16 @@ const Groups = () => {
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-primary" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-primary" />
+              </div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Chi_
+              </h1>
             </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Chi_
-            </h1>
+            <LogoutButton />
           </div>
         </div>
       </header>
@@ -181,51 +255,66 @@ const Groups = () => {
 
           {/* Groups */}
           <div className="space-y-4">
-            {filteredGroups.map((group) => (
-              <Card
-                key={group.id}
-                className="hover:shadow-lg transition-all duration-300 cursor-pointer"
-                onClick={() => navigate(`/groups/${group.id}`)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4 flex-1">
-                      <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <DollarSign className="w-7 h-7 text-primary" />
-                      </div>
-                      
-                      <div className="space-y-3 flex-1">
-                        <h3 className="text-xl font-semibold text-foreground">
-                          {group.name}
-                        </h3>
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Đang tải...</p>
+              </div>
+            ) : filteredGroups.length === 0 ? (
+              <div className="text-center py-12">
+                <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                <p className="text-xl font-semibold mb-2">Chưa có nhóm nào</p>
+                <p className="text-muted-foreground mb-6">
+                  Tạo nhóm mới hoặc tham gia nhóm có sẵn để bắt đầu
+                </p>
+              </div>
+            ) : (
+              filteredGroups.map((group) => (
+                <Card
+                  key={group.id}
+                  className="hover:shadow-lg transition-all duration-300 cursor-pointer"
+                  onClick={() => navigate(`/groups/${group.id}`)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-4 flex-1">
+                        <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <DollarSign className="w-7 h-7 text-primary" />
+                        </div>
                         
-                        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4" />
-                            <span>Với tên: {group.creator}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4" />
-                            <span>{group.memberCount} Thành viên</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            <span>Tạo: {group.createdAt}</span>
+                        <div className="space-y-3 flex-1">
+                          <h3 className="text-xl font-semibold text-foreground">
+                            {group.name}
+                          </h3>
+                          
+                          <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4" />
+                              <span>Với tên: {group.creator}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4" />
+                              <span>{group.memberCount} Thành viên</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              <span>Tạo: {group.createdAt}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {group.isOwner && (
-                      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium">
-                        <Crown className="w-4 h-4" />
-                        TRƯỞNG NHÓM
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                      {group.isOwner && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium">
+                          <Crown className="w-4 h-4" />
+                          TRƯỞNG NHÓM
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </div>
       </div>
