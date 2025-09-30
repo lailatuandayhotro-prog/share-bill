@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AddExpenseDialog from "@/components/AddExpenseDialog";
+import ExpenseDetailDialog from "@/components/ExpenseDetailDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,8 @@ const GroupDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [openAddExpense, setOpenAddExpense] = useState(false);
+  const [openExpenseDetail, setOpenExpenseDetail] = useState(false);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [groupName, setGroupName] = useState("Test");
   const [isEditingName, setIsEditingName] = useState(false);
 
@@ -89,6 +92,30 @@ const GroupDetail = () => {
       )
     );
     toast.success("Đã cập nhật trạng thái!");
+  };
+
+  const handleViewExpenseDetail = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setOpenExpenseDetail(true);
+  };
+
+  const handleEditExpense = () => {
+    toast.info("Chức năng sửa chi phí đang được phát triển");
+    setOpenExpenseDetail(false);
+  };
+
+  const handleDeleteExpense = () => {
+    if (selectedExpense) {
+      setExpenses(expenses.filter((e) => e.id !== selectedExpense.id));
+      toast.success("Đã xóa chi phí!");
+      setOpenExpenseDetail(false);
+      setSelectedExpense(null);
+    }
+  };
+
+  const handleMarkParticipantPaid = (participantId: string) => {
+    // Logic to mark participant as paid
+    toast.success("Đã đánh dấu đã trả!");
   };
 
   const handleShare = () => {
@@ -320,7 +347,12 @@ const GroupDetail = () => {
                   </div>
 
                   <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => handleViewExpenseDetail(expense)}
+                    >
                       <Eye className="w-4 h-4" />
                       Xem Chi Tiết
                     </Button>
@@ -396,6 +428,22 @@ const GroupDetail = () => {
         onOpenChange={setOpenAddExpense}
         onAddExpense={handleAddExpense}
         members={members}
+      />
+
+      {/* Expense Detail Dialog */}
+      <ExpenseDetailDialog
+        open={openExpenseDetail}
+        onOpenChange={setOpenExpenseDetail}
+        expense={selectedExpense}
+        onComplete={() => {
+          if (selectedExpense) {
+            handleCompleteExpense(selectedExpense.id);
+            setOpenExpenseDetail(false);
+          }
+        }}
+        onEdit={handleEditExpense}
+        onDelete={handleDeleteExpense}
+        onMarkPaid={handleMarkParticipantPaid}
       />
 
       {/* Floating Action Buttons */}
