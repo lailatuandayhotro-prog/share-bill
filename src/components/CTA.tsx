@@ -16,13 +16,13 @@ const CTA = () => {
               Tạo tài khoản miễn phí và trải nghiệm ngay hôm nay
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <a href="/groups">
+              <a href="/auth">
                 <Button 
                   size="lg" 
                   variant="secondary"
                   className="bg-white text-primary hover:bg-white/90 shadow-lg gap-2"
                 >
-                  Bắt đầu miễn phí
+                  Đăng ký ngay
                   <ArrowRight className="w-5 h-5" />
                 </Button>
               </a>

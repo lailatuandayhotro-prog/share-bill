@@ -27,9 +27,9 @@ const Header = () => {
           </a>
         </nav>
 
-        <a href="/groups">
+        <a href="/auth">
           <Button variant="outline" size="sm">
-            Dùng thử ngay
+            Đăng nhập
           </Button>
         </a>
       </div>

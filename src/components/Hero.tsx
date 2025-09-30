@@ -31,9 +31,9 @@ const Hero = () => {
                 <ArrowRight className="w-5 h-5" />
               </Button>
             </a>
-            <a href="/groups">
+            <a href="/auth">
               <Button variant="outline" size="lg">
-                Dùng thử miễn phí
+                Đăng nhập
               </Button>
             </a>
           </div>
