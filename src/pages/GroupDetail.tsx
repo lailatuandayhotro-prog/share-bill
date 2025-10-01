@@ -27,15 +27,26 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+interface Participant {
+  userId?: string;
+  userName?: string;
+  guestId?: string;
+  guestName?: string;
+  amount: number;
+  isPaid: boolean;
+}
+
 interface Expense {
   id: string;
   title: string;
   amount: number;
   paidBy: string;
+  paidById: string;
   splitWith: string[];
   date: string;
   isCompleted: boolean;
   isMine: boolean;
+  participants: Participant[];
 }
 
 const GroupDetail = () => {
@@ -59,10 +70,12 @@ const GroupDetail = () => {
       title: "Ăn",
       amount: 500000,
       paidBy: "tuan hoang",
+      paidById: "member-1",
       splitWith: ["tuan hoang"],
       date: "Sep 29, 2025",
       isCompleted: false,
       isMine: true,
+      participants: [],
     },
   ]);
 
@@ -75,10 +88,12 @@ const GroupDetail = () => {
       title: expenseData.description,
       amount: expenseData.amount,
       paidBy: expenseData.paidByName,
+      paidById: expenseData.paidBy,
       splitWith: expenseData.allParticipants.map((id: string) => members.find(m => m.id === id)?.name || "").filter(Boolean),
       date: expenseData.date,
       isCompleted: false,
       isMine: expenseData.paidBy === "member-1",
+      participants: expenseData.participants,
     };
 
     setExpenses([...expenses, newExpense]);

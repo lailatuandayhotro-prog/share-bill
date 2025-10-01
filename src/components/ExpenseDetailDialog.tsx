@@ -4,12 +4,12 @@ import { CheckCircle2, Edit, Trash2, Receipt, Users } from "lucide-react";
 import { toast } from "sonner";
 
 interface Participant {
-  id: string;
-  name: string;
+  userId?: string;
+  userName?: string;
+  guestId?: string;
+  guestName?: string;
   amount: number;
   isPaid: boolean;
-  isCreator?: boolean;
-  isCurrentUser?: boolean;
 }
 
 interface ExpenseDetailDialogProps {
@@ -40,25 +40,8 @@ const ExpenseDetailDialog = ({
 }: ExpenseDetailDialogProps) => {
   if (!expense) return null;
 
-  // Mock participants data
-  const participants: Participant[] = expense.participants || [
-    {
-      id: "p1",
-      name: "tuan hoang",
-      amount: expense.amount / 2,
-      isPaid: true,
-      isCreator: true,
-      isCurrentUser: true,
-    },
-    {
-      id: "p2",
-      name: "Abc",
-      amount: expense.amount / 2,
-      isPaid: false,
-      isCreator: false,
-      isCurrentUser: false,
-    },
-  ];
+  // Convert participants data to display format
+  const participants: Participant[] = expense.participants || [];
 
   const handleMarkPaid = (participantId: string) => {
     onMarkPaid(participantId);
@@ -129,74 +112,74 @@ const ExpenseDetailDialog = ({
           </div>
 
           <div className="space-y-3">
-            {participants.map((participant) => (
-              <div
-                key={participant.id}
-                className="border border-border rounded-xl p-4 bg-card hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-center gap-4">
-                  {/* Avatar */}
+            {participants.length > 0 ? (
+              participants.map((participant, index) => {
+                const participantName = participant.userName || participant.guestName || 'Unknown';
+                const participantId = participant.userId || participant.guestId || `participant-${index}`;
+                
+                return (
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 ${
-                      participant.isCurrentUser
-                        ? "bg-green-600"
-                        : "bg-gray-400"
-                    }`}
+                    key={participantId}
+                    className="border border-border rounded-xl p-4 bg-card hover:shadow-md transition-shadow"
                   >
-                    {getInitials(participant.name)}
-                  </div>
+                    <div className="flex items-center gap-4">
+                      {/* Avatar */}
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 bg-blue-500">
+                        {getInitials(participantName)}
+                      </div>
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-foreground">
-                        {participant.name}
-                      </span>
-                      {participant.isCreator && (
-                        <span className="px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-xs">
-                          Người Tạo
-                        </span>
-                      )}
-                      {participant.isCurrentUser && (
-                        <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-medium">
-                          Bạn
-                        </span>
-                      )}
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      {participant.isPaid ? (
-                        <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
-                          Đã Trả
-                        </span>
-                      ) : (
-                        <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium">
-                          Chờ Trả
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold text-foreground">
+                            {participantName}
+                          </span>
+                          {participant.guestName && (
+                            <span className="px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-xs">
+                              Khách
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          {participant.isPaid ? (
+                            <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                              Đã Trả
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium">
+                              Chờ Trả
+                            </span>
+                          )}
+                        </div>
+                      </div>
 
-                  {/* Amount and Action */}
-                  <div className="text-right flex-shrink-0">
-                    <div className="text-xl font-bold text-foreground mb-2">
-                      {participant.amount.toLocaleString()} đ
+                      {/* Amount and Action */}
+                      <div className="text-right flex-shrink-0">
+                        <div className="text-xl font-bold text-foreground mb-2">
+                          {participant.amount.toLocaleString()} đ
+                        </div>
+                        
+                        {!participant.isPaid && (
+                          <Button
+                            onClick={() => handleMarkPaid(participantId)}
+                            size="sm"
+                            className="bg-blue-500 hover:bg-blue-600 text-white"
+                          >
+                            <CheckCircle2 className="w-4 h-4 mr-1" />
+                            Đánh Dấu Đã Trả
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    
-                    {!participant.isPaid && (
-                      <Button
-                        onClick={() => handleMarkPaid(participant.id)}
-                        size="sm"
-                        className="bg-blue-500 hover:bg-blue-600 text-white"
-                      >
-                        <CheckCircle2 className="w-4 h-4 mr-1" />
-                        Đánh Dấu Đã Trả
-                      </Button>
-                    )}
                   </div>
-                </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                Không có người tham gia nào
               </div>
-            ))}
+            )}
           </div>
         </div>
       </DialogContent>
