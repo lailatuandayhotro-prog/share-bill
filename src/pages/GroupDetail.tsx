@@ -74,15 +74,25 @@ const GroupDetail = () => {
       id: Date.now().toString(),
       title: expenseData.description,
       amount: expenseData.amount,
-      paidBy: "tuan hoang",
-      splitWith: expenseData.members.map((id: string) => members.find(m => m.id === id)?.name || "").filter(Boolean),
+      paidBy: expenseData.paidByName,
+      splitWith: expenseData.allParticipants.map((id: string) => members.find(m => m.id === id)?.name || "").filter(Boolean),
       date: expenseData.date,
       isCompleted: false,
-      isMine: true,
+      isMine: expenseData.paidBy === "member-1",
     };
 
     setExpenses([...expenses, newExpense]);
-    toast.success("Thêm chi phí thành công!");
+    
+    // Calculate and show debt info
+    const totalParticipants = expenseData.participants.length;
+    if (totalParticipants > 0) {
+      const amountPerPerson = expenseData.participants[0]?.amount || 0;
+      toast.success(
+        `Chi phí đã thêm! Mỗi người phải trả: ${amountPerPerson.toLocaleString()} đ`
+      );
+    } else {
+      toast.success("Thêm chi phí thành công!");
+    }
   };
 
   const handleCompleteExpense = (expenseId: string) => {
@@ -426,6 +436,8 @@ const GroupDetail = () => {
         onOpenChange={setOpenAddExpense}
         onAddExpense={handleAddExpense}
         members={members}
+        currentUserId="member-1"
+        currentUserName="tuan hoang"
       />
 
       {/* Expense Detail Dialog */}

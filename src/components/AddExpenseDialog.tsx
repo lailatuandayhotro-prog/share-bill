@@ -30,14 +30,17 @@ interface AddExpenseDialogProps {
   onOpenChange: (open: boolean) => void;
   onAddExpense: (expense: any) => void;
   members: Member[];
+  currentUserId: string;
+  currentUserName: string;
 }
 
-const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members }: AddExpenseDialogProps) => {
+const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUserId, currentUserName }: AddExpenseDialogProps) => {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState<Date>(new Date());
-  const [splitType, setSplitType] = useState<"equal" | "custom">("custom");
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [splitType, setSplitType] = useState<"equal" | "custom">("equal");
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([currentUserId]);
+  const [paidBy, setPaidBy] = useState<string>(currentUserId);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [newGuestName, setNewGuestName] = useState("");
   const [receiptImage, setReceiptImage] = useState<File | null>(null);
@@ -81,12 +84,42 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members }: AddExpe
       return;
     }
 
+    if (selectedMembers.length === 0 && guests.length === 0) {
+      toast.error("Vui lòng chọn ít nhất một người tham gia");
+      return;
+    }
+
+    // Calculate split amounts
+    const totalParticipants = selectedMembers.length + guests.length;
+    const amountPerPerson = parseFloat(amount) / totalParticipants;
+    
+    // Create participants list excluding the payer
+    const participantsWithAmounts = [
+      ...selectedMembers
+        .filter(memberId => memberId !== paidBy)
+        .map(memberId => ({
+          userId: memberId,
+          userName: members.find(m => m.id === memberId)?.name || '',
+          amount: amountPerPerson,
+          isPaid: false,
+        })),
+      ...guests.map(guest => ({
+        guestId: guest.id,
+        guestName: guest.name,
+        amount: amountPerPerson,
+        isPaid: false,
+      }))
+    ];
+
     const expense = {
       amount: parseFloat(amount),
       description,
       date: format(date, "dd/MM/yyyy"),
       splitType,
-      members: selectedMembers,
+      paidBy,
+      paidByName: members.find(m => m.id === paidBy)?.name || currentUserName,
+      participants: participantsWithAmounts,
+      allParticipants: selectedMembers,
       guests,
       receiptImage: receiptImage?.name,
     };
@@ -97,8 +130,9 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members }: AddExpe
     setAmount("");
     setDescription("");
     setDate(new Date());
-    setSplitType("custom");
-    setSelectedMembers([]);
+    setSplitType("equal");
+    setSelectedMembers([currentUserId]);
+    setPaidBy(currentUserId);
     setGuests([]);
     setNewGuestName("");
     setReceiptImage(null);
@@ -150,6 +184,23 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members }: AddExpe
             />
           </div>
 
+          {/* Người trả tiền */}
+          <div className="space-y-2">
+            <Label>Người trả tiền</Label>
+            <Select value={paidBy} onValueChange={setPaidBy}>
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn người trả tiền..." />
+              </SelectTrigger>
+              <SelectContent>
+                {members.map((member) => (
+                  <SelectItem key={member.id} value={member.id}>
+                    {member.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Ngày */}
           <div className="space-y-2">
             <Label>Ngày</Label>
@@ -188,38 +239,9 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members }: AddExpe
             </div>
 
             {/* Split Type */}
-            <RadioGroup value={splitType} onValueChange={(v) => setSplitType(v as "equal" | "custom")}>
-              <div className="grid grid-cols-2 gap-3">
-                <div
-                  className={cn(
-                    "flex items-center space-x-2 p-4 border-2 rounded-lg cursor-pointer transition-all",
-                    splitType === "equal" 
-                      ? "border-primary bg-primary/5" 
-                      : "border-border hover:border-primary/50"
-                  )}
-                  onClick={() => setSplitType("equal")}
-                >
-                  <RadioGroupItem value="equal" id="equal" />
-                  <Label htmlFor="equal" className="cursor-pointer font-medium">
-                    Chia đều
-                  </Label>
-                </div>
-                <div
-                  className={cn(
-                    "flex items-center space-x-2 p-4 border-2 rounded-lg cursor-pointer transition-all",
-                    splitType === "custom" 
-                      ? "border-primary bg-primary/5" 
-                      : "border-border hover:border-primary/50"
-                  )}
-                  onClick={() => setSplitType("custom")}
-                >
-                  <RadioGroupItem value="custom" id="custom" />
-                  <Label htmlFor="custom" className="cursor-pointer font-medium">
-                    Số tiền tùy chỉnh
-                  </Label>
-                </div>
-              </div>
-            </RadioGroup>
+            <div className="text-sm text-muted-foreground">
+              Chi phí sẽ được chia đều cho tất cả người tham gia
+            </div>
 
             {/* Member Selection */}
             <div className="space-y-3">
