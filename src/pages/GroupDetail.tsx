@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AddExpenseDialog from "@/components/AddExpenseDialog";
 import ExpenseDetailDialog from "@/components/ExpenseDetailDialog";
@@ -26,6 +26,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Participant {
   userId?: string;
@@ -52,61 +54,151 @@ interface Expense {
 const GroupDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [openAddExpense, setOpenAddExpense] = useState(false);
   const [openExpenseDetail, setOpenExpenseDetail] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [groupName, setGroupName] = useState("Test");
   const [isEditingName, setIsEditingName] = useState(false);
+  const [members, setMembers] = useState<Array<{ id: string; name: string }>>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock members data
-  const members = [
-    { id: "member-1", name: "tuan hoang" },
-  ];
+  // Load group data
+  useEffect(() => {
+    if (!id || !user) return;
+    loadGroupData();
+  }, [id, user]);
 
-  // Mock data
-  const [expenses, setExpenses] = useState<Expense[]>([
-    {
-      id: "1",
-      title: "Ăn",
-      amount: 500000,
-      paidBy: "tuan hoang",
-      paidById: "member-1",
-      splitWith: ["tuan hoang"],
-      date: "Sep 29, 2025",
-      isCompleted: false,
-      isMine: true,
-      participants: [],
-    },
-  ]);
+  const loadGroupData = async () => {
+    try {
+      setLoading(true);
+      
+      // Load group info
+      const { data: groupData, error: groupError } = await supabase
+        .from('groups')
+        .select('name')
+        .eq('id', id)
+        .single();
+      
+      if (groupError) throw groupError;
+      if (groupData) setGroupName(groupData.name);
+
+      // Load members
+      const { data: membersData, error: membersError } = await supabase
+        .from('group_members')
+        .select('user_id, profiles(id, full_name)')
+        .eq('group_id', id);
+      
+      if (membersError) throw membersError;
+      
+      const formattedMembers = membersData?.map(m => ({
+        id: m.user_id,
+        name: (m.profiles as any)?.full_name || 'Unknown'
+      })) || [];
+      
+      setMembers(formattedMembers);
+
+      // Load expenses
+      const { data: expensesData, error: expensesError } = await supabase
+        .from('expenses')
+        .select(`
+          *,
+          expense_participants(*)
+        `)
+        .eq('group_id', id)
+        .order('created_at', { ascending: false });
+      
+      if (expensesError) throw expensesError;
+
+      const formattedExpenses = expensesData?.map(exp => {
+        const payer = formattedMembers.find(m => m.id === exp.paid_by);
+        const participants = exp.expense_participants.map((p: any) => ({
+          userId: p.user_id,
+          userName: formattedMembers.find(m => m.id === p.user_id)?.name,
+          guestName: p.guest_name,
+          amount: p.amount,
+          isPaid: p.is_paid
+        }));
+
+        return {
+          id: exp.id,
+          title: exp.title,
+          amount: exp.amount,
+          paidBy: payer?.name || 'Unknown',
+          paidById: exp.paid_by,
+          splitWith: participants.map(p => p.userName || p.guestName).filter(Boolean),
+          date: new Date(exp.expense_date).toLocaleDateString('vi-VN'),
+          isCompleted: exp.is_completed,
+          isMine: exp.paid_by === user?.id,
+          participants
+        };
+      }) || [];
+
+      setExpenses(formattedExpenses);
+    } catch (error) {
+      console.error('Error loading group data:', error);
+      toast.error('Không thể tải dữ liệu nhóm');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0);
   const completedCount = expenses.filter((e) => e.isCompleted).length;
 
-  const handleAddExpense = (expenseData: any) => {
-    const newExpense: Expense = {
-      id: Date.now().toString(),
-      title: expenseData.description,
-      amount: expenseData.amount,
-      paidBy: expenseData.paidByName,
-      paidById: expenseData.paidBy,
-      splitWith: expenseData.allParticipants.map((id: string) => members.find(m => m.id === id)?.name || "").filter(Boolean),
-      date: expenseData.date,
-      isCompleted: false,
-      isMine: expenseData.paidBy === "member-1",
-      participants: expenseData.participants,
-    };
+  const handleAddExpense = async (expenseData: any) => {
+    if (!id || !user) return;
 
-    setExpenses([...expenses, newExpense]);
-    
-    // Calculate and show debt info
-    const totalParticipants = expenseData.participants.length;
-    if (totalParticipants > 0) {
-      const amountPerPerson = expenseData.participants[0]?.amount || 0;
-      toast.success(
-        `Chi phí đã thêm! Mỗi người phải trả: ${amountPerPerson.toLocaleString()} đ`
-      );
-    } else {
-      toast.success("Thêm chi phí thành công!");
+    try {
+      // Insert expense
+      const { data: newExpense, error: expenseError } = await supabase
+        .from('expenses')
+        .insert({
+          group_id: id,
+          title: expenseData.description,
+          description: expenseData.description,
+          amount: expenseData.amount,
+          paid_by: expenseData.paidBy,
+          expense_date: expenseData.date,
+          split_type: 'equal'
+        })
+        .select()
+        .single();
+
+      if (expenseError) throw expenseError;
+
+      // Insert participants
+      const participantsToInsert = expenseData.participants.map((p: any) => ({
+        expense_id: newExpense.id,
+        user_id: p.userId,
+        guest_name: p.guestName,
+        amount: p.amount,
+        is_paid: false
+      }));
+
+      const { error: participantsError } = await supabase
+        .from('expense_participants')
+        .insert(participantsToInsert);
+
+      if (participantsError) throw participantsError;
+
+      // Reload expenses
+      await loadGroupData();
+
+      // Show success message
+      const totalParticipants = expenseData.participants.length;
+      if (totalParticipants > 0) {
+        const amountPerPerson = expenseData.participants[0]?.amount || 0;
+        toast.success(
+          `Chi phí đã thêm! Mỗi người phải trả: ${amountPerPerson.toLocaleString()} đ`
+        );
+      } else {
+        toast.success("Thêm chi phí thành công!");
+      }
+    } catch (error) {
+      console.error('Error adding expense:', error);
+      toast.error('Không thể thêm chi phí');
     }
   };
 
@@ -451,8 +543,8 @@ const GroupDetail = () => {
         onOpenChange={setOpenAddExpense}
         onAddExpense={handleAddExpense}
         members={members}
-        currentUserId="member-1"
-        currentUserName="tuan hoang"
+        currentUserId={user?.id || ""}
+        currentUserName={members.find(m => m.id === user?.id)?.name || ""}
       />
 
       {/* Expense Detail Dialog */}
