@@ -84,17 +84,26 @@ const GroupDetail = () => {
       if (groupError) throw groupError;
       if (groupData) setGroupName(groupData.name);
 
-      // Load members
-      const { data: membersData, error: membersError } = await supabase
+      // Load member IDs
+      const { data: memberIds, error: membersError } = await supabase
         .from('group_members')
-        .select('user_id, profiles(id, full_name)')
+        .select('user_id')
         .eq('group_id', id);
       
       if (membersError) throw membersError;
+
+      // Load profiles for these members
+      const userIds = memberIds?.map(m => m.user_id) || [];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', userIds);
       
-      const formattedMembers = membersData?.map(m => ({
-        id: m.user_id,
-        name: (m.profiles as any)?.full_name || 'Unknown'
+      if (profilesError) throw profilesError;
+      
+      const formattedMembers = profilesData?.map(p => ({
+        id: p.id,
+        name: p.full_name
       })) || [];
       
       setMembers(formattedMembers);
