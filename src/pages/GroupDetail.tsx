@@ -158,6 +158,25 @@ const GroupDetail = () => {
   const totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0);
   const completedCount = expenses.filter((e) => e.isCompleted).length;
 
+  // Calculate amount to pay (money current user owes to others)
+  const amountToPay = expenses.reduce((sum, exp) => {
+    const myParticipant = exp.participants.find(
+      p => p.userId === user?.id && !p.isPayer && !p.isPaid
+    );
+    return sum + (myParticipant?.amount || 0);
+  }, 0);
+
+  // Calculate amount to collect (money others owe to current user)
+  const amountToCollect = expenses.reduce((sum, exp) => {
+    if (exp.paidById === user?.id) {
+      const unpaidAmount = exp.participants
+        .filter(p => !p.isPaid && !p.isPayer)
+        .reduce((total, p) => total + p.amount, 0);
+      return sum + unpaidAmount;
+    }
+    return sum;
+  }, 0);
+
   const handleAddExpense = async (expenseData: any) => {
     if (!id || !user) return;
 
@@ -387,7 +406,12 @@ const GroupDetail = () => {
                   <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
                     <DollarSign className="w-5 h-5 text-red-500" />
                   </div>
-                  <span className="font-medium">Khoản Tiền Phải Trả</span>
+                  <div>
+                    <div className="font-medium">Khoản Tiền Phải Trả</div>
+                    <div className="text-xl font-bold text-red-500">
+                      {amountToPay.toLocaleString()} đ
+                    </div>
+                  </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </CardContent>
@@ -399,7 +423,12 @@ const GroupDetail = () => {
                   <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
                     <Clock className="w-5 h-5 text-green-500" />
                   </div>
-                  <span className="font-medium">Khoản Tiền Cần Thu</span>
+                  <div>
+                    <div className="font-medium">Khoản Tiền Cần Thu</div>
+                    <div className="text-xl font-bold text-green-500">
+                      {amountToCollect.toLocaleString()} đ
+                    </div>
+                  </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </CardContent>
