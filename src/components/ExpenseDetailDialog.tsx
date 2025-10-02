@@ -10,6 +10,7 @@ interface Participant {
   guestName?: string;
   amount: number;
   isPaid: boolean;
+  isPayer?: boolean;
 }
 
 interface ExpenseDetailDialogProps {
@@ -139,10 +140,19 @@ const ExpenseDetailDialog = ({
                               Khách
                             </span>
                           )}
+                          {participant.isPayer && (
+                            <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-xs font-medium">
+                              Người trả tiền
+                            </span>
+                          )}
                         </div>
                         
                         <div className="flex items-center gap-2">
-                          {participant.isPaid ? (
+                          {participant.isPayer ? (
+                            <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                              Đã Trả
+                            </span>
+                          ) : participant.isPaid ? (
                             <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
                               Đã Trả
                             </span>
@@ -160,7 +170,7 @@ const ExpenseDetailDialog = ({
                           {participant.amount.toLocaleString()} đ
                         </div>
                         
-                        {!participant.isPaid && (
+                        {!participant.isPaid && !participant.isPayer && (
                           <Button
                             onClick={() => handleMarkPaid(participantId)}
                             size="sm"

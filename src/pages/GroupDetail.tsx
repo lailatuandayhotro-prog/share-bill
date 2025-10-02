@@ -36,6 +36,7 @@ interface Participant {
   guestName?: string;
   amount: number;
   isPaid: boolean;
+  isPayer?: boolean;
 }
 
 interface Expense {
@@ -127,7 +128,8 @@ const GroupDetail = () => {
           userName: formattedMembers.find(m => m.id === p.user_id)?.name,
           guestName: p.guest_name,
           amount: p.amount,
-          isPaid: p.is_paid
+          isPaid: p.is_paid,
+          isPayer: p.user_id === exp.paid_by
         }));
 
         return {

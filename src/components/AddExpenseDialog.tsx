@@ -93,21 +93,21 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
     const totalParticipants = selectedMembers.length + guests.length;
     const amountPerPerson = parseFloat(amount) / totalParticipants;
     
-    // Create participants list excluding the payer
+    // Create participants list including the payer (with amount = 0)
     const participantsWithAmounts = [
-      ...selectedMembers
-        .filter(memberId => memberId !== paidBy)
-        .map(memberId => ({
-          userId: memberId,
-          userName: members.find(m => m.id === memberId)?.name || '',
-          amount: amountPerPerson,
-          isPaid: false,
-        })),
+      ...selectedMembers.map(memberId => ({
+        userId: memberId,
+        userName: members.find(m => m.id === memberId)?.name || '',
+        amount: memberId === paidBy ? 0 : amountPerPerson,
+        isPaid: memberId === paidBy,
+        isPayer: memberId === paidBy,
+      })),
       ...guests.map(guest => ({
         guestId: guest.id,
         guestName: guest.name,
         amount: amountPerPerson,
         isPaid: false,
+        isPayer: false,
       }))
     ];
 
