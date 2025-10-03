@@ -5,12 +5,21 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 
+interface ContributingExpense {
+  expenseId: string;
+  title: string;
+  amount: number; // amount for this specific participant in this expense
+  date: string;
+  paidBy: string; // name of the payer
+}
+
 interface BalanceItem {
   id: string; // user ID or guest ID
   name: string;
   amount: number; // positive for money owed to current user, negative for money current user owes
   avatarUrl?: string;
   isGuest?: boolean;
+  contributingExpenses: ContributingExpense[]; // New field
 }
 
 interface BalanceDetailDialogProps {
@@ -20,9 +29,11 @@ interface BalanceDetailDialogProps {
   description: string;
   balances: BalanceItem[];
   currentUserId: string;
+  onViewIndividualBalance: (personName: string, expenses: ContributingExpense[], type: 'pay' | 'collect') => void; // New callback
+  type: 'pay' | 'collect'; // New prop to pass down
 }
 
-const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances, currentUserId }: BalanceDetailDialogProps) => {
+const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances, currentUserId, onViewIndividualBalance, type }: BalanceDetailDialogProps) => {
   const { user } = useAuth();
 
   return (
@@ -41,7 +52,11 @@ const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances,
               </div>
             ) : (
               balances.map((item) => (
-                <div key={item.id} className="flex items-center gap-4 p-3 border border-border rounded-lg bg-card">
+                <div 
+                  key={item.id} 
+                  className="flex items-center gap-4 p-3 border border-border rounded-lg bg-card cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => onViewIndividualBalance(item.name, item.contributingExpenses, type)} // Call new callback
+                >
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={item.avatarUrl} alt={item.name} />
                     <AvatarFallback>

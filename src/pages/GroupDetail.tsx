@@ -4,8 +4,9 @@ import AddExpenseDialog from "@/components/AddExpenseDialog";
 import ExpenseDetailDialog from "@/components/ExpenseDetailDialog";
 import EditExpenseDialog from "@/components/EditExpenseDialog";
 import InviteMemberDialog from "@/components/InviteMemberDialog";
-import GroupMembersDialog from "@/components/GroupMembersDialog"; // Import the new component
-import BalanceDetailDialog from "@/components/BalanceDetailDialog"; // Import the new balance dialog
+import GroupMembersDialog from "@/components/GroupMembersDialog";
+import BalanceDetailDialog from "@/components/BalanceDetailDialog";
+import IndividualBalanceDetailDialog from "@/components/IndividualBalanceDetailDialog"; // Import the new component
 import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -71,12 +72,21 @@ interface GroupMember {
   avatarUrl?: string;
 }
 
+interface ContributingExpense {
+  expenseId: string;
+  title: string;
+  amount: number; // amount for this specific participant in this expense
+  date: string;
+  paidBy: string; // name of the payer
+}
+
 interface BalanceItem {
   id: string; // user ID or guest ID
   name: string;
   amount: number; // positive for money owed to current user, negative for money current user owes
   avatarUrl?: string;
   isGuest?: boolean;
+  contributingExpenses: ContributingExpense[]; // New field
 }
 
 const GroupDetail = () => {
@@ -89,10 +99,15 @@ const GroupDetail = () => {
   const [openShareDialog, setOpenShareDialog] = useState(false);
   const [openInviteMemberDialog, setOpenInviteMemberDialog] = useState(false);
   const [openMembersDialog, setOpenMembersDialog] = useState(false);
-  const [openBalanceDetailDialog, setOpenBalanceDetailDialog] = useState(false); // New state for balance dialog
+  const [openBalanceDetailDialog, setOpenBalanceDetailDialog] = useState(false);
   const [balanceDetailTitle, setBalanceDetailTitle] = useState("");
   const [balanceDetailDescription, setBalanceDetailDescription] = useState("");
   const [balancesToDisplay, setBalancesToDisplay] = useState<BalanceItem[]>([]);
+  const [balanceDetailType, setBalanceDetailType] = useState<'pay' | 'collect'>('pay'); // To pass to BalanceDetailDialog
+
+  const [openIndividualBalanceDetail, setOpenIndividualBalanceDetail] = useState(false); // New state
+  const [individualBalancePersonName, setIndividualBalancePersonName] = useState(""); // New state
+  const [individualBalanceExpenses, setIndividualBalanceExpenses] = useState<ContributingExpense[]>([]); // New state
 
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
@@ -263,8 +278,16 @@ const GroupDetail = () => {
             amount: 0,
             avatarUrl: payerAvatar,
             isGuest: false,
+            contributingExpenses: [], // Initialize
           };
           currentBalance.amount -= p.amount; // Negative means current user owes
+          currentBalance.contributingExpenses.push({
+            expenseId: exp.id,
+            title: exp.title,
+            amount: p.amount,
+            date: exp.date,
+            paidBy: payerName,
+          });
           balancesMap.set(payerId, currentBalance);
         } else if (type === 'collect' && payerId === user.id && !p.isPayer) {
           // Participant owes money to the current user (payer)
@@ -274,8 +297,16 @@ const GroupDetail = () => {
             amount: 0,
             avatarUrl: participantAvatar,
             isGuest: isGuest,
+            contributingExpenses: [], // Initialize
           };
           currentBalance.amount += p.amount; // Positive means they owe current user
+          currentBalance.contributingExpenses.push({
+            expenseId: exp.id,
+            title: exp.title,
+            amount: p.amount,
+            date: exp.date,
+            paidBy: exp.paidBy, // The current user's name as payer
+          });
           balancesMap.set(participantId, currentBalance);
         }
       });
@@ -304,7 +335,15 @@ const GroupDetail = () => {
         ? "Chi tiết các khoản bạn cần trả cho các thành viên khác."
         : "Chi tiết các khoản các thành viên khác cần trả cho bạn."
     );
+    setBalanceDetailType(type); // Set the type for BalanceDetailDialog
     setOpenBalanceDetailDialog(true);
+  };
+
+  const handleViewIndividualBalance = (personName: string, expenses: ContributingExpense[], type: 'pay' | 'collect') => {
+    setIndividualBalancePersonName(personName);
+    setIndividualBalanceExpenses(expenses);
+    setBalanceDetailType(type); // Pass the type to the individual balance dialog
+    setOpenIndividualBalanceDetail(true);
   };
 
   const handleAddExpense = async (expenseData: any) => {
@@ -1006,6 +1045,17 @@ const GroupDetail = () => {
         description={balanceDetailDescription}
         balances={balancesToDisplay}
         currentUserId={user?.id || ""}
+        onViewIndividualBalance={handleViewIndividualBalance} // Pass the new callback
+        type={balanceDetailType} // Pass the type
+      />
+
+      {/* Individual Balance Detail Dialog */}
+      <IndividualBalanceDetailDialog
+        open={openIndividualBalanceDetail}
+        onOpenChange={setOpenIndividualBalanceDetail}
+        personName={individualBalancePersonName}
+        expenses={individualBalanceExpenses}
+        type={balanceDetailType} // Use the same type as the parent balance dialog
       />
 
       {/* Share Dialog */}
