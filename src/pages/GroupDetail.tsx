@@ -1021,7 +1021,8 @@ const GroupDetail = () => {
                       </div>
                     </div>
                   </div>
-                </CardContent>
+                </div> {/* Missing closing div added here */}
+              </CardContent>
             </Card>
           ))}
         </div>
