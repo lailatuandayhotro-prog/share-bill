@@ -273,7 +273,7 @@ const Groups = () => {
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="join-code">Mã nhóm hoặc link mời</Label>
+                  <Label htmlFor="join-code">Mã nhóm</Label> {/* Changed text here */}
                   <Input
                     id="join-code"
                     placeholder="Nhập mã nhóm..."

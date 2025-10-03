@@ -64,7 +64,7 @@ const GroupDetail = () => {
   const [openExpenseDetail, setOpenExpenseDetail] = useState(false);
   const [openShareDialog, setOpenShareDialog] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
-  const [shareLink, setShareLink] = useState("");
+  const [shareCode, setShareCode] = useState(""); // Changed from shareLink to shareCode
   const [copied, setCopied] = useState(false);
   const [groupName, setGroupName] = useState("Test");
   const [isEditingName, setIsEditingName] = useState(false);
@@ -297,19 +297,22 @@ const GroupDetail = () => {
   };
 
   const handleShare = () => {
-    const link = `${window.location.origin}/groups/${id}`;
-    setShareLink(link);
-    setOpenShareDialog(true);
+    if (id) {
+      setShareCode(id); // Set the group ID as the share code
+      setOpenShareDialog(true);
+    } else {
+      toast.error("Không thể lấy mã nhóm");
+    }
   };
 
-  const handleCopyLink = async () => {
+  const handleCopyCode = async () => { // Changed from handleCopyLink to handleCopyCode
     try {
-      await navigator.clipboard.writeText(shareLink);
+      await navigator.clipboard.writeText(shareCode);
       setCopied(true);
-      toast.success("Đã sao chép link!");
+      toast.success("Đã sao chép mã nhóm!");
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      toast.error("Không thể sao chép link");
+      toast.error("Không thể sao chép mã nhóm");
     }
   };
 
@@ -653,26 +656,26 @@ const GroupDetail = () => {
           <DialogHeader>
             <DialogTitle>Chia sẻ nhóm</DialogTitle>
             <DialogDescription>
-              Chia sẻ link này để mời người khác tham gia nhóm
+              Chia sẻ mã này để mời người khác tham gia nhóm
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-2">
               <Input
-                value={shareLink}
+                value={shareCode}
                 readOnly
                 className="flex-1"
               />
               <Button
                 size="icon"
-                onClick={handleCopyLink}
+                onClick={handleCopyCode} // Changed to handleCopyCode
                 className="flex-shrink-0"
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
-              Người nhận link sẽ cần đăng nhập để tham gia nhóm
+              Người nhận mã sẽ cần đăng nhập để tham gia nhóm
             </p>
           </div>
         </DialogContent>
