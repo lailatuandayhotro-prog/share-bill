@@ -43,6 +43,7 @@ import { format, endOfMonth, startOfMonth, getYear, setYear, setMonth } from "da
 import { vi } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import MonthSelector from "@/components/MonthSelector";
+import ConfirmMonthCompletionDialog from "@/components/ConfirmMonthCompletionDialog"; // Import new component
 
 interface Participant {
   userId?: string;
@@ -132,8 +133,9 @@ const GroupDetail = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
-  const [isDeletingExpense, setIsDeletingExpense] = useState(false); // New state for delete loading
-  const [isCompletingMonthExpenses, setIsCompletingMonthExpenses] = useState(false); // New state for completing month expenses
+  const [isDeletingExpense, setIsDeletingExpense] = useState(false);
+  const [isCompletingMonthExpenses, setIsCompletingMonthExpenses] = useState(false);
+  const [openConfirmMonthCompletionDialog, setOpenConfirmMonthCompletionDialog] = useState(false); // New state for confirmation dialog
 
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date()));
@@ -569,13 +571,14 @@ const GroupDetail = () => {
     }
   };
 
-  const handleCompleteAllMyExpensesInMonth = async () => {
+  const confirmCompleteAllMyExpensesInMonth = async () => {
     if (!user || !id) {
       toast.error("Vui lòng đăng nhập và chọn nhóm.");
       return;
     }
 
     setIsCompletingMonthExpenses(true);
+    setOpenConfirmMonthCompletionDialog(false); // Close dialog immediately after confirmation
     try {
       const startOfSelectedMonth = format(startOfMonth(setYear(selectedMonth, selectedYear)), 'yyyy-MM-dd');
       const endOfSelectedMonth = format(endOfMonth(setYear(selectedMonth, selectedYear)), 'yyyy-MM-dd');
@@ -913,7 +916,7 @@ const GroupDetail = () => {
             </Card>
 
             <Button
-              onClick={handleCompleteAllMyExpensesInMonth}
+              onClick={() => setOpenConfirmMonthCompletionDialog(true)} // Open confirmation dialog
               className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white text-base"
               disabled={isCompletingMonthExpenses}
             >
@@ -1203,7 +1206,7 @@ const GroupDetail = () => {
             <DialogDescription>
               Chia sẻ mã này để mời người khác tham gia nhóm
             </DialogDescription>
-          </DialogHeader>
+          </DialogDescription>
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-2">
               <Input
@@ -1225,6 +1228,15 @@ const GroupDetail = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Confirm Month Completion Dialog */}
+      <ConfirmMonthCompletionDialog
+        open={openConfirmMonthCompletionDialog}
+        onOpenChange={setOpenConfirmMonthCompletionDialog}
+        onConfirm={confirmCompleteAllMyExpensesInMonth}
+        monthYear={format(selectedMonth, 'MM/yyyy', { locale: vi })}
+        isConfirming={isCompletingMonthExpenses}
+      />
 
       {/* Floating Action Buttons */}
       <div className="fixed bottom-6 left-4 right-4 flex justify-between max-w-4xl mx-auto">
