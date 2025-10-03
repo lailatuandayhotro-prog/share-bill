@@ -5,6 +5,7 @@ import ExpenseDetailDialog from "@/components/ExpenseDetailDialog";
 import EditExpenseDialog from "@/components/EditExpenseDialog";
 import InviteMemberDialog from "@/components/InviteMemberDialog";
 import GroupMembersDialog from "@/components/GroupMembersDialog"; // Import the new component
+import BalanceDetailDialog from "@/components/BalanceDetailDialog"; // Import the new balance dialog
 import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -70,6 +71,14 @@ interface GroupMember {
   avatarUrl?: string;
 }
 
+interface BalanceItem {
+  id: string; // user ID or guest ID
+  name: string;
+  amount: number; // positive for money owed to current user, negative for money current user owes
+  avatarUrl?: string;
+  isGuest?: boolean;
+}
+
 const GroupDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -79,17 +88,22 @@ const GroupDetail = () => {
   const [openEditExpense, setOpenEditExpense] = useState(false);
   const [openShareDialog, setOpenShareDialog] = useState(false);
   const [openInviteMemberDialog, setOpenInviteMemberDialog] = useState(false);
-  const [openMembersDialog, setOpenMembersDialog] = useState(false); // New state for members dialog
+  const [openMembersDialog, setOpenMembersDialog] = useState(false);
+  const [openBalanceDetailDialog, setOpenBalanceDetailDialog] = useState(false); // New state for balance dialog
+  const [balanceDetailTitle, setBalanceDetailTitle] = useState("");
+  const [balanceDetailDescription, setBalanceDetailDescription] = useState("");
+  const [balancesToDisplay, setBalancesToDisplay] = useState<BalanceItem[]>([]);
+
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
   const [shareCode, setShareCode] = useState("");
   const [copied, setCopied] = useState(false);
   const [groupName, setGroupName] = useState("Test");
   const [isEditingName, setIsEditingName] = useState(false);
-  const [members, setMembers] = useState<GroupMember[]>([]); // Updated type to GroupMember[]
+  const [members, setMembers] = useState<GroupMember[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isMarkingPaid, setIsMarkingPaid] = useState(false); // New state for loading paid status
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
 
   // Load group data
   useEffect(() => {
@@ -98,7 +112,7 @@ const GroupDetail = () => {
   }, [id, user]);
 
   const loadGroupData = async () => {
-    if (!id || !user) return []; // Return empty array if no ID or user
+    if (!id || !user) return [];
     
     try {
       setLoading(true);
@@ -106,7 +120,7 @@ const GroupDetail = () => {
       // Load group info
       const { data: groupData, error: groupError } = await supabase
         .from('groups')
-        .select('name, owner_id') // Also fetch owner_id
+        .select('name, owner_id')
         .eq('id', id)
         .single();
       
@@ -126,7 +140,7 @@ const GroupDetail = () => {
       const userIds = groupMembersData?.map(m => m.user_id) || [];
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, full_name, avatar_url') // Fetch avatar_url
+        .select('id, full_name, avatar_url')
         .in('id', userIds);
       
       if (profilesError) throw profilesError;
@@ -134,7 +148,7 @@ const GroupDetail = () => {
       const formattedMembers: GroupMember[] = profilesData?.map(p => ({
         id: p.id,
         name: p.full_name,
-        isOwner: p.id === groupOwnerId, // Determine owner status
+        isOwner: p.id === groupOwnerId,
         avatarUrl: p.avatar_url || undefined,
       })) || [];
       
@@ -157,7 +171,7 @@ const GroupDetail = () => {
         const participants = exp.expense_participants.map((p: any) => ({
           userId: p.user_id,
           userName: formattedMembers.find(m => m.id === p.user_id)?.name,
-          guestId: p.guest_name ? p.id : undefined, // Use participant ID for guest ID
+          guestId: p.guest_name ? p.id : undefined,
           guestName: p.guest_name,
           amount: p.amount,
           isPaid: p.is_paid,
@@ -187,7 +201,7 @@ const GroupDetail = () => {
       }) || [];
 
       setExpenses(formattedExpenses);
-      return formattedExpenses; // Return the fetched expenses
+      return formattedExpenses;
     } catch (error) {
       console.error('Error loading group data:', error);
       toast.error('Không thể tải dữ liệu nhóm');
@@ -202,7 +216,7 @@ const GroupDetail = () => {
 
   // Calculate amount to pay (money current user owes to others)
   const amountToPay = expenses
-    .filter(exp => !exp.isCompleted) // Only consider non-completed expenses
+    .filter(exp => !exp.isCompleted)
     .reduce((sum, exp) => {
       const myParticipant = exp.participants.find(
         p => p.userId === user?.id && !p.isPayer && !p.isPaid
@@ -212,7 +226,7 @@ const GroupDetail = () => {
 
   // Calculate amount to collect (money others owe to current user)
   const amountToCollect = expenses
-    .filter(exp => !exp.isCompleted) // Only consider non-completed expenses
+    .filter(exp => !exp.isCompleted)
     .reduce((sum, exp) => {
       if (exp.paidById === user?.id) {
         const unpaidAmount = exp.participants
@@ -222,6 +236,76 @@ const GroupDetail = () => {
       }
       return sum;
     }, 0);
+
+  const calculateDetailedBalances = (type: 'pay' | 'collect'): BalanceItem[] => {
+    if (!user) return [];
+
+    const balancesMap = new Map<string, BalanceItem>(); // Key: memberId or guestId
+
+    expenses.filter(exp => !exp.isCompleted).forEach(exp => {
+      const payerId = exp.paidById;
+      const payerName = members.find(m => m.id === payerId)?.name || 'Unknown';
+      const payerAvatar = members.find(m => m.id === payerId)?.avatarUrl;
+
+      exp.participants.forEach(p => {
+        const participantId = p.userId || p.guestId;
+        const participantName = p.userName || p.guestName;
+        const participantAvatar = members.find(m => m.id === p.userId)?.avatarUrl;
+        const isGuest = !!p.guestName;
+
+        if (!participantId || !participantName || p.isPaid) return;
+
+        if (type === 'pay' && p.userId === user.id && !p.isPayer) {
+          // Current user owes money to the payer of this expense
+          const currentBalance = balancesMap.get(payerId) || {
+            id: payerId,
+            name: payerName,
+            amount: 0,
+            avatarUrl: payerAvatar,
+            isGuest: false,
+          };
+          currentBalance.amount -= p.amount; // Negative means current user owes
+          balancesMap.set(payerId, currentBalance);
+        } else if (type === 'collect' && payerId === user.id && !p.isPayer) {
+          // Participant owes money to the current user (payer)
+          const currentBalance = balancesMap.get(participantId) || {
+            id: participantId,
+            name: participantName,
+            amount: 0,
+            avatarUrl: participantAvatar,
+            isGuest: isGuest,
+          };
+          currentBalance.amount += p.amount; // Positive means they owe current user
+          balancesMap.set(participantId, currentBalance);
+        }
+      });
+    });
+
+    // Filter out zero balances and sort
+    const filteredBalances = Array.from(balancesMap.values()).filter(b => b.amount !== 0);
+
+    if (type === 'pay') {
+      return filteredBalances.filter(b => b.amount < 0).map(b => ({ ...b, amount: Math.abs(b.amount) }));
+    } else { // 'collect'
+      return filteredBalances.filter(b => b.amount > 0);
+    }
+  };
+
+  const handleOpenBalanceDetail = (type: 'pay' | 'collect') => {
+    if (!user) {
+      toast.error("Vui lòng đăng nhập để xem chi tiết.");
+      return;
+    }
+    const calculatedBalances = calculateDetailedBalances(type);
+    setBalancesToDisplay(calculatedBalances);
+    setBalanceDetailTitle(type === 'pay' ? "Khoản Tiền Phải Trả" : "Khoản Tiền Cần Thu");
+    setBalanceDetailDescription(
+      type === 'pay'
+        ? "Chi tiết các khoản bạn cần trả cho các thành viên khác."
+        : "Chi tiết các khoản các thành viên khác cần trả cho bạn."
+    );
+    setOpenBalanceDetailDialog(true);
+  };
 
   const handleAddExpense = async (expenseData: any) => {
     if (!id || !user) return;
@@ -460,7 +544,7 @@ const GroupDetail = () => {
   };
 
   const handleMarkParticipantPaid = async (expenseId: string, participantId: string, currentIsPaid: boolean, isGuest: boolean) => {
-    setIsMarkingPaid(true); // Set loading to true
+    setIsMarkingPaid(true);
     try {
       const newPaidStatus = !currentIsPaid;
       const updateData = {
@@ -472,16 +556,15 @@ const GroupDetail = () => {
         .from('expense_participants')
         .update(updateData)
         .eq('expense_id', expenseId)
-        .eq('id', participantId); // participantId here is the ID of the expense_participant row
+        .eq('id', participantId);
 
       if (error) throw error;
       
-      const updatedExpenses = await loadGroupData(); // Reload data and get the updated list
+      const updatedExpenses = await loadGroupData();
       
-      // Find the updated selected expense from the new list
       const updatedSelectedExpense = updatedExpenses.find(exp => exp.id === expenseId);
       if (updatedSelectedExpense) {
-        setSelectedExpense(updatedSelectedExpense); // Update selectedExpense state
+        setSelectedExpense(updatedSelectedExpense);
       }
 
       toast.success(newPaidStatus ? "Đã đánh dấu đã trả!" : "Đã đánh dấu chưa trả!");
@@ -489,13 +572,13 @@ const GroupDetail = () => {
       console.error('Error marking participant as paid:', error);
       toast.error('Không thể cập nhật trạng thái đã trả');
     } finally {
-      setIsMarkingPaid(false); // Set loading to false
+      setIsMarkingPaid(false);
     }
   };
 
   const handleShare = () => {
     if (id) {
-      setShareCode(id); // Set the group ID as the share code
+      setShareCode(id);
       setOpenShareDialog(true);
     } else {
       toast.error("Không thể lấy mã nhóm");
@@ -623,8 +706,8 @@ const GroupDetail = () => {
           </Card>
 
           <Card 
-            className="cursor-pointer hover:shadow-md transition-shadow" // Make it clickable
-            onClick={() => setOpenMembersDialog(true)} // Open members dialog
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setOpenMembersDialog(true)}
           >
             <CardContent className="p-4 space-y-2">
               <div className="flex items-center gap-2 text-green-500">
@@ -660,7 +743,10 @@ const GroupDetail = () => {
             Thao tác nhanh
           </h2>
           <div className="space-y-2">
-            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleOpenBalanceDetail('pay')}
+            >
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
@@ -677,7 +763,10 @@ const GroupDetail = () => {
               </CardContent>
             </Card>
 
-            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleOpenBalanceDetail('collect')}
+            >
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
@@ -877,7 +966,7 @@ const GroupDetail = () => {
             handleMarkParticipantPaid(selectedExpense.id, participantId, currentIsPaid, isGuest);
           }
         }}
-        isMarkingPaid={isMarkingPaid} // Pass the loading state
+        isMarkingPaid={isMarkingPaid}
       />
 
       {/* Edit Expense Dialog */}
@@ -907,6 +996,16 @@ const GroupDetail = () => {
         onOpenChange={setOpenMembersDialog}
         members={members}
         groupName={groupName}
+      />
+
+      {/* Balance Detail Dialog */}
+      <BalanceDetailDialog
+        open={openBalanceDetailDialog}
+        onOpenChange={setOpenBalanceDetailDialog}
+        title={balanceDetailTitle}
+        description={balanceDetailDescription}
+        balances={balancesToDisplay}
+        currentUserId={user?.id || ""}
       />
 
       {/* Share Dialog */}
