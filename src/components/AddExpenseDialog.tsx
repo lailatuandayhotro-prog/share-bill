@@ -44,6 +44,7 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
   const [guests, setGuests] = useState<Guest[]>([]);
   const [newGuestName, setNewGuestName] = useState("");
   const [receiptImage, setReceiptImage] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleAddGuest = () => {
@@ -73,7 +74,9 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
         toast.error("Kích thước file tối đa 5MB");
         return;
       }
+      if (receiptPreview) URL.revokeObjectURL(receiptPreview);
       setReceiptImage(file);
+      setReceiptPreview(URL.createObjectURL(file));
       toast.success("Đã chọn ảnh hóa đơn");
     }
   };
@@ -114,7 +117,7 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
     const expense = {
       amount: parseFloat(amount),
       description,
-      date: format(date, "dd/MM/yyyy"),
+      date: format(date, "yyyy-MM-dd"),
       splitType,
       paidBy,
       paidByName: members.find(m => m.id === paidBy)?.name || currentUserName,
@@ -136,6 +139,8 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
     setGuests([]);
     setNewGuestName("");
     setReceiptImage(null);
+    if (receiptPreview) URL.revokeObjectURL(receiptPreview);
+    setReceiptPreview(null);
     
     onOpenChange(false);
   };
@@ -358,6 +363,17 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
                 </div>
               </label>
             </div>
+
+            {receiptPreview && (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <img
+                  src={receiptPreview}
+                  alt={`Hóa đơn: ${receiptImage?.name ?? ''}`}
+                  className="w-full max-h-64 object-contain bg-muted"
+                  loading="lazy"
+                />
+              </div>
+            )}
           </div>
         </div>
 

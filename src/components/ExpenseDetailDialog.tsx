@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Edit, Trash2, Receipt, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -57,6 +57,10 @@ const ExpenseDetailDialog = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Chi tiết chi phí: {expense.title}</DialogTitle>
+          <DialogDescription>Hóa đơn và người tham gia</DialogDescription>
+        </DialogHeader>
         {/* Header with gradient */}
         <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-purple-600 text-white p-6 space-y-4">
           <div className="flex items-start gap-4">
