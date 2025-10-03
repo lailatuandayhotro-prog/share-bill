@@ -121,7 +121,7 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
       participants: participantsWithAmounts,
       allParticipants: selectedMembers,
       guests,
-      receiptImage: receiptImage?.name,
+      receiptImage: receiptImage,
     };
 
     onAddExpense(expense);

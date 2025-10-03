@@ -23,6 +23,7 @@ interface ExpenseDetailDialogProps {
     paidBy: string;
     date: string;
     participants?: Participant[];
+    receiptUrl?: string;
   } | null;
   onComplete: () => void;
   onEdit: () => void;
@@ -104,6 +105,24 @@ const ExpenseDetailDialog = ({
             Xóa
           </Button>
         </div>
+
+        {/* Receipt Image */}
+        {expense.receiptUrl && (
+          <div className="px-6 pb-4 space-y-3">
+            <div className="flex items-center gap-2 text-lg font-semibold">
+              <Receipt className="w-5 h-5 text-primary" />
+              <span>Hóa đơn</span>
+            </div>
+            <div className="border border-border rounded-xl overflow-hidden">
+              <img
+                src={expense.receiptUrl}
+                alt="Hóa đơn"
+                className="w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => window.open(expense.receiptUrl, '_blank')}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Participants Section */}
         <div className="px-6 pb-6 space-y-4">

@@ -50,6 +50,7 @@ interface Expense {
   isCompleted: boolean;
   isMine: boolean;
   participants: Participant[];
+  receiptUrl?: string;
 }
 
 const GroupDetail = () => {
@@ -142,7 +143,8 @@ const GroupDetail = () => {
           date: new Date(exp.expense_date).toLocaleDateString('vi-VN'),
           isCompleted: exp.is_completed,
           isMine: exp.paid_by === user?.id,
-          participants
+          participants,
+          receiptUrl: exp.receipt_url
         };
       }) || [];
 
@@ -181,6 +183,28 @@ const GroupDetail = () => {
     if (!id || !user) return;
 
     try {
+      let receiptUrl = null;
+
+      // Upload receipt image if exists
+      if (expenseData.receiptImage) {
+        const fileExt = expenseData.receiptImage.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('receipts')
+          .upload(fileName, expenseData.receiptImage);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          toast.error('Không thể tải lên ảnh hóa đơn');
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('receipts')
+            .getPublicUrl(fileName);
+          receiptUrl = publicUrl;
+        }
+      }
+
       // Insert expense
       const { data: newExpense, error: expenseError } = await supabase
         .from('expenses')
@@ -191,7 +215,8 @@ const GroupDetail = () => {
           amount: expenseData.amount,
           paid_by: expenseData.paidBy,
           expense_date: expenseData.date,
-          split_type: 'equal'
+          split_type: 'equal',
+          receipt_url: receiptUrl
         })
         .select()
         .single();
