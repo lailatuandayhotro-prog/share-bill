@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label"; // Import Label
+import { Label } from "@/components/ui/label";
 import {
   DollarSign,
   ArrowLeft,
@@ -34,7 +34,7 @@ import {
   Copy,
   Check,
   UserPlus,
-  Loader2, // Import Loader2
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -840,26 +840,28 @@ const GroupDetail = () => {
               <Receipt className="w-5 h-5" />
               Chi phí ({expenses.length})
             </h2>
-            <div className="space-y-1">
-              <Label htmlFor="year-select" className="text-xs text-muted-foreground">Chọn năm</Label>
-              <Select onValueChange={handleYearChange} value={selectedYear.toString()}>
-                <SelectTrigger id="year-select" className="w-[90px] h-8 text-sm"> {/* Adjusted width and height */}
-                  <SelectValue placeholder="Năm" />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Month and Year Selectors on the same line */}
+            <div className="flex items-end gap-3"> {/* Use items-end to align labels at the bottom */}
+              <div className="space-y-1">
+                <Label htmlFor="year-select" className="text-xs text-muted-foreground">Chọn năm</Label>
+                <Select onValueChange={handleYearChange} value={selectedYear.toString()}>
+                  <SelectTrigger id="year-select" className="w-[90px] h-8 text-sm">
+                    <SelectValue placeholder="Năm" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Chọn tháng</Label>
+                <MonthSelector selectedMonth={selectedMonth} onMonthChange={handleMonthChange} />
+              </div>
             </div>
-          </div>
-
-          <div className="mb-4 space-y-1">
-            <Label className="text-xs text-muted-foreground">Chọn tháng</Label>
-            <MonthSelector selectedMonth={selectedMonth} onMonthChange={handleMonthChange} />
           </div>
 
           <div className="text-sm text-muted-foreground mb-4">
