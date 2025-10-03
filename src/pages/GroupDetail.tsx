@@ -454,7 +454,7 @@ const GroupDetail = () => {
 
       if (error) throw error;
       
-      await loadGroupData();
+      await loadGroupData(); // Reload data after update
       toast.success(newPaidStatus ? "Đã đánh dấu đã trả!" : "Đã đánh dấu chưa trả!");
     } catch (error) {
       console.error('Error marking participant as paid:', error);
