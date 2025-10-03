@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AddExpenseDialog from "@/components/AddExpenseDialog";
 import ExpenseDetailDialog from "@/components/ExpenseDetailDialog";
+import EditExpenseDialog from "@/components/EditExpenseDialog"; // New import
 import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,6 +55,9 @@ interface Expense {
   isMine: boolean;
   participants: Participant[];
   receiptUrl?: string;
+  description?: string; // Added for edit
+  splitType?: string; // Added for edit
+  guests?: Array<{ id: string; name: string }>; // Added for edit
 }
 
 const GroupDetail = () => {
@@ -62,8 +66,10 @@ const GroupDetail = () => {
   const { user } = useAuth();
   const [openAddExpense, setOpenAddExpense] = useState(false);
   const [openExpenseDetail, setOpenExpenseDetail] = useState(false);
+  const [openEditExpense, setOpenEditExpense] = useState(false); // New state for edit dialog
   const [openShareDialog, setOpenShareDialog] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null); // New state for expense to edit
   const [shareCode, setShareCode] = useState("");
   const [copied, setCopied] = useState(false);
   const [groupName, setGroupName] = useState("Test");
@@ -133,24 +139,32 @@ const GroupDetail = () => {
         const participants = exp.expense_participants.map((p: any) => ({
           userId: p.user_id,
           userName: formattedMembers.find(m => m.id === p.user_id)?.name,
+          guestId: p.guest_name ? p.id : undefined, // Use participant ID for guest ID
           guestName: p.guest_name,
           amount: p.amount,
           isPaid: p.is_paid,
           isPayer: p.user_id === exp.paid_by
         }));
 
+        const guests = participants
+          .filter(p => p.guestName)
+          .map(p => ({ id: p.guestId!, name: p.guestName! }));
+
         return {
           id: exp.id,
           title: exp.title,
+          description: exp.description || exp.title,
           amount: exp.amount,
           paidBy: payer?.name || 'Unknown',
           paidById: exp.paid_by,
-          splitWith: participants.map(p => p.userName || p.guestName).filter(Boolean),
+          splitWith: participants.map(p => p.userName || p.guestName).filter(Boolean) as string[],
           date: new Date(exp.expense_date).toLocaleDateString('vi-VN'),
           isCompleted: exp.is_completed,
           isMine: exp.paid_by === user?.id,
           participants,
-          receiptUrl: exp.receipt_url
+          receiptUrl: exp.receipt_url,
+          splitType: exp.split_type || 'equal',
+          guests,
         };
       }) || [];
 
@@ -263,13 +277,108 @@ const GroupDetail = () => {
     }
   };
 
-  const handleCompleteExpense = (expenseId: string) => {
-    setExpenses(
-      expenses.map((exp) =>
-        exp.id === expenseId ? { ...exp, isCompleted: !exp.isCompleted } : exp
-      )
-    );
-    toast.success("Đã cập nhật trạng thái!");
+  const handleUpdateExpense = async (expenseId: string, updatedExpenseData: any) => {
+    if (!id || !user) return;
+
+    try {
+      let receiptUrl = updatedExpenseData.receiptUrl; // Keep existing URL if not changed
+
+      // Handle receipt image update
+      if (updatedExpenseData.receiptImage instanceof File) {
+        // Delete old receipt if exists
+        if (selectedExpense?.receiptUrl) {
+          const oldFileName = selectedExpense.receiptUrl.split('/').pop();
+          if (oldFileName) {
+            await supabase.storage.from('receipts').remove([`${user.id}/${oldFileName}`]);
+          }
+        }
+
+        // Upload new receipt image
+        const fileExt = updatedExpenseData.receiptImage.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('receipts')
+          .upload(fileName, updatedExpenseData.receiptImage);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          toast.error('Không thể tải lên ảnh hóa đơn mới');
+          return; // Stop if upload fails
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('receipts')
+            .getPublicUrl(fileName);
+          receiptUrl = publicUrl;
+        }
+      } else if (updatedExpenseData.receiptImage === null && selectedExpense?.receiptUrl) {
+        // User explicitly removed the receipt image
+        const oldFileName = selectedExpense.receiptUrl.split('/').pop();
+        if (oldFileName) {
+          await supabase.storage.from('receipts').remove([`${user.id}/${oldFileName}`]);
+        }
+        receiptUrl = null;
+      }
+
+      // Update expense
+      const { error: expenseError } = await supabase
+        .from('expenses')
+        .update({
+          title: updatedExpenseData.description,
+          description: updatedExpenseData.description,
+          amount: updatedExpenseData.amount,
+          paid_by: updatedExpenseData.paidBy,
+          expense_date: updatedExpenseData.date,
+          split_type: updatedExpenseData.splitType,
+          receipt_url: receiptUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', expenseId);
+
+      if (expenseError) throw expenseError;
+
+      // Delete existing participants and insert new ones
+      await supabase.from('expense_participants').delete().eq('expense_id', expenseId);
+
+      const participantsToInsert = updatedExpenseData.participants.map((p: any) => ({
+        expense_id: expenseId,
+        user_id: p.userId,
+        guest_name: p.guestName,
+        amount: p.amount,
+        is_paid: p.isPaid // Preserve paid status
+      }));
+
+      const { error: participantsError } = await supabase
+        .from('expense_participants')
+        .insert(participantsToInsert);
+
+      if (participantsError) throw participantsError;
+
+      await loadGroupData();
+      toast.success("Cập nhật chi phí thành công!");
+      setOpenEditExpense(false);
+      setExpenseToEdit(null);
+    } catch (error) {
+      console.error('Error updating expense:', error);
+      toast.error('Không thể cập nhật chi phí');
+    }
+  };
+
+  const handleCompleteExpense = async (expenseId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('expenses')
+        .update({ is_completed: !currentStatus })
+        .eq('id', expenseId);
+
+      if (error) throw error;
+
+      await loadGroupData();
+      toast.success("Đã cập nhật trạng thái chi phí!");
+    } catch (error) {
+      console.error('Error updating expense completion status:', error);
+      toast.error('Không thể cập nhật trạng thái chi phí');
+    }
   };
 
   const handleViewExpenseDetail = (expense: Expense) => {
@@ -278,22 +387,79 @@ const GroupDetail = () => {
   };
 
   const handleEditExpense = () => {
-    toast.info("Chức năng sửa chi phí đang được phát triển");
-    setOpenExpenseDetail(false);
-  };
-
-  const handleDeleteExpense = () => {
     if (selectedExpense) {
-      setExpenses(expenses.filter((e) => e.id !== selectedExpense.id));
-      toast.success("Đã xóa chi phí!");
-      setOpenExpenseDetail(false);
-      setSelectedExpense(null);
+      setExpenseToEdit(selectedExpense);
+      setOpenExpenseDetail(false); // Close detail dialog
+      setOpenEditExpense(true); // Open edit dialog
     }
   };
 
-  const handleMarkParticipantPaid = (participantId: string) => {
-    // Logic to mark participant as paid
-    toast.success("Đã đánh dấu đã trả!");
+  const handleDeleteExpense = async () => {
+    if (!selectedExpense) return;
+
+    try {
+      // Delete associated participants first
+      const { error: participantsError } = await supabase
+        .from('expense_participants')
+        .delete()
+        .eq('expense_id', selectedExpense.id);
+
+      if (participantsError) throw participantsError;
+
+      // Delete receipt image from storage if exists
+      if (selectedExpense.receiptUrl) {
+        const fileName = selectedExpense.receiptUrl.split('/').pop();
+        if (fileName) {
+          const { error: storageError } = await supabase.storage
+            .from('receipts')
+            .remove([`${user?.id}/${fileName}`]);
+          if (storageError) console.error('Error deleting receipt image:', storageError);
+        }
+      }
+
+      // Then delete the expense
+      const { error: expenseError } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', selectedExpense.id);
+
+      if (expenseError) throw expenseError;
+
+      await loadGroupData();
+      toast.success("Đã xóa chi phí thành công!");
+      setOpenExpenseDetail(false);
+      setSelectedExpense(null);
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      toast.error('Không thể xóa chi phí');
+    }
+  };
+
+  const handleMarkParticipantPaid = async (expenseId: string, participantId: string, isGuest: boolean) => {
+    try {
+      if (isGuest) {
+        // For guests, we update by guest_name and expense_id
+        const { error } = await supabase
+          .from('expense_participants')
+          .update({ is_paid: true, paid_at: new Date().toISOString() })
+          .eq('expense_id', expenseId)
+          .eq('id', participantId); // Assuming participantId is the ID of the expense_participant row for guests
+        if (error) throw error;
+      } else {
+        // For registered users, we update by user_id and expense_id
+        const { error } = await supabase
+          .from('expense_participants')
+          .update({ is_paid: true, paid_at: new Date().toISOString() })
+          .eq('expense_id', expenseId)
+          .eq('id', participantId); // Assuming participantId is the ID of the expense_participant row for users
+        if (error) throw error;
+      }
+      await loadGroupData();
+      toast.success("Đã đánh dấu đã trả!");
+    } catch (error) {
+      console.error('Error marking participant as paid:', error);
+      toast.error('Không thể đánh dấu đã trả');
+    }
   };
 
   const handleShare = () => {
@@ -427,7 +593,7 @@ const GroupDetail = () => {
                 <span className="text-xs font-medium">Tổng thành viên</span>
               </div>
               <div className="space-y-1">
-                <div className="text-xl font-bold text-foreground">1</div>
+                <div className="text-xl font-bold text-foreground">{members.length}</div>
                 <div className="text-xs text-muted-foreground">trong nhóm này</div>
               </div>
             </CardContent>
@@ -583,7 +749,7 @@ const GroupDetail = () => {
                           ? "bg-muted text-muted-foreground"
                           : "bg-green-500 hover:bg-green-600"
                       }`}
-                      onClick={() => handleCompleteExpense(expense.id)}
+                      onClick={() => handleCompleteExpense(expense.id, expense.isCompleted)}
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       {expense.isCompleted ? "Đã hoàn thành" : "Hoàn thành"}
@@ -600,7 +766,7 @@ const GroupDetail = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
               <Users className="w-5 h-5" />
-              Thành viên (1)
+              Thành viên ({members.length})
             </h2>
             <Button variant="outline" size="sm">
               <MessageCircle className="w-4 h-4" />
@@ -612,29 +778,38 @@ const GroupDetail = () => {
             Người tham gia nhóm
           </div>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">tuan hoang</span>
-                    <div className="flex gap-1">
-                      <span className="px-2 py-0.5 rounded-md bg-green-500 text-white text-xs font-medium">
-                        Bạn
-                      </span>
-                      <span className="px-2 py-0.5 rounded-md bg-yellow-500 text-white text-xs font-medium flex items-center gap-1">
-                        <Crown className="w-3 h-3" />
-                        Trưởng nhóm
-                      </span>
+          {members.map(member => (
+            <Card key={member.id} className="mb-2">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{member.name}</span>
+                      <div className="flex gap-1">
+                        {member.id === user?.id && (
+                          <span className="px-2 py-0.5 rounded-md bg-green-500 text-white text-xs font-medium">
+                            Bạn
+                          </span>
+                        )}
+                        {/* Assuming owner status is determined by group.owner_id */}
+                        {/* This needs to be fetched from group_members table */}
+                        {/* For now, hardcoding for owner_id check */}
+                        {id && expenses.length > 0 && expenses[0].paidById === member.id && ( // This is a temporary check, should be from group_members role
+                          <span className="px-2 py-0.5 rounded-md bg-yellow-500 text-white text-xs font-medium flex items-center gap-1">
+                            <Crown className="w-3 h-3" />
+                            Trưởng nhóm
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
 
@@ -655,14 +830,32 @@ const GroupDetail = () => {
         expense={selectedExpense}
         onComplete={() => {
           if (selectedExpense) {
-            handleCompleteExpense(selectedExpense.id);
+            handleCompleteExpense(selectedExpense.id, selectedExpense.isCompleted);
             setOpenExpenseDetail(false);
           }
         }}
         onEdit={handleEditExpense}
         onDelete={handleDeleteExpense}
-        onMarkPaid={handleMarkParticipantPaid}
+        onMarkPaid={(participantId: string) => {
+          if (selectedExpense) {
+            const participant = selectedExpense.participants.find(p => (p.userId === user?.id && p.userId === participantId) || p.guestId === participantId);
+            handleMarkParticipantPaid(selectedExpense.id, participantId, !!participant?.guestName);
+          }
+        }}
       />
+
+      {/* Edit Expense Dialog */}
+      {expenseToEdit && (
+        <EditExpenseDialog
+          open={openEditExpense}
+          onOpenChange={setOpenEditExpense}
+          initialExpense={expenseToEdit}
+          onUpdateExpense={handleUpdateExpense}
+          members={members}
+          currentUserId={user?.id || ""}
+          currentUserName={members.find(m => m.id === user?.id)?.name || ""}
+        />
+      )}
 
       {/* Share Dialog */}
       <Dialog open={openShareDialog} onOpenChange={setOpenShareDialog}>
