@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Edit, Trash2, Receipt, Users, RotateCcw } from "lucide-react"; // Added RotateCcw icon
+import { CheckCircle2, Edit, Trash2, Receipt, Users, RotateCcw, Loader2 } from "lucide-react"; // Added Loader2 icon
 import { toast } from "sonner";
 
 interface Participant {
@@ -28,7 +28,8 @@ interface ExpenseDetailDialogProps {
   onComplete: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onMarkPaid: (participantId: string, currentIsPaid: boolean, isGuest: boolean) => void; // Updated signature
+  onMarkPaid: (participantId: string, currentIsPaid: boolean, isGuest: boolean) => void;
+  isMarkingPaid: boolean; // New prop for loading state
 }
 
 const ExpenseDetailDialog = ({
@@ -39,6 +40,7 @@ const ExpenseDetailDialog = ({
   onEdit,
   onDelete,
   onMarkPaid,
+  isMarkingPaid, // Destructure new prop
 }: ExpenseDetailDialogProps) => {
   if (!expense) return null;
 
@@ -46,7 +48,7 @@ const ExpenseDetailDialog = ({
 
   const handleMarkPaidToggle = (participantId: string, currentIsPaid: boolean, isGuest: boolean) => {
     onMarkPaid(participantId, currentIsPaid, isGuest);
-    toast.success(currentIsPaid ? "Đã đánh dấu chưa trả!" : "Đã đánh dấu đã trả!");
+    // Toast messages are now handled by the parent component after the async operation
   };
 
   const getInitials = (name: string) => {
@@ -179,18 +181,16 @@ const ExpenseDetailDialog = ({
                             onClick={() => handleMarkPaidToggle(participantId, participant.isPaid, !!participant.guestName)}
                             size="sm"
                             className={participant.isPaid ? "bg-red-500 hover:bg-red-600 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"}
+                            disabled={isMarkingPaid} // Disable button when loading
                           >
-                            {participant.isPaid ? (
-                              <>
-                                <RotateCcw className="w-4 h-4 mr-1" />
-                                Đánh Dấu Chưa Trả
-                              </>
+                            {isMarkingPaid ? (
+                              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                            ) : participant.isPaid ? (
+                              <RotateCcw className="w-4 h-4 mr-1" />
                             ) : (
-                              <>
-                                <CheckCircle2 className="w-4 h-4 mr-1" />
-                                Đánh Dấu Đã Trả
-                              </>
+                              <CheckCircle2 className="w-4 h-4 mr-1" />
                             )}
+                            {isMarkingPaid ? "Đang cập nhật..." : (participant.isPaid ? "Đánh Dấu Chưa Trả" : "Đánh Dấu Đã Trả")}
                           </Button>
                         )}
                       </div>

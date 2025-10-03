@@ -80,6 +80,7 @@ const GroupDetail = () => {
   const [members, setMembers] = useState<Array<{ id: string; name: string }>>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false); // New state for loading paid status
 
   // Load group data
   useEffect(() => {
@@ -443,6 +444,7 @@ const GroupDetail = () => {
   };
 
   const handleMarkParticipantPaid = async (expenseId: string, participantId: string, currentIsPaid: boolean, isGuest: boolean) => {
+    setIsMarkingPaid(true); // Set loading to true
     try {
       const newPaidStatus = !currentIsPaid;
       const updateData = {
@@ -470,6 +472,8 @@ const GroupDetail = () => {
     } catch (error) {
       console.error('Error marking participant as paid:', error);
       toast.error('Không thể cập nhật trạng thái đã trả');
+    } finally {
+      setIsMarkingPaid(false); // Set loading to false
     }
   };
 
@@ -856,6 +860,7 @@ const GroupDetail = () => {
             handleMarkParticipantPaid(selectedExpense.id, participantId, currentIsPaid, isGuest);
           }
         }}
+        isMarkingPaid={isMarkingPaid} // Pass the loading state
       />
 
       {/* Edit Expense Dialog */}
