@@ -23,7 +23,7 @@ const ReceiptViewDialog = ({ open, onOpenChange, receiptUrl, expenseTitle }: Rec
             <img
               src={receiptUrl}
               alt={`Hóa đơn cho ${expenseTitle}`}
-              className="w-full h-auto object-contain rounded-lg border border-border"
+              className="w-full h-auto object-contain rounded-lg border border-border max-h-[70vh]" // Added max-h-[70vh]
               loading="lazy"
             />
           ) : (
