@@ -6,7 +6,8 @@ import { toast } from "sonner";
 interface Participant {
   userId?: string;
   userName?: string;
-  // guestId and guestName are no longer directly part of expense_participants for absorbed guests
+  guestId?: string; // ID for unabsorbed guest from expense_participants
+  guestName?: string; // Name for unabsorbed guest from expense_participants
   amount: number;
   isPaid: boolean;
   isPayer?: boolean;
@@ -15,7 +16,7 @@ interface Participant {
 interface Guest {
   id: string;
   name: string;
-  responsibleMemberId?: string;
+  responsibleMemberId?: string; // Optional: if a member pays for this guest
 }
 
 interface ExpenseDetailDialogProps {
@@ -27,9 +28,9 @@ interface ExpenseDetailDialogProps {
     amount: number;
     paidBy: string;
     date: string;
-    participants?: Participant[]; // These are now only members (or responsible members)
+    participants?: Participant[]; // These are entries from expense_participants (members or unabsorbed guests)
     receiptUrl?: string;
-    guests?: Guest[]; // Guests are now passed separately for display
+    guests?: Guest[]; // Full guest list with responsibleMemberId
   } | null;
   onComplete: () => void;
   onEdit: () => void;
@@ -60,6 +61,17 @@ const ExpenseDetailDialog = ({
   const getInitials = (name: string) => {
     return name.charAt(0).toUpperCase();
   };
+
+  // Group guests by their responsible member
+  const memberToGuestsMap = new Map<string, Guest[]>();
+  guests.forEach(guest => {
+    if (guest.responsibleMemberId) {
+      if (!memberToGuestsMap.has(guest.responsibleMemberId)) {
+        memberToGuestsMap.set(guest.responsibleMemberId, []);
+      }
+      memberToGuestsMap.get(guest.responsibleMemberId)?.push(guest);
+    }
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -121,43 +133,47 @@ const ExpenseDetailDialog = ({
         <div className="px-4 pb-4 space-y-3">
           <div className="flex items-center gap-2 text-base font-semibold">
             <Users className="w-4 h-4 text-primary" />
-            <span>Người tham gia ({participants.length + guests.length})</span>
+            <span>Người tham gia ({participants.length + guests.filter(g => !g.responsibleMemberId).length})</span>
           </div>
 
           <div className="space-y-2">
-            {participants.length === 0 && guests.length === 0 ? (
+            {participants.length === 0 && guests.filter(g => !g.responsibleMemberId).length === 0 ? (
               <div className="text-center py-6 text-muted-foreground text-sm">
                 Không có người tham gia nào
               </div>
             ) : (
               <>
-                {participants.map((participant, index) => {
-                  const participantName = participant.userName || 'Unknown';
-                  const participantId = participant.userId || `participant-${index}`;
-                  
-                  // Find guests for whom this member is responsible
-                  const responsibleGuests = guests.filter(g => g.responsibleMemberId === participant.userId);
+                {participants.map((participant) => {
+                  const isMember = !!participant.userId;
+                  const name = isMember ? participant.userName : participant.guestName;
+                  const id = isMember ? participant.userId : participant.guestId;
+                  const responsibleGuests = isMember ? memberToGuestsMap.get(participant.userId!) || [] : [];
 
                   return (
                     <div
-                      key={participantId}
+                      key={id}
                       className="border border-border rounded-lg p-3 bg-card hover:shadow-md transition-shadow"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-start gap-3">
                         {/* Avatar */}
                         <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0 bg-blue-500">
-                          {getInitials(participantName)}
+                          {getInitials(name || 'U')}
                         </div>
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1 mb-0.5">
                             <span className="font-medium text-sm text-foreground">
-                              {participantName}
+                              {name}
                             </span>
                             {participant.isPayer && (
                               <span className="px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 text-xs font-medium">
                                 Người trả tiền
+                              </span>
+                            )}
+                            {!isMember && (
+                              <span className="px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+                                Khách
                               </span>
                             )}
                           </div>
@@ -179,7 +195,7 @@ const ExpenseDetailDialog = ({
                           </div>
                           {responsibleGuests.length > 0 && (
                             <div className="text-xs text-muted-foreground mt-1">
-                              Chịu trách nhiệm cho: {responsibleGuests.map(g => g.name).join(', ')}
+                              Trả hộ cho: {responsibleGuests.map(g => g.name).join(', ')}
                             </div>
                           )}
                         </div>
@@ -192,7 +208,7 @@ const ExpenseDetailDialog = ({
                           
                           {!participant.isPayer && (
                             <Button
-                              onClick={() => handleMarkPaidToggle(participantId, participant.isPaid, false)} // isGuest is false for members
+                              onClick={() => handleMarkPaidToggle(id!, participant.isPaid, !isMember)}
                               size="sm"
                               className={participant.isPaid ? "bg-red-500 hover:bg-red-600 text-white text-xs" : "bg-blue-500 hover:bg-blue-600 text-white text-xs"}
                               disabled={isMarkingPaid}

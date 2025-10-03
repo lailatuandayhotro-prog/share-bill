@@ -47,7 +47,8 @@ import MonthSelector from "@/components/MonthSelector";
 interface Participant {
   userId?: string;
   userName?: string;
-  // guestId and guestName are no longer directly part of expense_participants for absorbed guests
+  guestId?: string; // ID for unabsorbed guest from expense_participants
+  guestName?: string; // Name for unabsorbed guest from expense_participants
   amount: number;
   isPaid: boolean;
   isPayer?: boolean;
@@ -56,7 +57,7 @@ interface Participant {
 interface Guest {
   id: string;
   name: string;
-  responsibleMemberId?: string;
+  responsibleMemberId?: string; // Optional: if a member pays for this guest
 }
 
 interface Expense {
@@ -65,16 +66,16 @@ interface Expense {
   amount: number;
   paidBy: string; // Name of the payer
   paidById: string; // ID of the payer
-  splitWith: string[]; // This will now only contain members (or responsible members)
+  splitWith: string[]; // This will now contain members and guests (with responsible member info)
   date: string; // ISO string from DB
   displayDate: string; // Formatted date for UI
   isCompleted: boolean;
   isMine: boolean;
-  participants: Participant[]; // These are now only members (or responsible members)
+  participants: Participant[]; // These are entries from expense_participants (members or unabsorbed guests)
   receiptUrl?: string;
   description?: string;
   splitType?: string;
-  guests?: Guest[]; // Guests are now stored here for display/editing
+  guests?: Guest[]; // Full guest list with responsibleMemberId, parsed from description
 }
 
 interface GroupMember {
@@ -204,30 +205,51 @@ const GroupDetail = () => {
       const formattedExpenses = expensesData?.map(exp => {
         const payer = formattedMembers.find(m => m.id === exp.paid_by);
         
-        // Participants are now only members (or responsible members)
+        // Parse guests from description
+        let guests: Guest[] = [];
+        let cleanDescription = exp.description || exp.title;
+        const guestsJsonMatch = cleanDescription.match(/guests:(\[.*\])/);
+        if (guestsJsonMatch && guestsJsonMatch[1]) {
+          try {
+            guests = JSON.parse(guestsJsonMatch[1]);
+            cleanDescription = cleanDescription.replace(guestsJsonMatch[0], '').trim();
+          } catch (e) {
+            console.error("Error parsing guests JSON from description:", e);
+          }
+        }
+
+        // Participants are entries from expense_participants (members or unabsorbed guests)
         const participants = exp.expense_participants.map((p: any) => ({
           userId: p.user_id,
-          userName: formattedMembers.find(m => m.id === p.user_id)?.name || 'Unknown',
+          userName: p.user_id ? formattedMembers.find(m => m.id === p.user_id)?.name : undefined,
+          guestId: p.guest_name ? p.id : undefined, // Use expense_participant ID for guest
+          guestName: p.guest_name,
           amount: p.amount,
           isPaid: p.is_paid,
           isPayer: p.user_id === exp.paid_by,
-          // guestId and guestName are no longer directly from expense_participants for absorbed guests
         }));
 
-        // Reconstruct guests array for display/editing if needed (e.g., from description or a new column)
-        // For now, assuming guests are passed from Add/Edit dialogs and not stored in DB for each participant row
-        // If you need to persist guest details, a JSONB column in 'expenses' table would be ideal.
-        const guests: Guest[] = exp.description?.includes("guests:") ? JSON.parse(exp.description.split("guests:")[1]) : [];
-
+        // Construct splitWith for display
+        const allSplitEntitiesNames = new Set<string>();
+        participants.forEach(p => {
+          if (p.userName) allSplitEntitiesNames.add(p.userName);
+          if (p.guestName) allSplitEntitiesNames.add(p.guestName);
+        });
+        guests.forEach(guest => {
+          if (guest.responsibleMemberId) {
+            const responsibleMemberName = formattedMembers.find(m => m.id === guest.responsibleMemberId)?.name || 'Unknown';
+            allSplitEntitiesNames.add(`${guest.name} (trả hộ bởi ${responsibleMemberName})`);
+          }
+        });
 
         return {
           id: exp.id,
           title: exp.title,
-          description: exp.description?.split("guests:")[0] || exp.title, // Clean description if guests were appended
+          description: cleanDescription,
           amount: exp.amount,
           paidBy: payer?.name || 'Unknown',
           paidById: exp.paid_by,
-          splitWith: participants.map(p => p.userName).filter(Boolean) as string[], // Only members
+          splitWith: Array.from(allSplitEntitiesNames).filter(Boolean) as string[],
           date: exp.expense_date, // ISO string
           displayDate: new Date(exp.expense_date).toLocaleDateString('vi-VN'), // Formatted for UI
           isCompleted: exp.is_completed,
@@ -235,7 +257,7 @@ const GroupDetail = () => {
           participants,
           receiptUrl: exp.receipt_url,
           splitType: exp.split_type || 'equal',
-          guests, // Pass guests for EditExpenseDialog
+          guests, // Pass full guest list for EditExpenseDialog and ExpenseDetailDialog
         };
       }) || [];
 
@@ -285,10 +307,10 @@ const GroupDetail = () => {
       const payerAvatar = members.find(m => m.id === payerId)?.avatarUrl;
 
       exp.participants.forEach(p => {
-        const participantId = p.userId; // Only user_id now
-        const participantName = p.userName;
-        const participantAvatar = members.find(m => m.id === p.userId)?.avatarUrl;
-        const isGuest = false; // Guests are absorbed, so this is always false for direct participants
+        const participantId = p.userId || p.guestId;
+        const participantName = p.userName || p.guestName;
+        const participantAvatar = p.userId ? members.find(m => m.id === p.userId)?.avatarUrl : undefined;
+        const isGuest = !!p.guestName;
 
         if (!participantId || !participantName || p.isPaid) return;
 
@@ -410,10 +432,11 @@ const GroupDetail = () => {
 
       if (expenseError) throw expenseError;
 
-      // Insert into expense_participants based on the calculated shares for members
+      // Insert into expense_participants based on the calculated shares for members and unabsorbed guests
       const participantsToInsert = expenseData.participants.map((p: any) => ({
         expense_id: newExpense.id,
         user_id: p.userId,
+        guest_name: p.guestName, // Will be null for members, name for unabsorbed guests
         amount: p.amount,
         is_paid: p.isPaid
       }));
@@ -499,6 +522,7 @@ const GroupDetail = () => {
       const participantsToInsert = updatedExpenseData.participants.map((p: any) => ({
         expense_id: expenseId,
         user_id: p.userId,
+        guest_name: p.guestName, // Will be null for members, name for unabsorbed guests
         amount: p.amount,
         is_paid: p.isPaid
       }));
@@ -600,7 +624,7 @@ const GroupDetail = () => {
         .from('expense_participants')
         .update(updateData)
         .eq('expense_id', expenseId)
-        .eq('user_id', participantId); // Always use user_id now
+        .eq(isGuest ? 'id' : 'user_id', participantId); // Use 'id' for guest participants
 
       if (error) throw error;
       
@@ -1021,7 +1045,7 @@ const GroupDetail = () => {
                       </div>
                     </div>
                   </div>
-                </div> {/* Missing closing div added here */}
+                </div>
               </CardContent>
             </Card>
           ))}

@@ -23,14 +23,14 @@ interface Member {
 interface Guest {
   id: string;
   name: string;
-  responsibleMemberId?: string; // New field to link guest to a member
+  responsibleMemberId?: string; // Optional: if a member pays for this guest
 }
 
 interface Participant {
   userId?: string;
   userName?: string;
-  guestId?: string; // guestId is still here for existing participants from DB, but new ones won't have it
-  guestName?: string; // guestName is still here for existing participants from DB, but new ones won't have it
+  guestId?: string;
+  guestName?: string;
   amount: number;
   isPaid: boolean;
   isPayer?: boolean;
@@ -47,7 +47,7 @@ interface Expense {
   splitType?: string;
   participants: Participant[];
   receiptUrl?: string;
-  guests?: Guest[]; // Guests are now stored here for display/editing
+  guests?: Guest[]; // Full guest list with responsibleMemberId
 }
 
 interface EditExpenseDialogProps {
@@ -77,7 +77,7 @@ const EditExpenseDialog = ({
   const [paidBy, setPaidBy] = useState<string>(currentUserId);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [newGuestName, setNewGuestName] = useState("");
-  const [newGuestResponsibleMemberId, setNewGuestResponsibleMemberId] = useState<string>(currentUserId); // State for new guest's responsible member
+  const [newGuestResponsibleMemberId, setNewGuestResponsibleMemberId] = useState<string | undefined>(undefined); // Default to undefined
   const [receiptImage, setReceiptImage] = useState<File | null | 'removed'>(null); // 'removed' to indicate explicit removal
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -90,26 +90,23 @@ const EditExpenseDialog = ({
       setSplitType((initialExpense.splitType as "equal" | "custom") || "equal");
       setPaidBy(initialExpense.paidById);
 
-      // Filter out guests from initial participants to get only members
+      // Populate selectedMembers from initialExpense.participants (only actual members)
       const initialSelectedMembers = initialExpense.participants
-        .filter(p => p.userId) // Only members, not guests
+        .filter(p => p.userId)
         .map(p => p.userId!);
       setSelectedMembers(initialSelectedMembers);
 
-      setGuests(initialExpense.guests || []); // Load guests from initialExpense
+      // Populate guests from initialExpense.guests (parsed from description)
+      setGuests(initialExpense.guests || []);
       setReceiptImage(null); // Reset file input
       setReceiptPreview(initialExpense.receiptUrl || null);
-      setNewGuestResponsibleMemberId(currentUserId); // Set default for new guest input
+      setNewGuestResponsibleMemberId(undefined); // Reset for new guest input
     }
   }, [open, initialExpense, currentUserId]);
 
   const handleAddGuest = () => {
     if (!newGuestName.trim()) {
       toast.error("Vui lòng nhập tên khách");
-      return;
-    }
-    if (!newGuestResponsibleMemberId) {
-      toast.error("Vui lòng chọn người chịu trách nhiệm cho khách này");
       return;
     }
     
@@ -121,7 +118,7 @@ const EditExpenseDialog = ({
     
     setGuests([...guests, newGuest]);
     setNewGuestName("");
-    setNewGuestResponsibleMemberId(currentUserId); // Reset for next guest
+    setNewGuestResponsibleMemberId(undefined); // Reset for next guest
     toast.success("Đã thêm khách mời");
   };
 
@@ -129,7 +126,7 @@ const EditExpenseDialog = ({
     setGuests(guests.filter(g => g.id !== guestId));
   };
 
-  const handleUpdateGuestResponsibleMember = (guestId: string, memberId: string) => {
+  const handleUpdateGuestResponsibleMember = (guestId: string, memberId: string | undefined) => {
     setGuests(prevGuests => 
       prevGuests.map(g => 
         g.id === guestId ? { ...g, responsibleMemberId: memberId } : g
@@ -169,56 +166,65 @@ const EditExpenseDialog = ({
       return;
     }
 
-    // Validate that all guests have a responsible member
-    const guestsWithoutResponsibleMember = guests.filter(g => !g.responsibleMemberId);
-    if (guestsWithoutResponsibleMember.length > 0) {
-      toast.error(`Vui lòng chọn người chịu trách nhiệm cho khách: ${guestsWithoutResponsibleMember.map(g => g.name).join(', ')}`);
-      return;
-    }
-
     const totalAmount = parseFloat(amount);
     
-    // Determine all unique "effective" participants (members who will owe a share, including those responsible for guests)
-    const effectiveParticipantIds = new Set<string>();
-    selectedMembers.forEach(memberId => effectiveParticipantIds.add(memberId));
+    // Determine all entities that will directly split the cost
+    const splitEntities = new Set<string>(); // Stores member IDs and guest IDs (for unabsorbed guests)
+    selectedMembers.forEach(memberId => splitEntities.add(`member-${memberId}`));
     guests.forEach(guest => {
-      if (guest.responsibleMemberId) {
-        effectiveParticipantIds.add(guest.responsibleMemberId);
+      if (!guest.responsibleMemberId) {
+        splitEntities.add(`guest-${guest.id}`); // Unabsorbed guest
+      } else {
+        splitEntities.add(`member-${guest.responsibleMemberId}`); // Absorbed guest's share goes to responsible member
       }
     });
 
-    if (effectiveParticipantIds.size === 0) {
+    if (splitEntities.size === 0) {
       toast.error("Không có người tham gia hợp lệ để chia chi phí.");
       return;
     }
 
-    const sharePerEffectiveParticipant = totalAmount / effectiveParticipantIds.size;
+    const sharePerSplitEntity = totalAmount / splitEntities.size;
 
-    // Calculate how much each member (or responsible member) owes
-    const memberOwesMap = new Map<string, number>();
-    effectiveParticipantIds.forEach(id => memberOwesMap.set(id, sharePerEffectiveParticipant));
+    const memberOwesMap = new Map<string, number>(); // Tracks how much each member *owes*
+    const guestOwesMap = new Map<string, number>(); // Tracks how much each unabsorbed guest *owes*
 
-    // The payer's share is effectively 0, as they paid the total amount
+    // Distribute shares
+    splitEntities.forEach(entityKey => {
+      if (entityKey.startsWith('member-')) {
+        const memberId = entityKey.substring(7);
+        memberOwesMap.set(memberId, (memberOwesMap.get(memberId) || 0) + sharePerSplitEntity);
+      } else if (entityKey.startsWith('guest-')) {
+        const guestId = entityKey.substring(6);
+        guestOwesMap.set(guestId, (guestOwesMap.get(guestId) || 0) + sharePerSplitEntity);
+      }
+    });
+
+    // Adjust for the payer: they don't owe their own share to the group.
+    // Their "share" is covered by their payment of the total amount.
     if (memberOwesMap.has(paidBy)) {
-      memberOwesMap.set(paidBy, 0);
+      memberOwesMap.set(paidBy, (memberOwesMap.get(paidBy) || 0) - sharePerSplitEntity);
     }
 
     // Construct participants list for the expense_participants table
-    const updatedParticipants: Participant[] = Array.from(effectiveParticipantIds).map(memberId => {
-      const isPayer = memberId === paidBy;
-      const amountOwed = memberOwesMap.get(memberId) || 0;
-      
-      // Preserve existing paid status if the participant was already in the expense
-      const existingParticipant = initialExpense.participants.find(p => p.userId === memberId);
-
-      return {
-        userId: memberId,
-        userName: members.find(m => m.id === memberId)?.name || '',
-        amount: amountOwed,
-        isPaid: existingParticipant?.isPaid || isPayer, // Payer is considered "paid" for their own share
-        isPayer: isPayer,
-      };
-    });
+    const updatedParticipants: any[] = [];
+    
+    for (const [memberId, owedAmount] of memberOwesMap.entries()) {
+      if (owedAmount > 0) { // Only add if they actually owe money
+        // Preserve existing paid status if the participant was already in the expense
+        const existingParticipant = initialExpense.participants.find(p => p.userId === memberId);
+        updatedParticipants.push({ user_id: memberId, amount: owedAmount, is_paid: existingParticipant?.isPaid || false });
+      }
+    }
+    for (const [guestId, owedAmount] of guestOwesMap.entries()) {
+      if (owedAmount > 0) { // Guests always owe
+        const guestName = guests.find(g => g.id === guestId)?.name;
+        if (guestName) {
+          const existingGuestParticipant = initialExpense.participants.find(p => p.guestId === guestId);
+          updatedParticipants.push({ guest_name: guestName, amount: owedAmount, is_paid: existingGuestParticipant?.isPaid || false });
+        }
+      }
+    }
 
     const updatedExpense = {
       amount: totalAmount,
@@ -227,8 +233,8 @@ const EditExpenseDialog = ({
       splitType,
       paidBy,
       paidByName: members.find(m => m.id === paidBy)?.name || currentUserName,
-      participants: updatedParticipants, // This now only contains members (or responsible members)
-      guests: guests, // Keep guests for display/tracking, but their shares are absorbed
+      participants: updatedParticipants, // This now contains members and unabsorbed guests
+      guests: guests, // Full guest list with responsibleMemberId for display/tracking
       receiptImage: receiptImage === 'removed' ? null : receiptImage, // Pass null if removed, or File object
       receiptUrl: receiptImage === 'removed' ? null : (receiptImage instanceof File ? undefined : initialExpense.receiptUrl), // Keep old URL if no new file and not removed
     };
@@ -336,7 +342,7 @@ const EditExpenseDialog = ({
             </div>
 
             <div className="text-sm text-muted-foreground">
-              Chi phí sẽ được chia đều cho tất cả người tham gia (bao gồm cả người chịu trách nhiệm cho khách mời).
+              Chi phí sẽ được chia đều cho tất cả thành viên được chọn và khách mời không có người trả hộ.
             </div>
 
             {/* Member Selection */}
@@ -402,11 +408,12 @@ const EditExpenseDialog = ({
                 onKeyDown={(e) => e.key === "Enter" && handleAddGuest()}
                 className="flex-1"
               />
-              <Select value={newGuestResponsibleMemberId} onValueChange={setNewGuestResponsibleMemberId}>
+              <Select value={newGuestResponsibleMemberId} onValueChange={(value) => setNewGuestResponsibleMemberId(value === "undefined" ? undefined : value)}>
                 <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Người chịu trách nhiệm" />
+                  <SelectValue placeholder="Người trả tiền hộ (Tùy chọn)" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="undefined">Không có người trả hộ</SelectItem>
                   {members.map((member) => (
                     <SelectItem key={member.id} value={member.id}>
                       {member.name}
@@ -428,13 +435,14 @@ const EditExpenseDialog = ({
                       <span className="text-sm font-medium">+ {guest.name}</span>
                       <div className="flex-1 flex items-center justify-end gap-2">
                         <Select 
-                          value={guest.responsibleMemberId || ""} 
-                          onValueChange={(value) => handleUpdateGuestResponsibleMember(guest.id, value)}
+                          value={guest.responsibleMemberId || "undefined"} 
+                          onValueChange={(value) => handleUpdateGuestResponsibleMember(guest.id, value === "undefined" ? undefined : value)}
                         >
                           <SelectTrigger className="h-8 text-xs w-full sm:w-[150px]">
-                            <SelectValue placeholder="Người chịu trách nhiệm" />
+                            <SelectValue placeholder="Người trả tiền hộ (Tùy chọn)" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="undefined">Không có người trả hộ</SelectItem>
                             {members.map((member) => (
                               <SelectItem key={member.id} value={member.id}>
                                 {member.name}
