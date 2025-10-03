@@ -43,7 +43,8 @@ import { format, endOfMonth, startOfMonth, getYear, setYear, setMonth } from "da
 import { vi } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import MonthSelector from "@/components/MonthSelector";
-import ConfirmMonthCompletionDialog from "@/components/ConfirmMonthCompletionDialog"; // Import new component
+import ConfirmMonthCompletionDialog from "@/components/ConfirmMonthCompletionDialog";
+import ReceiptViewDialog from "@/components/ReceiptViewDialog"; // Import new component
 
 interface Participant {
   userId?: string;
@@ -135,7 +136,11 @@ const GroupDetail = () => {
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
   const [isDeletingExpense, setIsDeletingExpense] = useState(false);
   const [isCompletingMonthExpenses, setIsCompletingMonthExpenses] = useState(false);
-  const [openConfirmMonthCompletionDialog, setOpenConfirmMonthCompletionDialog] = useState(false); // New state for confirmation dialog
+  const [openConfirmMonthCompletionDialog, setOpenConfirmMonthCompletionDialog] = useState(false);
+
+  const [openReceiptViewDialog, setOpenReceiptViewDialog] = useState(false); // New state for receipt view dialog
+  const [currentReceiptUrl, setCurrentReceiptUrl] = useState<string | null>(null); // New state for current receipt URL
+  const [currentReceiptTitle, setCurrentReceiptTitle] = useState<string>(""); // New state for current receipt title
 
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date()));
@@ -715,9 +720,11 @@ const GroupDetail = () => {
     }
   };
 
-  const handleViewReceipt = (receiptUrl?: string) => {
-    if (receiptUrl) {
-      window.open(receiptUrl, '_blank');
+  const handleViewReceipt = (receiptUrl?: string, expenseTitle?: string) => {
+    if (receiptUrl && expenseTitle) {
+      setCurrentReceiptUrl(receiptUrl);
+      setCurrentReceiptTitle(expenseTitle);
+      setOpenReceiptViewDialog(true);
     } else {
       toast.info("Không có hóa đơn cho chi phí này.");
     }
@@ -916,7 +923,7 @@ const GroupDetail = () => {
             </Card>
 
             <Button
-              onClick={() => setOpenConfirmMonthCompletionDialog(true)} // Open confirmation dialog
+              onClick={() => setOpenConfirmMonthCompletionDialog(true)}
               className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white text-base"
               disabled={isCompletingMonthExpenses}
             >
@@ -1041,7 +1048,7 @@ const GroupDetail = () => {
                         variant="outline"
                         size="sm"
                         className="flex-1"
-                        onClick={() => handleViewReceipt(expense.receiptUrl)}
+                        onClick={() => handleViewReceipt(expense.receiptUrl, expense.title)} // Pass expense.title
                         disabled={!expense.receiptUrl}
                       >
                         <FileText className="w-4 h-4" />
@@ -1145,7 +1152,7 @@ const GroupDetail = () => {
           }
         }}
         isMarkingPaid={isMarkingPaid}
-        isDeletingExpense={isDeletingExpense} // Pass the new prop
+        isDeletingExpense={isDeletingExpense}
       />
 
       {/* Edit Expense Dialog */}
@@ -1236,6 +1243,14 @@ const GroupDetail = () => {
         onConfirm={confirmCompleteAllMyExpensesInMonth}
         monthYear={format(selectedMonth, 'MM/yyyy', { locale: vi })}
         isConfirming={isCompletingMonthExpenses}
+      />
+
+      {/* Receipt View Dialog */}
+      <ReceiptViewDialog
+        open={openReceiptViewDialog}
+        onOpenChange={setOpenReceiptViewDialog}
+        receiptUrl={currentReceiptUrl}
+        expenseTitle={currentReceiptTitle}
       />
 
       {/* Floating Action Buttons */}
