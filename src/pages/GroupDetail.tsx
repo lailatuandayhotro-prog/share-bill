@@ -4,6 +4,7 @@ import AddExpenseDialog from "@/components/AddExpenseDialog";
 import ExpenseDetailDialog from "@/components/ExpenseDetailDialog";
 import EditExpenseDialog from "@/components/EditExpenseDialog";
 import InviteMemberDialog from "@/components/InviteMemberDialog";
+import GroupMembersDialog from "@/components/GroupMembersDialog"; // Import the new component
 import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,6 +63,13 @@ interface Expense {
   guests?: Array<{ id: string; name: string }>;
 }
 
+interface GroupMember {
+  id: string;
+  name: string;
+  isOwner: boolean;
+  avatarUrl?: string;
+}
+
 const GroupDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -71,13 +79,14 @@ const GroupDetail = () => {
   const [openEditExpense, setOpenEditExpense] = useState(false);
   const [openShareDialog, setOpenShareDialog] = useState(false);
   const [openInviteMemberDialog, setOpenInviteMemberDialog] = useState(false);
+  const [openMembersDialog, setOpenMembersDialog] = useState(false); // New state for members dialog
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
   const [shareCode, setShareCode] = useState("");
   const [copied, setCopied] = useState(false);
   const [groupName, setGroupName] = useState("Test");
   const [isEditingName, setIsEditingName] = useState(false);
-  const [members, setMembers] = useState<Array<{ id: string; name: string }>>([]);
+  const [members, setMembers] = useState<GroupMember[]>([]); // Updated type to GroupMember[]
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false); // New state for loading paid status
@@ -97,15 +106,16 @@ const GroupDetail = () => {
       // Load group info
       const { data: groupData, error: groupError } = await supabase
         .from('groups')
-        .select('name')
+        .select('name, owner_id') // Also fetch owner_id
         .eq('id', id)
         .single();
       
       if (groupError) throw groupError;
       if (groupData) setGroupName(groupData.name);
+      const groupOwnerId = groupData?.owner_id;
 
       // Load member IDs
-      const { data: memberIds, error: membersError } = await supabase
+      const { data: groupMembersData, error: membersError } = await supabase
         .from('group_members')
         .select('user_id')
         .eq('group_id', id);
@@ -113,17 +123,19 @@ const GroupDetail = () => {
       if (membersError) throw membersError;
 
       // Load profiles for these members
-      const userIds = memberIds?.map(m => m.user_id) || [];
+      const userIds = groupMembersData?.map(m => m.user_id) || [];
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, full_name')
+        .select('id, full_name, avatar_url') // Fetch avatar_url
         .in('id', userIds);
       
       if (profilesError) throw profilesError;
       
-      const formattedMembers = profilesData?.map(p => ({
+      const formattedMembers: GroupMember[] = profilesData?.map(p => ({
         id: p.id,
-        name: p.full_name
+        name: p.full_name,
+        isOwner: p.id === groupOwnerId, // Determine owner status
+        avatarUrl: p.avatar_url || undefined,
       })) || [];
       
       setMembers(formattedMembers);
@@ -610,7 +622,10 @@ const GroupDetail = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow" // Make it clickable
+            onClick={() => setOpenMembersDialog(true)} // Open members dialog
+          >
             <CardContent className="p-4 space-y-2">
               <div className="flex items-center gap-2 text-green-500">
                 <Users className="w-5 h-5" />
@@ -818,9 +833,7 @@ const GroupDetail = () => {
                             Bạn
                           </span>
                         )}
-                        {/* Assuming owner status is determined by group.owner_id */}
-                        {/* This needs to be fetched from group_members table */}
-                        {id && expenses.length > 0 && expenses[0].paidById === member.id && ( // This is a temporary check, should be from group_members role
+                        {member.isOwner && (
                           <span className="px-2 py-0.5 rounded-md bg-yellow-500 text-white text-xs font-medium flex items-center gap-1">
                             <Crown className="w-3 h-3" />
                             Trưởng nhóm
@@ -885,6 +898,14 @@ const GroupDetail = () => {
         open={openInviteMemberDialog}
         onOpenChange={setOpenInviteMemberDialog}
         onInvite={handleInviteMembers}
+        groupName={groupName}
+      />
+
+      {/* Group Members Dialog */}
+      <GroupMembersDialog
+        open={openMembersDialog}
+        onOpenChange={setOpenMembersDialog}
+        members={members}
         groupName={groupName}
       />
 
