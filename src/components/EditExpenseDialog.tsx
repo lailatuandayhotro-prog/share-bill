@@ -40,8 +40,8 @@ interface Expense {
   title: string;
   description?: string;
   amount: number;
-  paidBy: string; // ID of the payer
-  paidById: string;
+  paidBy: string; // Name of the payer
+  paidById: string; // ID of the payer
   date: string; // ISO string
   splitType?: string;
   participants: Participant[];
@@ -84,7 +84,7 @@ const EditExpenseDialog = ({
     if (open && initialExpense) {
       setAmount(initialExpense.amount.toString());
       setDescription(initialExpense.description || initialExpense.title);
-      setDate(parseISO(initialExpense.date));
+      setDate(parseISO(initialExpense.date)); // initialExpense.date is now guaranteed to be ISO string
       setSplitType((initialExpense.splitType as "equal" | "custom") || "equal");
       setPaidBy(initialExpense.paidById);
 

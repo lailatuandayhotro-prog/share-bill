@@ -58,10 +58,11 @@ interface Expense {
   id: string;
   title: string;
   amount: number;
-  paidBy: string;
-  paidById: string;
+  paidBy: string; // Name of the payer
+  paidById: string; // ID of the payer
   splitWith: string[];
-  date: string;
+  date: string; // ISO string from DB
+  displayDate: string; // Formatted date for UI
   isCompleted: boolean;
   isMine: boolean;
   participants: Participant[];
@@ -219,7 +220,8 @@ const GroupDetail = () => {
           paidBy: payer?.name || 'Unknown',
           paidById: exp.paid_by,
           splitWith: participants.map(p => p.userName || p.guestName).filter(Boolean) as string[],
-          date: new Date(exp.expense_date).toLocaleDateString('vi-VN'),
+          date: exp.expense_date, // ISO string
+          displayDate: new Date(exp.expense_date).toLocaleDateString('vi-VN'), // Formatted for UI
           isCompleted: exp.is_completed,
           isMine: exp.paid_by === user?.id,
           participants,
@@ -296,7 +298,7 @@ const GroupDetail = () => {
             expenseId: exp.id,
             title: exp.title,
             amount: p.amount,
-            date: exp.date,
+            date: exp.displayDate, // Use displayDate for contributing expenses
             paidBy: payerName,
           });
           balancesMap.set(payerId, currentBalance);
@@ -314,7 +316,7 @@ const GroupDetail = () => {
             expenseId: exp.id,
             title: exp.title,
             amount: p.amount,
-            date: exp.date,
+            date: exp.displayDate, // Use displayDate for contributing expenses
             paidBy: exp.paidBy,
           });
           balancesMap.set(participantId, currentBalance);
@@ -533,7 +535,7 @@ const GroupDetail = () => {
 
   const handleEditExpense = () => {
     if (selectedExpense) {
-      setExpenseToEdit(selectedExpense);
+      setExpenseToEdit(selectedExpense); // selectedExpense now contains the ISO date in `date`
       setOpenExpenseDetail(false);
       setOpenEditExpense(true);
     }
@@ -910,7 +912,7 @@ const GroupDetail = () => {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Clock className="w-4 h-4" />
-                          <span>{expense.date}</span>
+                          <span>{expense.displayDate}</span> {/* Use displayDate here */}
                         </div>
                       </div>
                       <div className="text-right">
@@ -1033,7 +1035,7 @@ const GroupDetail = () => {
       <ExpenseDetailDialog
         open={openExpenseDetail}
         onOpenChange={setOpenExpenseDetail}
-        expense={selectedExpense}
+        expense={selectedExpense ? { ...selectedExpense, date: selectedExpense.displayDate } : null} // Pass formatted date for display
         onComplete={() => {
           if (selectedExpense) {
             handleCompleteExpense(selectedExpense.id, selectedExpense.isCompleted);
@@ -1055,7 +1057,7 @@ const GroupDetail = () => {
         <EditExpenseDialog
           open={openEditExpense}
           onOpenChange={setOpenEditExpense}
-          initialExpense={expenseToEdit}
+          initialExpense={expenseToEdit} // expenseToEdit.date is ISO string
           onUpdateExpense={handleUpdateExpense}
           members={members}
           currentUserId={user?.id || ""}
