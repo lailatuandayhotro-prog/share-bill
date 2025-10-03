@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
 import {
   DollarSign,
   ArrowLeft,
@@ -27,21 +28,19 @@ import {
   CheckCircle2,
   MessageCircle,
   Crown,
-  Filter,
   Pencil,
   ChevronRight,
   Copy,
   Check,
   UserPlus,
-  CalendarIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { format, endOfMonth, startOfMonth, getYear, setYear } from "date-fns";
+import { format, endOfMonth, startOfMonth, getYear, setYear, setMonth } from "date-fns"; // Import setMonth
 import { vi } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import MonthSelector from "@/components/MonthSelector"; // Import the new MonthSelector
+import MonthSelector from "@/components/MonthSelector";
 
 interface Participant {
   userId?: string;
@@ -126,12 +125,12 @@ const GroupDetail = () => {
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
 
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
-  const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date())); // New state for selected year
+  const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date()));
 
   useEffect(() => {
     if (!id || !user) return;
     loadGroupData();
-  }, [id, user, selectedMonth, selectedYear]); // Add selectedYear to dependencies
+  }, [id, user, selectedMonth, selectedYear]);
 
   const loadGroupData = async () => {
     if (!id || !user) return [];
@@ -173,7 +172,7 @@ const GroupDetail = () => {
       
       setMembers(formattedMembers);
 
-      // Adjust selectedMonth to reflect the selectedYear
+      // Ensure selectedMonth always reflects the selectedYear
       const currentSelectedMonthWithYear = setYear(selectedMonth, selectedYear);
 
       const startOfSelectedMonth = format(startOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
@@ -640,9 +639,19 @@ const GroupDetail = () => {
     toast.success(`Đã gửi lời mời đến ${emails.length} địa chỉ email.`);
   };
 
-  const handleYearChange = (year: number) => {
-    setSelectedYear(year);
+  const handleMonthChange = (newMonth: Date) => {
+    setSelectedMonth(newMonth);
   };
+
+  const handleYearChange = (year: string) => {
+    const newYear = parseInt(year);
+    setSelectedYear(newYear);
+    // Also update selectedMonth to reflect the new year, keeping the same month
+    setSelectedMonth(prevMonth => setYear(prevMonth, newYear));
+  };
+
+  const currentYear = getYear(new Date());
+  const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i); // e.g., 2019 to 2029
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -785,7 +794,7 @@ const GroupDetail = () => {
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-red-500" />
+                    <DollarSign className="w-5 h-5" />
                   </div>
                   <div>
                     <div className="font-medium">Khoản Tiền Phải Trả</div>
@@ -827,27 +836,22 @@ const GroupDetail = () => {
               <Receipt className="w-5 h-5" />
               Chi phí ({expenses.length})
             </h2>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleYearChange(selectedYear - 1)}
-              >
-                Năm trước
-              </Button>
-              <span className="font-semibold text-lg">{selectedYear}</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleYearChange(selectedYear + 1)}
-              >
-                Năm sau
-              </Button>
-            </div>
+            <Select onValueChange={handleYearChange} value={selectedYear.toString()}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Chọn năm" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="mb-4">
-            <MonthSelector selectedMonth={selectedMonth} onMonthChange={setSelectedMonth} />
+            <MonthSelector selectedMonth={selectedMonth} onMonthChange={handleMonthChange} />
           </div>
 
           <div className="text-sm text-muted-foreground mb-4">
