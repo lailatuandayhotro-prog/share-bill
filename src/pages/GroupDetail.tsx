@@ -37,7 +37,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { format, endOfMonth, startOfMonth, getYear, setYear, setMonth, endOfDay } from "date-fns"; // Import endOfDay
+import { format, endOfMonth, startOfMonth, getYear, setYear, setMonth } from "date-fns"; // Removed endOfDay
 import { vi } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import MonthSelector from "@/components/MonthSelector";
@@ -176,8 +176,8 @@ const GroupDetail = () => {
       const currentSelectedMonthWithYear = setYear(selectedMonth, selectedYear);
 
       const startOfSelectedMonth = format(startOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
-      // Use endOfDay to ensure the entire last day of the month is included
-      const endOfSelectedMonth = format(endOfDay(endOfMonth(currentSelectedMonthWithYear)), 'yyyy-MM-dd HH:mm:ss');
+      // Revert to yyyy-MM-dd for end of month, assuming expense_date is DATE type in DB
+      const endOfSelectedMonth = format(endOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
 
       const { data: expensesData, error: expensesError } = await supabase
         .from('expenses')
