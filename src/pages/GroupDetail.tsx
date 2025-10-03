@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import AddExpenseDialog from "@/components/AddExpenseDialog";
 import ExpenseDetailDialog from "@/components/ExpenseDetailDialog";
 import EditExpenseDialog from "@/components/EditExpenseDialog";
-import InviteMemberDialog from "@/components/InviteMemberDialog"; // New import
+import InviteMemberDialog from "@/components/InviteMemberDialog";
 import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,7 +29,7 @@ import {
   ChevronRight,
   Copy,
   Check,
-  UserPlus, // New icon for invite
+  UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,7 +70,7 @@ const GroupDetail = () => {
   const [openExpenseDetail, setOpenExpenseDetail] = useState(false);
   const [openEditExpense, setOpenEditExpense] = useState(false);
   const [openShareDialog, setOpenShareDialog] = useState(false);
-  const [openInviteMemberDialog, setOpenInviteMemberDialog] = useState(false); // New state for invite dialog
+  const [openInviteMemberDialog, setOpenInviteMemberDialog] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
   const [shareCode, setShareCode] = useState("");
@@ -88,6 +88,8 @@ const GroupDetail = () => {
   }, [id, user]);
 
   const loadGroupData = async () => {
+    if (!id || !user) return []; // Return empty array if no ID or user
+    
     try {
       setLoading(true);
       
@@ -172,9 +174,11 @@ const GroupDetail = () => {
       }) || [];
 
       setExpenses(formattedExpenses);
+      return formattedExpenses; // Return the fetched expenses
     } catch (error) {
       console.error('Error loading group data:', error);
       toast.error('Không thể tải dữ liệu nhóm');
+      return [];
     } finally {
       setLoading(false);
     }
@@ -454,7 +458,14 @@ const GroupDetail = () => {
 
       if (error) throw error;
       
-      await loadGroupData(); // Reload data after update
+      const updatedExpenses = await loadGroupData(); // Reload data and get the updated list
+      
+      // Find the updated selected expense from the new list
+      const updatedSelectedExpense = updatedExpenses.find(exp => exp.id === expenseId);
+      if (updatedSelectedExpense) {
+        setSelectedExpense(updatedSelectedExpense); // Update selectedExpense state
+      }
+
       toast.success(newPaidStatus ? "Đã đánh dấu đã trả!" : "Đã đánh dấu chưa trả!");
     } catch (error) {
       console.error('Error marking participant as paid:', error);
@@ -491,15 +502,8 @@ const GroupDetail = () => {
   };
 
   const handleInviteMembers = (emails: string[]) => {
-    // This is a placeholder for actual email sending and member invitation logic.
-    // In a real application, you would:
-    // 1. Call a Supabase Edge Function or a backend API to send emails.
-    // 2. The email would contain a link to join the group (e.g., /join-group?groupId=XYZ&email=abc@example.com).
-    // 3. Upon clicking the link, the user would be prompted to sign up/log in and then added to the group.
     console.log("Sending invitations to:", emails);
     toast.success(`Đã gửi lời mời đến ${emails.length} địa chỉ email.`);
-    // For now, we just show a toast.
-    // You might want to add these emails to a 'pending_invitations' table in Supabase.
   };
 
   return (
