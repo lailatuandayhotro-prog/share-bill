@@ -17,10 +17,11 @@ const CTA = () => {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3"> {/* Reduced gap and padding */}
               <a href="/auth">
+                {/* Smaller button */}
                 <Button 
                   size="md" 
                   variant="secondary"
-                  className="bg-white text-primary hover:bg-white/90 shadow-lg gap-2 h-10 px-4 text-base" {/* Smaller button */}
+                  className="bg-white text-primary hover:bg-white/90 shadow-lg gap-2 h-10 px-4 text-base"
                 >
                   Đăng ký ngay
                   <ArrowRight className="w-4 h-4" /> {/* Smaller icon */}
