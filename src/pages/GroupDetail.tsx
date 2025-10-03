@@ -6,6 +6,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   DollarSign,
   ArrowLeft,
@@ -24,6 +25,8 @@ import {
   Filter,
   Pencil,
   ChevronRight,
+  Copy,
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,7 +62,10 @@ const GroupDetail = () => {
   const { user } = useAuth();
   const [openAddExpense, setOpenAddExpense] = useState(false);
   const [openExpenseDetail, setOpenExpenseDetail] = useState(false);
+  const [openShareDialog, setOpenShareDialog] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [shareLink, setShareLink] = useState("");
+  const [copied, setCopied] = useState(false);
   const [groupName, setGroupName] = useState("Test");
   const [isEditingName, setIsEditingName] = useState(false);
   const [members, setMembers] = useState<Array<{ id: string; name: string }>>([]);
@@ -291,7 +297,20 @@ const GroupDetail = () => {
   };
 
   const handleShare = () => {
-    toast.success("Đã sao chép link chia sẻ!");
+    const link = `${window.location.origin}/groups/${id}`;
+    setShareLink(link);
+    setOpenShareDialog(true);
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setCopied(true);
+      toast.success("Đã sao chép link!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast.error("Không thể sao chép link");
+    }
   };
 
   return (
@@ -627,6 +646,37 @@ const GroupDetail = () => {
         onDelete={handleDeleteExpense}
         onMarkPaid={handleMarkParticipantPaid}
       />
+
+      {/* Share Dialog */}
+      <Dialog open={openShareDialog} onOpenChange={setOpenShareDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Chia sẻ nhóm</DialogTitle>
+            <DialogDescription>
+              Chia sẻ link này để mời người khác tham gia nhóm
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center gap-2">
+              <Input
+                value={shareLink}
+                readOnly
+                className="flex-1"
+              />
+              <Button
+                size="icon"
+                onClick={handleCopyLink}
+                className="flex-shrink-0"
+              >
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Người nhận link sẽ cần đăng nhập để tham gia nhóm
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Floating Action Buttons */}
       <div className="fixed bottom-6 left-4 right-4 flex justify-between max-w-4xl mx-auto">
