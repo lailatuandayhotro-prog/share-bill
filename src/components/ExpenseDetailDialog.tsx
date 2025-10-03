@@ -37,6 +37,7 @@ interface ExpenseDetailDialogProps {
   onDelete: () => void;
   onMarkPaid: (participantId: string, currentIsPaid: boolean, isGuest: boolean) => void;
   isMarkingPaid: boolean;
+  isDeletingExpense: boolean; // New prop for delete loading state
 }
 
 const ExpenseDetailDialog = ({
@@ -48,6 +49,7 @@ const ExpenseDetailDialog = ({
   onDelete,
   onMarkPaid,
   isMarkingPaid,
+  isDeletingExpense, // Destructure new prop
 }: ExpenseDetailDialogProps) => {
   if (!expense) return null;
 
@@ -123,9 +125,14 @@ const ExpenseDetailDialog = ({
             onClick={onDelete}
             variant="outline"
             className="flex-1 h-10 text-red-500 hover:text-red-600 hover:bg-red-50 text-sm"
+            disabled={isDeletingExpense} // Disable button when deleting
           >
-            <Trash2 className="w-4 h-4 mr-1" />
-            Xóa
+            {isDeletingExpense ? (
+              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+            ) : (
+              <Trash2 className="w-4 h-4 mr-1" />
+            )}
+            {isDeletingExpense ? "Đang xóa..." : "Xóa"}
           </Button>
         </div>
 

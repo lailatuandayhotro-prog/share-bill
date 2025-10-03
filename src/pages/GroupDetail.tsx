@@ -132,6 +132,7 @@ const GroupDetail = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
+  const [isDeletingExpense, setIsDeletingExpense] = useState(false); // New state for delete loading
 
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date()));
@@ -583,6 +584,7 @@ const GroupDetail = () => {
   const handleDeleteExpense = async () => {
     if (!selectedExpense) return;
 
+    setIsDeletingExpense(true); // Start loading
     try {
       const { error: participantsError } = await supabase
         .from('expense_participants')
@@ -615,6 +617,8 @@ const GroupDetail = () => {
     } catch (error) {
       console.error('Error deleting expense:', error);
       toast.error('Không thể xóa chi phí');
+    } finally {
+      setIsDeletingExpense(false); // End loading
     }
   };
 
@@ -1088,6 +1092,7 @@ const GroupDetail = () => {
           }
         }}
         isMarkingPaid={isMarkingPaid}
+        isDeletingExpense={isDeletingExpense} // Pass the new prop
       />
 
       {/* Edit Expense Dialog */}
