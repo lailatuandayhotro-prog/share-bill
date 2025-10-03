@@ -224,22 +224,22 @@ const Groups = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-3"> {/* Reduced padding */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-primary" />
+              <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center"> {/* Smaller icon container */}
+                <DollarSign className="w-5 h-5 text-primary" /> {/* Smaller icon */}
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> {/* Reduced font size */}
                 Share Bill
               </h1>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={() => setOpenUserProfileDialog(true)}>
-                <Avatar className="h-8 w-8">
+              <Button variant="ghost" size="icon" onClick={() => setOpenUserProfileDialog(true)} className="h-8 w-8"> {/* Smaller button */}
+                <Avatar className="h-7 w-7"> {/* Smaller avatar */}
                   <AvatarImage src={userProfile?.avatar_url || ""} alt={userProfile?.full_name || "User"} />
                   <AvatarFallback>
-                    <UserIcon className="h-5 w-5" />
+                    <UserIcon className="h-4 w-4" /> {/* Smaller icon */}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -249,39 +249,40 @@ const Groups = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-6 max-w-4xl"> {/* Reduced padding */}
         {/* Hero Text */}
-        <div className="mb-8">
-          <p className="text-lg text-muted-foreground">
+        <div className="mb-6"> {/* Reduced margin */}
+          <p className="text-base text-muted-foreground"> {/* Reduced font size */}
             Chia sẻ chi phí với bạn bè và gia đình một cách dễ dàng. Theo dõi chi phí chung
             và thanh toán chi với vài cú nhấp chuột.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="grid sm:grid-cols-2 gap-4 mb-12">
+        <div className="grid sm:grid-cols-2 gap-3 mb-10"> {/* Reduced gap and margin */}
           <Dialog open={openJoinDialog} onOpenChange={setOpenJoinDialog}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="lg" className="h-16 text-base">
-                <UserPlus className="w-5 h-5" />
+              <Button variant="outline" size="lg" className="h-12 text-base"> {/* Reduced height */}
+                <UserPlus className="w-4 h-4 mr-2" /> {/* Smaller icon */}
                 Tham gia nhóm
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-sm"> {/* Smaller max-width for dialog */}
               <DialogHeader>
-                <DialogTitle>Tham gia nhóm</DialogTitle>
+                <DialogTitle className="text-xl">Tham gia nhóm</DialogTitle> {/* Reduced font size */}
               </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="join-code">Mã nhóm</Label> {/* Changed text here */}
+              <div className="space-y-3 pt-3"> {/* Reduced space-y and padding */}
+                <div className="space-y-1.5"> {/* Reduced space-y */}
+                  <Label htmlFor="join-code" className="text-sm">Mã nhóm</Label>
                   <Input
                     id="join-code"
                     placeholder="Nhập mã nhóm..."
                     value={joinCode}
                     onChange={(e) => setJoinCode(e.target.value)}
+                    className="h-9 text-sm" {/* Reduced height and font size */}
                   />
                 </div>
-                <Button onClick={handleJoinGroup} className="w-full">
+                <Button onClick={handleJoinGroup} className="w-full h-9 text-sm"> {/* Reduced height and font size */}
                   Tham gia
                 </Button>
               </div>
@@ -290,26 +291,27 @@ const Groups = () => {
 
           <Dialog open={openCreateDialog} onOpenChange={setOpenCreateDialog}>
             <DialogTrigger asChild>
-              <Button size="lg" className="h-16 text-base">
-                <Plus className="w-5 h-5" />
+              <Button size="lg" className="h-12 text-base"> {/* Reduced height */}
+                <Plus className="w-4 h-4 mr-2" /> {/* Smaller icon */}
                 Tạo nhóm
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-sm"> {/* Smaller max-width for dialog */}
               <DialogHeader>
-                <DialogTitle>Tạo nhóm mới</DialogTitle>
+                <DialogTitle className="text-xl">Tạo nhóm mới</DialogTitle> {/* Reduced font size */}
               </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="group-name">Tên nhóm</Label>
+              <div className="space-y-3 pt-3"> {/* Reduced space-y and padding */}
+                <div className="space-y-1.5"> {/* Reduced space-y */}
+                  <Label htmlFor="group-name" className="text-sm">Tên nhóm</Label>
                   <Input
                     id="group-name"
                     placeholder="VD: Chuyến đi Đà Lạt"
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
+                    className="h-9 text-sm" {/* Reduced height and font size */}
                   />
                 </div>
-                <Button onClick={handleCreateGroup} className="w-full">
+                <Button onClick={handleCreateGroup} className="w-full h-9 text-sm"> {/* Reduced height and font size */}
                   Tạo nhóm
                 </Button>
               </div>
@@ -318,37 +320,37 @@ const Groups = () => {
         </div>
 
         {/* Groups List */}
-        <div className="space-y-6">
+        <div className="space-y-5"> {/* Reduced space-y */}
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Users className="w-6 h-6" />
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-2"> {/* Reduced font size */}
+              <Users className="w-5 h-5" /> {/* Smaller icon */}
               Nhóm của bạn ({filteredGroups.length})
             </h2>
           </div>
 
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /> {/* Smaller icon */}
             <Input
               placeholder="Tìm kiếm nhóm, thành viên hoặc ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-9 h-9 text-sm" {/* Reduced padding, height and font size */}
             />
           </div>
 
           {/* Groups */}
-          <div className="space-y-4">
+          <div className="space-y-3"> {/* Reduced space-y */}
             {loading ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Đang tải...</p>
+              <div className="text-center py-10"> {/* Reduced padding */}
+                <div className="w-14 h-14 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div> {/* Smaller loader */}
+                <p className="text-sm text-muted-foreground">Đang tải...</p> {/* Reduced font size */}
               </div>
             ) : filteredGroups.length === 0 ? (
-              <div className="text-center py-12">
-                <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <p className="text-xl font-semibold mb-2">Chưa có nhóm nào</p>
-                <p className="text-muted-foreground mb-6">
+              <div className="text-center py-10"> {/* Reduced padding */}
+                <Users className="w-14 h-14 text-muted-foreground mx-auto mb-3" /> {/* Smaller icon */}
+                <p className="text-lg font-semibold mb-1.5">Chưa có nhóm nào</p> {/* Reduced font size */}
+                <p className="text-sm text-muted-foreground mb-5"> {/* Reduced font size */}
                   Tạo nhóm mới hoặc tham gia nhóm có sẵn để bắt đầu
                 </p>
               </div>
@@ -359,29 +361,29 @@ const Groups = () => {
                   className="hover:shadow-lg transition-all duration-300 cursor-pointer"
                   onClick={() => navigate(`/groups/${group.id}`)}
                 >
-                  <CardContent className="p-6">
+                  <CardContent className="p-4"> {/* Reduced padding */}
                     <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-4 flex-1">
-                        <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <DollarSign className="w-7 h-7 text-primary" />
+                      <div className="flex items-start gap-3 flex-1"> {/* Reduced gap */}
+                        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0"> {/* Smaller icon container */}
+                          <DollarSign className="w-6 h-6 text-primary" /> {/* Smaller icon */}
                         </div>
                         
-                        <div className="space-y-3 flex-1">
-                          <h3 className="text-xl font-semibold text-foreground">
+                        <div className="space-y-2 flex-1"> {/* Reduced space-y */}
+                          <h3 className="text-lg font-semibold text-foreground"> {/* Reduced font size */}
                             {group.name}
                           </h3>
                           
-                          <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                              <Users className="w-4 h-4" />
+                          <div className="flex flex-col gap-1.5 text-xs text-muted-foreground"> {/* Reduced gap and font size */}
+                            <div className="flex items-center gap-1.5"> {/* Reduced gap */}
+                              <Users className="w-3 h-3" /> {/* Smaller icon */}
                               <span>Với tên: {group.creator}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Users className="w-4 h-4" />
+                            <div className="flex items-center gap-1.5"> {/* Reduced gap */}
+                              <Users className="w-3 h-3" /> {/* Smaller icon */}
                               <span>{group.memberCount} Thành viên</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4" />
+                            <div className="flex items-center gap-1.5"> {/* Reduced gap */}
+                              <Clock className="w-3 h-3" /> {/* Smaller icon */}
                               <span>Tạo: {group.createdAt}</span>
                             </div>
                           </div>
@@ -389,8 +391,8 @@ const Groups = () => {
                       </div>
 
                       {group.isOwner && (
-                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium">
-                          <Crown className="w-4 h-4" />
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium"> {/* Smaller badge */}
+                          <Crown className="w-3 h-3" /> {/* Smaller icon */}
                           TRƯỞNG NHÓM
                         </div>
                       )}

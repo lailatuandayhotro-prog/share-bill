@@ -20,7 +20,7 @@ const MonthSelector = ({ selectedMonth, onMonthChange }: MonthSelectorProps) => 
   };
 
   return (
-    <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+    <div className="flex flex-wrap gap-1.5 justify-center md:justify-start"> {/* Reduced gap */}
       {months.map((monthIndex) => (
         <Button
           key={monthIndex}
@@ -28,7 +28,7 @@ const MonthSelector = ({ selectedMonth, onMonthChange }: MonthSelectorProps) => 
           size="sm"
           onClick={() => handleMonthClick(monthIndex)}
           className={cn(
-            "w-9 h-8 text-sm font-semibold", // Adjusted size and text size
+            "w-8 h-7 text-xs font-semibold", // Adjusted size and text size
             currentMonthIndex === monthIndex && "bg-primary text-primary-foreground hover:bg-primary/90"
           )}
         >

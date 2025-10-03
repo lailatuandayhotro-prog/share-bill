@@ -27,32 +27,32 @@ const features = [
 
 const Features = () => {
   return (
-    <section id="features" className="py-20 px-4">
+    <section id="features" className="py-16 px-4"> {/* Reduced padding */}
       <div className="container mx-auto max-w-6xl">
-        <div className="text-center space-y-4 mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+        <div className="text-center space-y-3 mb-10"> {/* Reduced space-y and margin */}
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground"> {/* Reduced font size */}
             Các tính năng nổi bật
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base text-muted-foreground max-w-2xl mx-auto"> {/* Reduced font size */}
             Được thiết kế để đơn giản hoá việc chia tiền trong mọi hoàn cảnh: 
             từ chuyến đi chơi đến chi tiêu gia đình hay dự án nhóm với Share Bill.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-5"> {/* Reduced gap */}
           {features.map((feature, index) => (
             <Card 
               key={index} 
               className="border-border hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
             >
-              <CardContent className="p-6 space-y-4">
-                <div className={`w-14 h-14 rounded-xl ${feature.bgColor} flex items-center justify-center`}>
-                  <feature.icon className={`w-7 h-7 ${feature.color}`} />
+              <CardContent className="p-5 space-y-3"> {/* Reduced padding and space-y */}
+                <div className={`w-12 h-12 rounded-lg ${feature.bgColor} flex items-center justify-center`}> {/* Smaller icon container */}
+                  <feature.icon className={`w-6 h-6 ${feature.color}`} /> {/* Smaller icon */}
                 </div>
-                <h3 className="text-xl font-semibold text-foreground">
+                <h3 className="text-lg font-semibold text-foreground"> {/* Reduced font size */}
                   {feature.title}
                 </h3>
-                <p className="text-muted-foreground">
+                <p className="text-sm text-muted-foreground"> {/* Reduced font size */}
                   {feature.description}
                 </p>
               </CardContent>

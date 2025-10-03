@@ -749,22 +749,23 @@ const GroupDetail = () => {
   const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-16 sm:pb-20"> {/* Adjusted padding for mobile */}
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur">
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-4 py-2.5"> {/* Reduced padding */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate("/groups")}
+                className="w-8 h-8" {/* Smaller button */}
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4" /> {/* Smaller icon */}
               </Button>
 
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-primary" />
+              <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center"> {/* Smaller icon container */}
+                <DollarSign className="w-5 h-5 text-primary" /> {/* Smaller icon */}
               </div>
 
               {isEditingName ? (
@@ -773,27 +774,27 @@ const GroupDetail = () => {
                   onChange={(e) => setGroupName(e.target.value)}
                   onBlur={() => setIsEditingName(false)}
                   onKeyDown={(e) => e.key === "Enter" && setIsEditingName(false)}
-                  className="w-32 h-8"
+                  className="w-28 h-7 text-base" {/* Smaller input */}
                   autoFocus
                 />
               ) : (
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-bold text-foreground">{groupName}</h1>
+                <div className="flex items-center gap-1.5"> {/* Reduced gap */}
+                  <h1 className="text-lg font-bold text-foreground">{groupName}</h1> {/* Reduced font size */}
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="w-8 h-8"
+                    className="w-7 h-7" {/* Smaller button */}
                     onClick={() => setIsEditingName(true)}
                   >
-                    <Pencil className="w-4 h-4" />
+                    <Pencil className="w-3.5 h-3.5" /> {/* Smaller icon */}
                   </Button>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Settings className="w-5 h-5" />
+            <div className="flex items-center gap-1.5"> {/* Reduced gap */}
+              <Button variant="ghost" size="icon" className="rounded-full w-8 h-8"> {/* Smaller button */}
+                <Settings className="w-4 h-4" /> {/* Smaller icon */}
               </Button>
               <LogoutButton />
             </div>
@@ -801,42 +802,42 @@ const GroupDetail = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
+      <div className="container mx-auto px-4 py-5 max-w-4xl space-y-5"> {/* Reduced padding and space-y */}
         {/* Action Buttons */}
-        <div className="flex gap-3">
+        <div className="grid grid-cols-3 gap-2"> {/* Changed to grid-cols-3 and reduced gap */}
           <Button 
-            className="flex-1 h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+            className="h-10 text-sm bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" {/* Reduced height and font size */}
             onClick={() => setOpenAddExpense(true)}
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 mr-1" /> {/* Smaller icon */}
             Thêm chi phí
           </Button>
 
           <Button
             variant="default"
-            className="flex-1 h-12"
+            className="h-10 text-sm" {/* Reduced height and font size */}
             onClick={handleShare}
           >
-            <Share2 className="w-5 h-5" />
+            <Share2 className="w-4 h-4 mr-1" /> {/* Smaller icon */}
             Chia sẻ
           </Button>
 
-          <Button variant="outline" className="px-6 h-12" onClick={() => setOpenInviteMemberDialog(true)}>
-            <UserPlus className="w-5 h-5" />
+          <Button variant="outline" className="h-10 text-sm" onClick={() => setOpenInviteMemberDialog(true)}> {/* Reduced height and font size */}
+            <UserPlus className="w-4 h-4 mr-1" /> {/* Smaller icon */}
             Mời thành viên
           </Button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2"> {/* Reduced gap */}
           <Card>
-            <CardContent className="p-4 space-y-2">
-              <div className="flex items-center gap-2 text-blue-500">
-                <Receipt className="w-5 h-5" />
+            <CardContent className="p-3 space-y-1.5"> {/* Reduced padding and space-y */}
+              <div className="flex items-center gap-1.5 text-blue-500"> {/* Reduced gap */}
+                <Receipt className="w-4 h-4" /> {/* Smaller icon */}
                 <span className="text-xs font-medium">Tổng Chi Phí</span>
               </div>
-              <div className="space-y-1">
-                <div className="text-xl font-bold text-foreground">
+              <div className="space-y-0.5"> {/* Reduced space-y */}
+                <div className="text-lg font-bold text-foreground"> {/* Reduced font size */}
                   {totalExpense.toLocaleString()} đ
                 </div>
                 <div className="text-xs text-muted-foreground">Tổng Chi Phí</div>
@@ -848,26 +849,26 @@ const GroupDetail = () => {
             className="cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => setOpenMembersDialog(true)}
           >
-            <CardContent className="p-4 space-y-2">
-              <div className="flex items-center gap-2 text-green-500">
-                <Users className="w-5 h-5" />
+            <CardContent className="p-3 space-y-1.5"> {/* Reduced padding and space-y */}
+              <div className="flex items-center gap-1.5 text-green-500"> {/* Reduced gap */}
+                <Users className="w-4 h-4" /> {/* Smaller icon */}
                 <span className="text-xs font-medium">Tổng thành viên</span>
               </div>
-              <div className="space-y-1">
-                <div className="text-xl font-bold text-foreground">{members.length}</div>
+              <div className="space-y-0.5"> {/* Reduced space-y */}
+                <div className="text-lg font-bold text-foreground">{members.length}</div> {/* Reduced font size */}
                 <div className="text-xs text-muted-foreground">trong nhóm này</div>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4 space-y-2">
-              <div className="flex items-center gap-2 text-yellow-500">
-                <User className="w-5 h-5" />
+            <CardContent className="p-3 space-y-1.5"> {/* Reduced padding and space-y */}
+              <div className="flex items-center gap-1.5 text-yellow-500"> {/* Reduced gap */}
+                <User className="w-4 h-4" /> {/* Smaller icon */}
                 <span className="text-xs font-medium">Phần Của Tôi</span>
               </div>
-              <div className="space-y-1">
-                <div className="text-xl font-bold text-foreground">
+              <div className="space-y-0.5"> {/* Reduced space-y */}
+                <div className="text-lg font-bold text-foreground"> {/* Reduced font size */}
                   {amountToPay.toLocaleString()} đ
                 </div>
                 <div className="text-xs text-muted-foreground">phần của tôi</div>
@@ -878,27 +879,27 @@ const GroupDetail = () => {
 
         {/* Quick Actions */}
         <div>
-          <h2 className="text-lg font-semibold text-foreground mb-3">
+          <h2 className="text-base font-semibold text-foreground mb-2"> {/* Reduced font size and margin */}
             Thao tác nhanh
           </h2>
-          <div className="space-y-2">
+          <div className="space-y-2"> {/* Reduced space-y */}
             <Card 
               className="cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => handleOpenBalanceDetail('pay')}
             >
-              <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-                    <DollarSign className="w-5 h-5" />
+              <CardContent className="p-3 flex items-center justify-between"> {/* Reduced padding */}
+                <div className="flex items-center gap-2"> {/* Reduced gap */}
+                  <div className="w-9 h-9 rounded-md bg-red-500/10 flex items-center justify-center"> {/* Smaller icon container */}
+                    <DollarSign className="w-4 h-4" /> {/* Smaller icon */}
                   </div>
                   <div>
-                    <div className="font-medium">Khoản Tiền Phải Trả</div>
-                    <div className="text-xl font-bold text-red-500">
+                    <div className="font-medium text-sm">Khoản Tiền Phải Trả</div> {/* Reduced font size */}
+                    <div className="text-lg font-bold text-red-500"> {/* Reduced font size */}
                       {amountToPay.toLocaleString()} đ
                     </div>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                <ChevronRight className="w-4 h-4 text-muted-foreground" /> {/* Smaller icon */}
               </CardContent>
             </Card>
 
@@ -906,31 +907,31 @@ const GroupDetail = () => {
               className="cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => handleOpenBalanceDetail('collect')}
             >
-              <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-green-500" />
+              <CardContent className="p-3 flex items-center justify-between"> {/* Reduced padding */}
+                <div className="flex items-center gap-2"> {/* Reduced gap */}
+                  <div className="w-9 h-9 rounded-md bg-green-500/10 flex items-center justify-center"> {/* Smaller icon container */}
+                    <Clock className="w-4 h-4 text-green-500" /> {/* Smaller icon */}
                   </div>
                   <div>
-                    <div className="font-medium">Khoản Tiền Cần Thu</div>
-                    <div className="text-xl font-bold text-green-500">
+                    <div className="font-medium text-sm">Khoản Tiền Cần Thu</div> {/* Reduced font size */}
+                    <div className="text-lg font-bold text-green-500"> {/* Reduced font size */}
                       {amountToCollect.toLocaleString()} đ
                     </div>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                <ChevronRight className="w-4 h-4 text-muted-foreground" /> {/* Smaller icon */}
               </CardContent>
             </Card>
 
             <Button
               onClick={() => setOpenConfirmMonthCompletionDialog(true)}
-              className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white text-base"
+              className="w-full h-10 text-sm bg-blue-500 hover:bg-blue-600 text-white" {/* Reduced height and font size */}
               disabled={isCompletingMonthExpenses}
             >
               {isCompletingMonthExpenses ? (
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> {/* Smaller icon */}
               ) : (
-                <CheckCircle2 className="w-5 h-5 mr-2" />
+                <CheckCircle2 className="w-4 h-4 mr-1.5" /> {/* Smaller icon */}
               )}
               Hoàn thành chi phí của tôi trong tháng
             </Button>
@@ -939,53 +940,53 @@ const GroupDetail = () => {
 
         {/* Expenses List */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Receipt className="w-5 h-5" />
+          <div className="flex items-center justify-between mb-2"> {/* Reduced margin */}
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-1.5"> {/* Reduced font size and gap */}
+              <Receipt className="w-4 h-4" /> {/* Smaller icon */}
               Chi phí ({expenses.length})
             </h2>
             {/* Month and Year Selectors on the same line */}
-            <div className="flex items-end gap-3">
-              <div className="space-y-1">
+            <div className="flex items-end gap-2"> {/* Reduced gap */}
+              <div className="space-y-0.5"> {/* Reduced space-y */}
                 <Label htmlFor="year-select" className="text-xs text-muted-foreground">Chọn năm</Label>
                 <Select onValueChange={handleYearChange} value={selectedYear.toString()}>
-                  <SelectTrigger id="year-select" className="w-[90px] h-8 text-sm">
+                  <SelectTrigger id="year-select" className="w-[80px] h-8 text-xs"> {/* Reduced width, height and font size */}
                     <SelectValue placeholder="Năm" />
                   </SelectTrigger>
                   <SelectContent>
                     {years.map((year) => (
-                      <SelectItem key={year} value={year.toString()}>
+                      <SelectItem key={year} value={year.toString()} className="text-xs"> {/* Reduced font size */}
                         {year}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-0.5"> {/* Reduced space-y */}
                 <Label className="text-xs text-muted-foreground">Chọn tháng</Label>
                 <MonthSelector selectedMonth={selectedMonth} onMonthChange={handleMonthChange} />
               </div>
             </div>
           </div>
 
-          <div className="text-sm text-muted-foreground mb-4">
+          <div className="text-xs text-muted-foreground mb-3"> {/* Reduced font size and margin */}
             Hoàn thành:{" "}
             <span className="font-medium text-primary">
               {completedCount}/{expenses.length}
             </span>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2"> {/* Reduced space-y */}
             {loading ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Đang tải chi phí...</p>
+              <div className="text-center py-10"> {/* Reduced padding */}
+                <div className="w-14 h-14 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div> {/* Smaller loader */}
+                <p className="text-sm text-muted-foreground">Đang tải chi phí...</p> {/* Reduced font size */}
               </div>
             ) : expenses.length === 0 ? (
-              <div className="text-center py-12">
-                <Receipt className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <p className="text-xl font-semibold mb-2">Chưa có chi phí nào</p>
-                <p className="text-muted-foreground mb-6">
+              <div className="text-center py-10"> {/* Reduced padding */}
+                <Receipt className="w-14 h-14 text-muted-foreground mx-auto mb-3" /> {/* Smaller icon */}
+                <p className="text-lg font-semibold mb-1.5">Chưa có chi phí nào</p> {/* Reduced font size */}
+                <p className="text-sm text-muted-foreground mb-5"> {/* Reduced font size */}
                   Thêm chi phí mới để bắt đầu theo dõi.
                 </p>
               </div>
@@ -997,73 +998,73 @@ const GroupDetail = () => {
                     expense.isCompleted ? "opacity-60" : ""
                   } transition-all`}
                 >
-                  <CardContent className="p-4 space-y-3">
+                  <CardContent className="p-3 space-y-2"> {/* Reduced padding and space-y */}
                     <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-lg">{expense.title}</h3>
+                      <div className="space-y-1"> {/* Reduced space-y */}
+                        <div className="flex items-center gap-1.5"> {/* Reduced gap */}
+                          <h3 className="font-semibold text-base">{expense.title}</h3> {/* Reduced font size */}
                           {expense.isMine && (
-                            <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 text-xs font-medium">
+                            <span className="px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 text-xs font-medium">
                               Chi phí của bạn
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <User className="w-4 h-4" />
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"> {/* Reduced gap and font size */}
+                          <User className="w-3.5 h-3.5" /> {/* Smaller icon */}
                           <span>{expense.paidBy}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock className="w-4 h-4" />
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground"> {/* Reduced gap and font size */}
+                          <Clock className="w-3.5 h-3.5" /> {/* Smaller icon */}
                           <span>{expense.displayDate}</span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-red-500">
+                        <div className="text-xl font-bold text-red-500"> {/* Reduced font size */}
                           {expense.amount.toLocaleString()} đ
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">
+                        <div className="text-xs text-muted-foreground mt-0.5"> {/* Reduced font size and margin */}
                           Chia đều
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-sm">
-                      <Users className="w-4 h-4 text-muted-foreground" />
+                    <div className="flex items-center gap-1.5 text-xs"> {/* Reduced gap and font size */}
+                      <Users className="w-3.5 h-3.5 text-muted-foreground" /> {/* Smaller icon */}
                       <span className="text-muted-foreground">
                         {expense.splitWith.join(", ")}
                       </span>
                     </div>
 
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex gap-2 pt-1.5"> {/* Reduced gap and padding */}
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="flex-1"
+                        className="flex-1 h-8 text-xs" {/* Reduced height and font size */}
                         onClick={() => handleViewExpenseDetail(expense)}
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-3.5 h-3.5 mr-1" /> {/* Smaller icon */}
                         Xem Chi Tiết
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1"
+                        className="flex-1 h-8 text-xs" {/* Reduced height and font size */}
                         onClick={() => handleViewReceipt(expense.receiptUrl, expense.title)} // Pass expense.title
                         disabled={!expense.receiptUrl}
                       >
-                        <FileText className="w-4 h-4" />
+                        <FileText className="w-3.5 h-3.5 mr-1" /> {/* Smaller icon */}
                         Hóa đơn
                       </Button>
                       <Button
                         size="sm"
-                        className={`flex-1 ${
+                        className={`flex-1 h-8 text-xs ${ /* Reduced height and font size */
                           expense.isCompleted
                             ? "bg-muted text-muted-foreground"
                             : "bg-green-500 hover:bg-green-600"
                         }`}
                         onClick={() => handleCompleteExpense(expense.id, expense.isCompleted)}
                       >
-                        <CheckCircle2 className="w-4 h-4" />
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> {/* Smaller icon */}
                         {expense.isCompleted ? "Đã hoàn thành" : "Hoàn thành"}
                       </Button>
                     </div>
@@ -1076,40 +1077,40 @@ const GroupDetail = () => {
 
         {/* Members */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Users className="w-5 h-5" />
+          <div className="flex items-center justify-between mb-3"> {/* Reduced margin */}
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-1.5"> {/* Reduced font size and gap */}
+              <Users className="w-4 h-4" /> {/* Smaller icon */}
               Thành viên ({members.length})
             </h2>
-            <Button variant="outline" size="sm">
-              <MessageCircle className="w-4 h-4" />
+            <Button variant="outline" size="sm" className="h-8 text-xs"> {/* Reduced height and font size */}
+              <MessageCircle className="w-3.5 h-3.5 mr-1" /> {/* Smaller icon */}
               Chat
             </Button>
           </div>
 
-          <div className="text-sm text-muted-foreground mb-3">
+          <div className="text-xs text-muted-foreground mb-2"> {/* Reduced font size and margin */}
             Người tham gia nhóm
           </div>
 
           {members.map(member => (
-            <Card key={member.id} className="mb-2">
-              <CardContent className="p-4">
+            <Card key={member.id} className="mb-1.5"> {/* Reduced margin */}
+              <CardContent className="p-3"> {/* Reduced padding */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User className="w-5 h-5 text-primary" />
+                  <div className="flex items-center gap-2"> {/* Reduced gap */}
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center"> {/* Smaller icon container */}
+                      <User className="w-4 h-4 text-primary" /> {/* Smaller icon */}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{member.name}</span>
-                      <div className="flex gap-1">
+                    <div className="flex items-center gap-1.5"> {/* Reduced gap */}
+                      <span className="font-medium text-sm">{member.name}</span> {/* Reduced font size */}
+                      <div className="flex gap-1"> {/* Reduced gap */}
                         {member.id === user?.id && (
-                          <span className="px-2 py-0.5 rounded-md bg-green-500 text-white text-xs font-medium">
+                          <span className="px-1.5 py-0.5 rounded-md bg-green-500 text-white text-xs font-medium">
                             Bạn
                           </span>
                         )}
                         {member.isOwner && (
-                          <span className="px-2 py-0.5 rounded-md bg-yellow-500 text-white text-xs font-medium flex items-center gap-1">
-                            <Crown className="w-3 h-3" />
+                          <span className="px-1.5 py-0.5 rounded-md bg-yellow-500 text-white text-xs font-medium flex items-center gap-1">
+                            <Crown className="w-3 h-3" /> {/* Smaller icon */}
                             Trưởng nhóm
                           </span>
                         )}
@@ -1207,29 +1208,29 @@ const GroupDetail = () => {
 
       {/* Share Dialog */}
       <Dialog open={openShareDialog} onOpenChange={setOpenShareDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-sm"> {/* Smaller max-width for dialog */}
           <DialogHeader>
-            <DialogTitle>Chia sẻ nhóm</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl">Chia sẻ nhóm</DialogTitle> {/* Reduced font size */}
+            <DialogDescription className="text-sm">
               Chia sẻ mã này để mời người khác tham gia nhóm
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-3 py-3"> {/* Reduced space-y and padding */}
             <div className="flex items-center gap-2">
               <Input
                 value={shareCode}
                 readOnly
-                className="flex-1"
+                className="flex-1 h-9 text-sm" {/* Reduced height and font size */}
               />
               <Button
                 size="icon"
                 onClick={handleCopyCode}
-                className="flex-shrink-0"
+                className="flex-shrink-0 w-9 h-9" {/* Reduced size */}
               >
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />} {/* Smaller icon */}
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground"> {/* Reduced font size */}
               Người nhận mã sẽ cần đăng nhập để tham gia nhóm
             </p>
           </div>
@@ -1254,20 +1255,20 @@ const GroupDetail = () => {
       />
 
       {/* Floating Action Buttons */}
-      <div className="fixed bottom-6 left-4 right-4 flex justify-between max-w-4xl mx-auto">
+      <div className="fixed bottom-4 left-4 right-4 flex justify-between max-w-4xl mx-auto"> {/* Reduced bottom padding */}
         <Button
           size="icon"
-          className="w-14 h-14 rounded-full shadow-lg"
+          className="w-12 h-12 rounded-full shadow-lg" {/* Reduced size */}
           onClick={() => toast.info("Mở chat")}
         >
-          <MessageCircle className="w-6 h-6" />
+          <MessageCircle className="w-5 h-5" /> {/* Smaller icon */}
         </Button>
         <Button
           size="icon"
-          className="w-14 h-14 rounded-full shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+          className="w-12 h-12 rounded-full shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" {/* Reduced size */}
           onClick={() => setOpenAddExpense(true)}
         >
-          <Plus className="w-6 h-6" />
+          <Plus className="w-5 h-5" /> {/* Smaller icon */}
         </Button>
       </div>
     </div>

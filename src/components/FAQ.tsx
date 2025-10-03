@@ -30,28 +30,28 @@ const faqs = [
 
 const FAQ = () => {
   return (
-    <section id="faq" className="py-20 px-4">
+    <section id="faq" className="py-16 px-4"> {/* Reduced padding */}
       <div className="container mx-auto max-w-3xl">
-        <div className="text-center space-y-4 mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+        <div className="text-center space-y-3 mb-10"> {/* Reduced space-y and margin */}
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground"> {/* Reduced font size */}
             Câu hỏi thường gặp
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base text-muted-foreground"> {/* Reduced font size */}
             Giải đáp chi tiết những thắc mắc phổ biến khi sử dụng ứng dụng
           </p>
         </div>
 
-        <Accordion type="single" collapsible className="space-y-4">
+        <Accordion type="single" collapsible className="space-y-3"> {/* Reduced space-y */}
           {faqs.map((faq, index) => (
             <AccordionItem 
               key={index} 
               value={`item-${index}`}
-              className="border border-border rounded-lg px-6 bg-card"
+              className="border border-border rounded-lg px-5 bg-card" {/* Reduced padding */}
             >
-              <AccordionTrigger className="text-left font-semibold hover:no-underline">
+              <AccordionTrigger className="text-left font-semibold text-base hover:no-underline"> {/* Reduced font size */}
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
+              <AccordionContent className="text-sm text-muted-foreground"> {/* Reduced font size */}
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>

@@ -25,32 +25,32 @@ const IndividualBalanceDetailDialog = ({ open, onOpenChange, personName, expense
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col p-4"> {/* Reduced max-w, padding, and added flex-col */}
+        <DialogHeader className="pb-2"> {/* Reduced padding */}
+          <DialogTitle className="text-xl">{title}</DialogTitle> {/* Reduced font size */}
+          <DialogDescription className="text-sm">{description}</DialogDescription> {/* Reduced font size */}
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4 -mr-4">
-          <div className="space-y-3 py-4">
+        <ScrollArea className="flex-1 pr-3 -mr-3"> {/* Reduced padding */}
+          <div className="space-y-2 py-2"> {/* Reduced space-y and padding */}
             {expenses.length === 0 ? (
-              <div className="text-center text-muted-foreground py-8">
+              <div className="text-center text-muted-foreground py-6 text-sm"> {/* Reduced padding and font size */}
                 Không có chi phí nào.
               </div>
             ) : (
               expenses.map((exp) => (
                 <Card key={exp.expenseId} className="border-border">
-                  <CardContent className="p-4 space-y-2">
-                    <h3 className="font-semibold text-base">{exp.title}</h3>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <User className="w-4 h-4" />
+                  <CardContent className="p-3 space-y-1.5"> {/* Reduced padding and space-y */}
+                    <h3 className="font-semibold text-base">{exp.title}</h3> {/* Reduced font size */}
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground"> {/* Reduced gap and font size */}
+                      <User className="w-3.5 h-3.5" /> {/* Reduced size */}
                       <span>Người trả: {exp.paidBy}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="w-4 h-4" />
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground"> {/* Reduced gap and font size */}
+                      <Clock className="w-3.5 h-3.5" /> {/* Reduced size */}
                       <span>Ngày: {exp.date}</span>
                     </div>
-                    <div className="text-lg font-bold text-foreground mt-2">
+                    <div className="text-base font-bold text-foreground mt-1.5"> {/* Reduced font size and margin */}
                       {exp.amount.toLocaleString()} đ
                     </div>
                   </CardContent>

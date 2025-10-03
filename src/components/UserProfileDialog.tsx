@@ -93,40 +93,41 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Chỉnh sửa thông tin cá nhân</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="max-w-sm p-4"> {/* Reduced max-w and padding */}
+        <DialogHeader className="pb-2"> {/* Reduced padding */}
+          <DialogTitle className="text-xl">Chỉnh sửa thông tin cá nhân</DialogTitle> {/* Reduced font size */}
+          <DialogDescription className="text-sm">
             Cập nhật tên, biệt danh, avatar và thông tin ngân hàng của bạn.
           </DialogDescription>
         </DialogHeader>
         {loading ? (
-          <div className="flex justify-center items-center h-40">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex justify-center items-center h-32"> {/* Reduced height */}
+            <Loader2 className="h-7 w-7 animate-spin text-primary" /> {/* Reduced size */}
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4 py-4">
-            <div className="flex flex-col items-center gap-4">
-              <Avatar className="h-24 w-24">
+          <form onSubmit={handleSubmit} className="space-y-3 py-2"> {/* Reduced space-y and padding */}
+            <div className="flex flex-col items-center gap-3"> {/* Reduced gap */}
+              <Avatar className="h-20 w-20"> {/* Reduced size */}
                 <AvatarImage src={avatarUrl} alt="Avatar" />
                 <AvatarFallback>
-                  <User className="h-12 w-12 text-muted-foreground" />
+                  <User className="h-10 w-10 text-muted-foreground" /> {/* Reduced size */}
                 </AvatarFallback>
               </Avatar>
-              <div className="w-full space-y-2">
-                <Label htmlFor="avatar-url">URL Avatar</Label>
+              <div className="w-full space-y-1.5"> {/* Reduced space-y */}
+                <Label htmlFor="avatar-url" className="text-sm">URL Avatar</Label> {/* Reduced font size */}
                 <Input
                   id="avatar-url"
                   type="url"
                   placeholder="https://example.com/avatar.jpg"
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
+                  className="h-9 text-sm" {/* Reduced height and font size */}
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="full-name">Họ và tên</Label>
+            <div className="space-y-1.5"> {/* Reduced space-y */}
+              <Label htmlFor="full-name" className="text-sm">Họ và tên</Label> {/* Reduced font size */}
               <Input
                 id="full-name"
                 type="text"
@@ -134,43 +135,47 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
+                className="h-9 text-sm" {/* Reduced height and font size */}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="nickname">Biệt danh</Label>
+            <div className="space-y-1.5"> {/* Reduced space-y */}
+              <Label htmlFor="nickname" className="text-sm">Biệt danh</Label> {/* Reduced font size */}
               <Input
                 id="nickname"
                 type="text"
                 placeholder="A Béo"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
+                className="h-9 text-sm" {/* Reduced height and font size */}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="bank-account-number">Số tài khoản ngân hàng</Label>
+            <div className="space-y-1.5"> {/* Reduced space-y */}
+              <Label htmlFor="bank-account-number" className="text-sm">Số tài khoản ngân hàng</Label> {/* Reduced font size */}
               <Input
                 id="bank-account-number"
                 type="text"
                 placeholder="1234567890"
                 value={bankAccountNumber}
                 onChange={(e) => setBankAccountNumber(e.target.value)}
+                className="h-9 text-sm" {/* Reduced height and font size */}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="bank-name">Tên ngân hàng</Label>
+            <div className="space-y-1.5"> {/* Reduced space-y */}
+              <Label htmlFor="bank-name" className="text-sm">Tên ngân hàng</Label> {/* Reduced font size */}
               <Input
                 id="bank-name"
                 type="text"
                 placeholder="Vietcombank"
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
+                className="h-9 text-sm" {/* Reduced height and font size */}
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-9 text-sm" disabled={loading}> {/* Reduced height and font size */}
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Lưu thay đổi
             </Button>

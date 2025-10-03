@@ -18,26 +18,26 @@ const testimonials = [
 
 const Testimonials = () => {
   return (
-    <section id="testimonials" className="py-20 px-4">
+    <section id="testimonials" className="py-16 px-4"> {/* Reduced padding */}
       <div className="container mx-auto max-w-6xl">
-        <div className="text-center space-y-4 mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+        <div className="text-center space-y-3 mb-10"> {/* Reduced space-y and margin */}
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground"> {/* Reduced font size */}
             Người dùng nói gì?
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base text-muted-foreground"> {/* Reduced font size */}
             Những phản hồi tích cực từ cộng đồng sử dụng hằng ngày
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-5"> {/* Reduced gap */}
           {testimonials.map((testimonial, index) => (
             <Card key={index} className="border-border hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-6 space-y-4">
-                <Quote className="w-8 h-8 text-primary/40" />
-                <p className="text-foreground italic">
+              <CardContent className="p-5 space-y-3"> {/* Reduced padding and space-y */}
+                <Quote className="w-7 h-7 text-primary/40" /> {/* Smaller icon */}
+                <p className="text-sm text-foreground italic"> {/* Reduced font size */}
                   "{testimonial.content}"
                 </p>
-                <p className="text-sm font-semibold text-muted-foreground">
+                <p className="text-xs font-semibold text-muted-foreground"> {/* Reduced font size */}
                   — {testimonial.author}
                 </p>
               </CardContent>
