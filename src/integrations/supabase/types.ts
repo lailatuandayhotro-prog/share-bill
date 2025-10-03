@@ -174,6 +174,9 @@ export type Database = {
           full_name: string
           id: string
           updated_at: string | null
+          nickname: string | null
+          bank_account_number: string | null
+          bank_name: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -181,6 +184,9 @@ export type Database = {
           full_name: string
           id: string
           updated_at?: string | null
+          nickname?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -188,6 +194,9 @@ export type Database = {
           full_name?: string
           id?: string
           updated_at?: string | null
+          nickname?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
         }
         Relationships: []
       }

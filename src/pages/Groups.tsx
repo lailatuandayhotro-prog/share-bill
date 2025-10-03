@@ -3,13 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { DollarSign, UserPlus, Plus, Search, Users, Clock, Crown } from "lucide-react";
+import { DollarSign, UserPlus, Plus, Search, Users, Clock, Crown, User as UserIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { LogoutButton } from "@/components/LogoutButton";
+import UserProfileDialog from "@/components/UserProfileDialog"; // Import the new component
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Group {
   id: string;
@@ -26,14 +28,32 @@ const Groups = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [openJoinDialog, setOpenJoinDialog] = useState(false);
+  const [openUserProfileDialog, setOpenUserProfileDialog] = useState(false); // State for UserProfileDialog
   const [newGroupName, setNewGroupName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
 
   useEffect(() => {
     fetchGroups();
+    fetchUserProfileData();
   }, [user]);
+
+  const fetchUserProfileData = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name, avatar_url")
+        .eq("id", user.id)
+        .single();
+      if (error) throw error;
+      setUserProfile(data);
+    } catch (error) {
+      console.error("Error fetching user profile data:", error);
+    }
+  };
 
   const fetchGroups = async () => {
     if (!user) return;
@@ -157,10 +177,20 @@ const Groups = () => {
                 <DollarSign className="w-6 h-6 text-primary" />
               </div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Chi_
+                ChiTi
               </h1>
             </div>
-            <LogoutButton />
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={() => setOpenUserProfileDialog(true)}>
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={userProfile?.avatar_url || ""} alt={userProfile?.full_name || "User"} />
+                  <AvatarFallback>
+                    <UserIcon className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+              <LogoutButton />
+            </div>
           </div>
         </div>
       </header>
@@ -318,6 +348,13 @@ const Groups = () => {
           </div>
         </div>
       </div>
+
+      {/* User Profile Dialog */}
+      <UserProfileDialog
+        open={openUserProfileDialog}
+        onOpenChange={setOpenUserProfileDialog}
+        onProfileUpdated={fetchUserProfileData} // Callback to refresh profile data after update
+      />
     </div>
   );
 };
