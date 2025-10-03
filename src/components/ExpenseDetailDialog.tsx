@@ -6,11 +6,16 @@ import { toast } from "sonner";
 interface Participant {
   userId?: string;
   userName?: string;
-  guestId?: string;
-  guestName?: string;
+  // guestId and guestName are no longer directly part of expense_participants for absorbed guests
   amount: number;
   isPaid: boolean;
   isPayer?: boolean;
+}
+
+interface Guest {
+  id: string;
+  name: string;
+  responsibleMemberId?: string;
 }
 
 interface ExpenseDetailDialogProps {
@@ -22,8 +27,9 @@ interface ExpenseDetailDialogProps {
     amount: number;
     paidBy: string;
     date: string;
-    participants?: Participant[];
+    participants?: Participant[]; // These are now only members (or responsible members)
     receiptUrl?: string;
+    guests?: Guest[]; // Guests are now passed separately for display
   } | null;
   onComplete: () => void;
   onEdit: () => void;
@@ -45,6 +51,7 @@ const ExpenseDetailDialog = ({
   if (!expense) return null;
 
   const participants: Participant[] = expense.participants || [];
+  const guests: Guest[] = expense.guests || [];
 
   const handleMarkPaidToggle = (participantId: string, currentIsPaid: boolean, isGuest: boolean) => {
     onMarkPaid(participantId, currentIsPaid, isGuest);
@@ -114,95 +121,100 @@ const ExpenseDetailDialog = ({
         <div className="px-4 pb-4 space-y-3">
           <div className="flex items-center gap-2 text-base font-semibold">
             <Users className="w-4 h-4 text-primary" />
-            <span>Người tham gia ({participants.length})</span>
+            <span>Người tham gia ({participants.length + guests.length})</span>
           </div>
 
           <div className="space-y-2">
-            {participants.length > 0 ? (
-              participants.map((participant, index) => {
-                const participantName = participant.userName || participant.guestName || 'Unknown';
-                const participantId = participant.userId || participant.guestId || `participant-${index}`;
-                
-                return (
-                  <div
-                    key={participantId}
-                    className="border border-border rounded-lg p-3 bg-card hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-center gap-3">
-                      {/* Avatar */}
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0 bg-blue-500">
-                        {getInitials(participantName)}
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 mb-0.5">
-                          <span className="font-medium text-sm text-foreground">
-                            {participantName}
-                          </span>
-                          {participant.guestName && (
-                            <span className="px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground text-xs">
-                              Khách
-                            </span>
-                          )}
-                          {participant.isPayer && (
-                            <span className="px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 text-xs font-medium">
-                              Người trả tiền
-                            </span>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center gap-1">
-                          {participant.isPayer ? (
-                            <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
-                              Đã Trả
-                            </span>
-                          ) : participant.isPaid ? (
-                            <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
-                              Đã Trả
-                            </span>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium">
-                              Chờ Trả
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Amount and Action */}
-                      <div className="text-right flex-shrink-0">
-                        <div className="text-lg font-bold text-foreground mb-1">
-                          {participant.amount.toLocaleString()} đ
-                        </div>
-                        
-                        {!participant.isPayer && (
-                          <Button
-                            onClick={() => handleMarkPaidToggle(participantId, participant.isPaid, !!participant.guestName)}
-                            size="sm"
-                            className={participant.isPaid ? "bg-red-500 hover:bg-red-600 text-white text-xs" : "bg-blue-500 hover:bg-blue-600 text-white text-xs"}
-                            disabled={isMarkingPaid}
-                          >
-                            <span> {/* Wrapped icon and text in a span */}
-                              {isMarkingPaid ? (
-                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                              ) : participant.isPaid ? (
-                                <RotateCcw className="w-3 h-3 mr-1" />
-                              ) : (
-                                <CheckCircle2 className="w-3 h-3 mr-1" />
-                              )}
-                              {isMarkingPaid ? "Đang cập nhật..." : (participant.isPaid ? "Đánh Dấu Chưa Trả" : "Đánh Dấu Đã Trả")}
-                            </span>
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
+            {participants.length === 0 && guests.length === 0 ? (
               <div className="text-center py-6 text-muted-foreground text-sm">
                 Không có người tham gia nào
               </div>
+            ) : (
+              <>
+                {participants.map((participant, index) => {
+                  const participantName = participant.userName || 'Unknown';
+                  const participantId = participant.userId || `participant-${index}`;
+                  
+                  // Find guests for whom this member is responsible
+                  const responsibleGuests = guests.filter(g => g.responsibleMemberId === participant.userId);
+
+                  return (
+                    <div
+                      key={participantId}
+                      className="border border-border rounded-lg p-3 bg-card hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center gap-3">
+                        {/* Avatar */}
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0 bg-blue-500">
+                          {getInitials(participantName)}
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 mb-0.5">
+                            <span className="font-medium text-sm text-foreground">
+                              {participantName}
+                            </span>
+                            {participant.isPayer && (
+                              <span className="px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 text-xs font-medium">
+                                Người trả tiền
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center gap-1">
+                            {participant.isPayer ? (
+                              <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                                Đã Trả
+                              </span>
+                            ) : participant.isPaid ? (
+                              <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                                Đã Trả
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium">
+                                Chờ Trả
+                              </span>
+                            )}
+                          </div>
+                          {responsibleGuests.length > 0 && (
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Chịu trách nhiệm cho: {responsibleGuests.map(g => g.name).join(', ')}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Amount and Action */}
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-lg font-bold text-foreground mb-1">
+                            {participant.amount.toLocaleString()} đ
+                          </div>
+                          
+                          {!participant.isPayer && (
+                            <Button
+                              onClick={() => handleMarkPaidToggle(participantId, participant.isPaid, false)} // isGuest is false for members
+                              size="sm"
+                              className={participant.isPaid ? "bg-red-500 hover:bg-red-600 text-white text-xs" : "bg-blue-500 hover:bg-blue-600 text-white text-xs"}
+                              disabled={isMarkingPaid}
+                            >
+                              <span>
+                                {isMarkingPaid ? (
+                                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                ) : participant.isPaid ? (
+                                  <RotateCcw className="w-3 h-3 mr-1" />
+                                ) : (
+                                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                                )}
+                                {isMarkingPaid ? "Đang cập nhật..." : (participant.isPaid ? "Đánh Dấu Chưa Trả" : "Đánh Dấu Đã Trả")}
+                              </span>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
             )}
           </div>
         </div>

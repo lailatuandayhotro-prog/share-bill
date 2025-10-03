@@ -47,11 +47,16 @@ import MonthSelector from "@/components/MonthSelector";
 interface Participant {
   userId?: string;
   userName?: string;
-  guestId?: string;
-  guestName?: string;
+  // guestId and guestName are no longer directly part of expense_participants for absorbed guests
   amount: number;
   isPaid: boolean;
   isPayer?: boolean;
+}
+
+interface Guest {
+  id: string;
+  name: string;
+  responsibleMemberId?: string;
 }
 
 interface Expense {
@@ -60,16 +65,16 @@ interface Expense {
   amount: number;
   paidBy: string; // Name of the payer
   paidById: string; // ID of the payer
-  splitWith: string[];
+  splitWith: string[]; // This will now only contain members (or responsible members)
   date: string; // ISO string from DB
   displayDate: string; // Formatted date for UI
   isCompleted: boolean;
   isMine: boolean;
-  participants: Participant[];
+  participants: Participant[]; // These are now only members (or responsible members)
   receiptUrl?: string;
   description?: string;
   splitType?: string;
-  guests?: Array<{ id: string; name: string }>;
+  guests?: Guest[]; // Guests are now stored here for display/editing
 }
 
 interface GroupMember {
@@ -198,28 +203,31 @@ const GroupDetail = () => {
 
       const formattedExpenses = expensesData?.map(exp => {
         const payer = formattedMembers.find(m => m.id === exp.paid_by);
+        
+        // Participants are now only members (or responsible members)
         const participants = exp.expense_participants.map((p: any) => ({
           userId: p.user_id,
-          userName: formattedMembers.find(m => m.id === p.user_id)?.name,
-          guestId: p.guest_name ? p.id : undefined,
-          guestName: p.guest_name,
+          userName: formattedMembers.find(m => m.id === p.user_id)?.name || 'Unknown',
           amount: p.amount,
           isPaid: p.is_paid,
-          isPayer: p.user_id === exp.paid_by
+          isPayer: p.user_id === exp.paid_by,
+          // guestId and guestName are no longer directly from expense_participants for absorbed guests
         }));
 
-        const guests = participants
-          .filter(p => p.guestName)
-          .map(p => ({ id: p.guestId!, name: p.guestName! }));
+        // Reconstruct guests array for display/editing if needed (e.g., from description or a new column)
+        // For now, assuming guests are passed from Add/Edit dialogs and not stored in DB for each participant row
+        // If you need to persist guest details, a JSONB column in 'expenses' table would be ideal.
+        const guests: Guest[] = exp.description?.includes("guests:") ? JSON.parse(exp.description.split("guests:")[1]) : [];
+
 
         return {
           id: exp.id,
           title: exp.title,
-          description: exp.description || exp.title,
+          description: exp.description?.split("guests:")[0] || exp.title, // Clean description if guests were appended
           amount: exp.amount,
           paidBy: payer?.name || 'Unknown',
           paidById: exp.paid_by,
-          splitWith: participants.map(p => p.userName || p.guestName).filter(Boolean) as string[],
+          splitWith: participants.map(p => p.userName).filter(Boolean) as string[], // Only members
           date: exp.expense_date, // ISO string
           displayDate: new Date(exp.expense_date).toLocaleDateString('vi-VN'), // Formatted for UI
           isCompleted: exp.is_completed,
@@ -227,7 +235,7 @@ const GroupDetail = () => {
           participants,
           receiptUrl: exp.receipt_url,
           splitType: exp.split_type || 'equal',
-          guests,
+          guests, // Pass guests for EditExpenseDialog
         };
       }) || [];
 
@@ -277,10 +285,10 @@ const GroupDetail = () => {
       const payerAvatar = members.find(m => m.id === payerId)?.avatarUrl;
 
       exp.participants.forEach(p => {
-        const participantId = p.userId || p.guestId;
-        const participantName = p.userName || p.guestName;
+        const participantId = p.userId; // Only user_id now
+        const participantName = p.userName;
         const participantAvatar = members.find(m => m.id === p.userId)?.avatarUrl;
-        const isGuest = !!p.guestName;
+        const isGuest = false; // Guests are absorbed, so this is always false for direct participants
 
         if (!participantId || !participantName || p.isPaid) return;
 
@@ -298,7 +306,7 @@ const GroupDetail = () => {
             expenseId: exp.id,
             title: exp.title,
             amount: p.amount,
-            date: exp.displayDate, // Use displayDate for contributing expenses
+            date: exp.displayDate,
             paidBy: payerName,
           });
           balancesMap.set(payerId, currentBalance);
@@ -316,7 +324,7 @@ const GroupDetail = () => {
             expenseId: exp.id,
             title: exp.title,
             amount: p.amount,
-            date: exp.displayDate, // Use displayDate for contributing expenses
+            date: exp.displayDate,
             paidBy: exp.paidBy,
           });
           balancesMap.set(participantId, currentBalance);
@@ -382,12 +390,15 @@ const GroupDetail = () => {
         }
       }
 
+      // Append guest details to description for storage, if any
+      const descriptionWithGuests = expenseData.description + (expenseData.guests.length > 0 ? `guests:${JSON.stringify(expenseData.guests)}` : '');
+
       const { data: newExpense, error: expenseError } = await supabase
         .from('expenses')
         .insert({
           group_id: id,
-          title: expenseData.description,
-          description: expenseData.description,
+          title: expenseData.description, // Title remains clean
+          description: descriptionWithGuests, // Description includes guest data
           amount: expenseData.amount,
           paid_by: expenseData.paidBy,
           expense_date: expenseData.date,
@@ -399,12 +410,12 @@ const GroupDetail = () => {
 
       if (expenseError) throw expenseError;
 
+      // Insert into expense_participants based on the calculated shares for members
       const participantsToInsert = expenseData.participants.map((p: any) => ({
         expense_id: newExpense.id,
         user_id: p.userId,
-        guest_name: p.guestName,
         amount: p.amount,
-        is_paid: false
+        is_paid: p.isPaid
       }));
 
       const { error: participantsError } = await supabase
@@ -415,15 +426,9 @@ const GroupDetail = () => {
 
       await loadGroupData();
 
-      const totalParticipants = expenseData.participants.length;
-      if (totalParticipants > 0) {
-        const amountPerPerson = expenseData.participants[0]?.amount || 0;
-        toast.success(
-          `Chi phí đã thêm! Mỗi người phải trả: ${amountPerPerson.toLocaleString()} đ`
-        );
-      } else {
-        toast.success("Thêm chi phí thành công!");
-      }
+      const payerName = members.find(m => m.id === expenseData.paidBy)?.name || currentUserName;
+      toast.success(`Chi phí đã thêm! ${payerName} đã trả ${expenseData.amount.toLocaleString()} đ.`);
+      
     } catch (error) {
       console.error('Error adding expense:', error);
       toast.error('Không thể thêm chi phí');
@@ -469,11 +474,14 @@ const GroupDetail = () => {
         receiptUrl = null;
       }
 
+      // Append guest details to description for storage, if any
+      const descriptionWithGuests = updatedExpenseData.description + (updatedExpenseData.guests.length > 0 ? `guests:${JSON.stringify(updatedExpenseData.guests)}` : '');
+
       const { error: expenseError } = await supabase
         .from('expenses')
         .update({
-          title: updatedExpenseData.description,
-          description: updatedExpenseData.description,
+          title: updatedExpenseData.description, // Title remains clean
+          description: descriptionWithGuests, // Description includes guest data
           amount: updatedExpenseData.amount,
           paid_by: updatedExpenseData.paidBy,
           expense_date: updatedExpenseData.date,
@@ -487,10 +495,10 @@ const GroupDetail = () => {
 
       await supabase.from('expense_participants').delete().eq('expense_id', expenseId);
 
+      // Insert updated participants based on the new logic
       const participantsToInsert = updatedExpenseData.participants.map((p: any) => ({
         expense_id: expenseId,
         user_id: p.userId,
-        guest_name: p.guestName,
         amount: p.amount,
         is_paid: p.isPaid
       }));
@@ -535,7 +543,7 @@ const GroupDetail = () => {
 
   const handleEditExpense = () => {
     if (selectedExpense) {
-      setExpenseToEdit(selectedExpense); // selectedExpense now contains the ISO date in `date`
+      setExpenseToEdit(selectedExpense);
       setOpenExpenseDetail(false);
       setOpenEditExpense(true);
     }
@@ -592,7 +600,7 @@ const GroupDetail = () => {
         .from('expense_participants')
         .update(updateData)
         .eq('expense_id', expenseId)
-        .eq('id', participantId);
+        .eq('user_id', participantId); // Always use user_id now
 
       if (error) throw error;
       
@@ -652,12 +660,11 @@ const GroupDetail = () => {
   const handleYearChange = (year: string) => {
     const newYear = parseInt(year);
     setSelectedYear(newYear);
-    // Also update selectedMonth to reflect the new year, keeping the same month
     setSelectedMonth(prevMonth => setYear(prevMonth, newYear));
   };
 
   const currentYear = getYear(new Date());
-  const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i); // e.g., 2019 to 2029
+  const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -843,7 +850,7 @@ const GroupDetail = () => {
               Chi phí ({expenses.length})
             </h2>
             {/* Month and Year Selectors on the same line */}
-            <div className="flex items-end gap-3"> {/* Use items-end to align labels at the bottom */}
+            <div className="flex items-end gap-3">
               <div className="space-y-1">
                 <Label htmlFor="year-select" className="text-xs text-muted-foreground">Chọn năm</Label>
                 <Select onValueChange={handleYearChange} value={selectedYear.toString()}>
@@ -912,7 +919,7 @@ const GroupDetail = () => {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Clock className="w-4 h-4" />
-                          <span>{expense.displayDate}</span> {/* Use displayDate here */}
+                          <span>{expense.displayDate}</span>
                         </div>
                       </div>
                       <div className="text-right">
@@ -1014,8 +1021,7 @@ const GroupDetail = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
+                </CardContent>
             </Card>
           ))}
         </div>
@@ -1035,7 +1041,7 @@ const GroupDetail = () => {
       <ExpenseDetailDialog
         open={openExpenseDetail}
         onOpenChange={setOpenExpenseDetail}
-        expense={selectedExpense ? { ...selectedExpense, date: selectedExpense.displayDate } : null} // Pass formatted date for display
+        expense={selectedExpense ? { ...selectedExpense, date: selectedExpense.displayDate } : null}
         onComplete={() => {
           if (selectedExpense) {
             handleCompleteExpense(selectedExpense.id, selectedExpense.isCompleted);
@@ -1057,7 +1063,7 @@ const GroupDetail = () => {
         <EditExpenseDialog
           open={openEditExpense}
           onOpenChange={setOpenEditExpense}
-          initialExpense={expenseToEdit} // expenseToEdit.date is ISO string
+          initialExpense={expenseToEdit}
           onUpdateExpense={handleUpdateExpense}
           members={members}
           currentUserId={user?.id || ""}
