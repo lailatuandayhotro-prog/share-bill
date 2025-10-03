@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AddExpenseDialog from "@/components/AddExpenseDialog";
 import ExpenseDetailDialog from "@/components/ExpenseDetailDialog";
-import EditExpenseDialog from "@/components/EditExpenseDialog"; // New import
+import EditExpenseDialog from "@/components/EditExpenseDialog";
+import InviteMemberDialog from "@/components/InviteMemberDialog"; // New import
 import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,6 +29,7 @@ import {
   ChevronRight,
   Copy,
   Check,
+  UserPlus, // New icon for invite
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,9 +57,9 @@ interface Expense {
   isMine: boolean;
   participants: Participant[];
   receiptUrl?: string;
-  description?: string; // Added for edit
-  splitType?: string; // Added for edit
-  guests?: Array<{ id: string; name: string }>; // Added for edit
+  description?: string;
+  splitType?: string;
+  guests?: Array<{ id: string; name: string }>;
 }
 
 const GroupDetail = () => {
@@ -66,10 +68,11 @@ const GroupDetail = () => {
   const { user } = useAuth();
   const [openAddExpense, setOpenAddExpense] = useState(false);
   const [openExpenseDetail, setOpenExpenseDetail] = useState(false);
-  const [openEditExpense, setOpenEditExpense] = useState(false); // New state for edit dialog
+  const [openEditExpense, setOpenEditExpense] = useState(false);
   const [openShareDialog, setOpenShareDialog] = useState(false);
+  const [openInviteMemberDialog, setOpenInviteMemberDialog] = useState(false); // New state for invite dialog
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
-  const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null); // New state for expense to edit
+  const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
   const [shareCode, setShareCode] = useState("");
   const [copied, setCopied] = useState(false);
   const [groupName, setGroupName] = useState("Test");
@@ -490,6 +493,18 @@ const GroupDetail = () => {
     }
   };
 
+  const handleInviteMembers = (emails: string[]) => {
+    // This is a placeholder for actual email sending and member invitation logic.
+    // In a real application, you would:
+    // 1. Call a Supabase Edge Function or a backend API to send emails.
+    // 2. The email would contain a link to join the group (e.g., /join-group?groupId=XYZ&email=abc@example.com).
+    // 3. Upon clicking the link, the user would be prompted to sign up/log in and then added to the group.
+    console.log("Sending invitations to:", emails);
+    toast.success(`Đã gửi lời mời đến ${emails.length} địa chỉ email.`);
+    // For now, we just show a toast.
+    // You might want to add these emails to a 'pending_invitations' table in Supabase.
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -563,9 +578,9 @@ const GroupDetail = () => {
             Chia sẻ
           </Button>
 
-          <Button variant="outline" className="px-6 h-12">
-            <Settings className="w-5 h-5" />
-            Quản lý
+          <Button variant="outline" className="px-6 h-12" onClick={() => setOpenInviteMemberDialog(true)}>
+            <UserPlus className="w-5 h-5" />
+            Mời thành viên
           </Button>
         </div>
 
@@ -796,7 +811,6 @@ const GroupDetail = () => {
                         )}
                         {/* Assuming owner status is determined by group.owner_id */}
                         {/* This needs to be fetched from group_members table */}
-                        {/* For now, hardcoding for owner_id check */}
                         {id && expenses.length > 0 && expenses[0].paidById === member.id && ( // This is a temporary check, should be from group_members role
                           <span className="px-2 py-0.5 rounded-md bg-yellow-500 text-white text-xs font-medium flex items-center gap-1">
                             <Crown className="w-3 h-3" />
@@ -856,6 +870,14 @@ const GroupDetail = () => {
           currentUserName={members.find(m => m.id === user?.id)?.name || ""}
         />
       )}
+
+      {/* Invite Member Dialog */}
+      <InviteMemberDialog
+        open={openInviteMemberDialog}
+        onOpenChange={setOpenInviteMemberDialog}
+        onInvite={handleInviteMembers}
+        groupName={groupName}
+      />
 
       {/* Share Dialog */}
       <Dialog open={openShareDialog} onOpenChange={setOpenShareDialog}>
