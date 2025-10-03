@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { LogoutButton } from "@/components/LogoutButton";
-import UserProfileDialog from "@/components/UserProfileDialog"; // Import the new component
+import UserProfileDialog from "@/components/UserProfileDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Group {
@@ -28,7 +28,7 @@ const Groups = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [openJoinDialog, setOpenJoinDialog] = useState(false);
-  const [openUserProfileDialog, setOpenUserProfileDialog] = useState(false); // State for UserProfileDialog
+  const [openUserProfileDialog, setOpenUserProfileDialog] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [groups, setGroups] = useState<Group[]>([]);
@@ -150,15 +150,69 @@ const Groups = () => {
     }
   };
 
-  const handleJoinGroup = () => {
+  const handleJoinGroup = async () => {
     if (!joinCode.trim()) {
       toast.error("Vui lòng nhập mã nhóm");
       return;
     }
-    
-    toast.success("Tham gia nhóm thành công!");
-    setOpenJoinDialog(false);
-    setJoinCode("");
+
+    if (!user) {
+      toast.error("Vui lòng đăng nhập để tham gia nhóm");
+      return;
+    }
+
+    try {
+      // Check if group exists
+      const { data: existingGroup, error: groupError } = await supabase
+        .from('groups')
+        .select('id')
+        .eq('id', joinCode)
+        .single();
+
+      if (groupError || !existingGroup) {
+        toast.error("Mã nhóm không hợp lệ hoặc nhóm không tồn tại");
+        return;
+      }
+
+      // Check if user is already a member
+      const { data: existingMember, error: memberCheckError } = await supabase
+        .from('group_members')
+        .select('id')
+        .eq('group_id', joinCode)
+        .eq('user_id', user.id)
+        .single();
+
+      if (memberCheckError && memberCheckError.code !== 'PGRST116') { // PGRST116 means no rows found
+        throw memberCheckError;
+      }
+
+      if (existingMember) {
+        toast.info("Bạn đã là thành viên của nhóm này rồi!");
+        setOpenJoinDialog(false);
+        setJoinCode("");
+        navigate(`/groups/${joinCode}`);
+        return;
+      }
+
+      // Add user to group_members
+      const { error: addMemberError } = await supabase
+        .from('group_members')
+        .insert({
+          group_id: joinCode,
+          user_id: user.id,
+          role: 'member', // Default role for new members
+        });
+
+      if (addMemberError) throw addMemberError;
+
+      setOpenJoinDialog(false);
+      setJoinCode("");
+      toast.success("Tham gia nhóm thành công!");
+      navigate(`/groups/${joinCode}`);
+    } catch (error: any) {
+      console.error('Error joining group:', error.message);
+      toast.error("Không thể tham gia nhóm: " + error.message);
+    }
   };
 
   const filteredGroups = groups.filter((group) =>
@@ -353,7 +407,7 @@ const Groups = () => {
       <UserProfileDialog
         open={openUserProfileDialog}
         onOpenChange={setOpenUserProfileDialog}
-        onProfileUpdated={fetchUserProfileData} // Callback to refresh profile data after update
+        onProfileUpdated={fetchUserProfileData}
       />
     </div>
   );
