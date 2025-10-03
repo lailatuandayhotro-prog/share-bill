@@ -43,10 +43,11 @@ const FAQ = () => {
 
         <Accordion type="single" collapsible className="space-y-3"> {/* Reduced space-y */}
           {faqs.map((faq, index) => (
+            // Reduced padding
             <AccordionItem 
               key={index} 
               value={`item-${index}`}
-              className="border border-border rounded-lg px-5 bg-card" {/* Reduced padding */}
+              className="border border-border rounded-lg px-5 bg-card" 
             >
               <AccordionTrigger className="text-left font-semibold text-base hover:no-underline"> {/* Reduced font size */}
                 {faq.question}
