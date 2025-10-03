@@ -187,7 +187,7 @@ const GroupDetail = () => {
 
       // Upload receipt image if exists
       if (expenseData.receiptImage) {
-        const fileExt = expenseData.receiptImage.split('.').pop();
+        const fileExt = expenseData.receiptImage.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
         
         const { error: uploadError } = await supabase.storage
