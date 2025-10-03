@@ -64,7 +64,7 @@ const GroupDetail = () => {
   const [openExpenseDetail, setOpenExpenseDetail] = useState(false);
   const [openShareDialog, setOpenShareDialog] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
-  const [shareCode, setShareCode] = useState(""); // Changed from shareLink to shareCode
+  const [shareCode, setShareCode] = useState("");
   const [copied, setCopied] = useState(false);
   const [groupName, setGroupName] = useState("Test");
   const [isEditingName, setIsEditingName] = useState(false);
@@ -305,7 +305,7 @@ const GroupDetail = () => {
     }
   };
 
-  const handleCopyCode = async () => { // Changed from handleCopyLink to handleCopyCode
+  const handleCopyCode = async () => {
     try {
       await navigator.clipboard.writeText(shareCode);
       setCopied(true);
@@ -313,6 +313,14 @@ const GroupDetail = () => {
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       toast.error("Không thể sao chép mã nhóm");
+    }
+  };
+
+  const handleViewReceipt = (receiptUrl?: string) => {
+    if (receiptUrl) {
+      window.open(receiptUrl, '_blank');
+    } else {
+      toast.info("Không có hóa đơn cho chi phí này.");
     }
   };
 
@@ -433,7 +441,7 @@ const GroupDetail = () => {
               </div>
               <div className="space-y-1">
                 <div className="text-xl font-bold text-foreground">
-                  {totalExpense.toLocaleString()} đ
+                  {amountToPay.toLocaleString()} đ
                 </div>
                 <div className="text-xs text-muted-foreground">phần của tôi</div>
               </div>
@@ -558,7 +566,13 @@ const GroupDetail = () => {
                       <Eye className="w-4 h-4" />
                       Xem Chi Tiết
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handleViewReceipt(expense.receiptUrl)}
+                      disabled={!expense.receiptUrl}
+                    >
                       <FileText className="w-4 h-4" />
                       Hóa đơn
                     </Button>
@@ -668,7 +682,7 @@ const GroupDetail = () => {
               />
               <Button
                 size="icon"
-                onClick={handleCopyCode} // Changed to handleCopyCode
+                onClick={handleCopyCode}
                 className="flex-shrink-0"
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
