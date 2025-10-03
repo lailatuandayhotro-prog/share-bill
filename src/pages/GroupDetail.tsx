@@ -12,8 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import {
   DollarSign,
   ArrowLeft,
@@ -40,9 +38,10 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { format, endOfMonth, startOfMonth } from "date-fns";
+import { format, endOfMonth, startOfMonth, getYear, setYear } from "date-fns";
 import { vi } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import MonthSelector from "@/components/MonthSelector"; // Import the new MonthSelector
 
 interface Participant {
   userId?: string;
@@ -127,12 +126,12 @@ const GroupDetail = () => {
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
 
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
-  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date())); // New state for selected year
 
   useEffect(() => {
     if (!id || !user) return;
     loadGroupData();
-  }, [id, user, selectedMonth]);
+  }, [id, user, selectedMonth, selectedYear]); // Add selectedYear to dependencies
 
   const loadGroupData = async () => {
     if (!id || !user) return [];
@@ -174,8 +173,11 @@ const GroupDetail = () => {
       
       setMembers(formattedMembers);
 
-      const startOfSelectedMonth = format(startOfMonth(selectedMonth), 'yyyy-MM-dd');
-      const endOfSelectedMonth = format(endOfMonth(selectedMonth), 'yyyy-MM-dd');
+      // Adjust selectedMonth to reflect the selectedYear
+      const currentSelectedMonthWithYear = setYear(selectedMonth, selectedYear);
+
+      const startOfSelectedMonth = format(startOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
+      const endOfSelectedMonth = format(endOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
 
       const { data: expensesData, error: expensesError } = await supabase
         .from('expenses')
@@ -638,6 +640,10 @@ const GroupDetail = () => {
     toast.success(`Đã gửi lời mời đến ${emails.length} địa chỉ email.`);
   };
 
+  const handleYearChange = (year: number) => {
+    setSelectedYear(year);
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -779,7 +785,7 @@ const GroupDetail = () => {
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-                    <DollarSign className="w-5 h-5" />
+                    <DollarSign className="w-5 h-5 text-red-500" />
                   </div>
                   <div>
                     <div className="font-medium">Khoản Tiền Phải Trả</div>
@@ -821,33 +827,27 @@ const GroupDetail = () => {
               <Receipt className="w-5 h-5" />
               Chi phí ({expenses.length})
             </h2>
-            <Popover open={showMonthPicker} onOpenChange={setShowMonthPicker}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-[180px] justify-start text-left font-normal",
-                    !selectedMonth && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedMonth ? format(selectedMonth, "MM/yyyy", { locale: vi }) : "Chọn tháng"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 z-[100]" align="end">
-                <Calendar
-                  mode="single"
-                  captionLayout="dropdown-buttons"
-                  selected={selectedMonth}
-                  onSelect={(date) => {
-                    setSelectedMonth(date || new Date());
-                    setShowMonthPicker(false);
-                  }}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleYearChange(selectedYear - 1)}
+              >
+                Năm trước
+              </Button>
+              <span className="font-semibold text-lg">{selectedYear}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleYearChange(selectedYear + 1)}
+              >
+                Năm sau
+              </Button>
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <MonthSelector selectedMonth={selectedMonth} onMonthChange={setSelectedMonth} />
           </div>
 
           <div className="text-sm text-muted-foreground mb-4">
