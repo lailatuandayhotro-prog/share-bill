@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   DollarSign,
   ArrowLeft,
@@ -37,7 +37,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { format, endOfMonth, startOfMonth, getYear, setYear, setMonth } from "date-fns"; // Import setMonth
+import { format, endOfMonth, startOfMonth, getYear, setYear, setMonth, endOfDay } from "date-fns"; // Import endOfDay
 import { vi } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import MonthSelector from "@/components/MonthSelector";
@@ -176,7 +176,8 @@ const GroupDetail = () => {
       const currentSelectedMonthWithYear = setYear(selectedMonth, selectedYear);
 
       const startOfSelectedMonth = format(startOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
-      const endOfSelectedMonth = format(endOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
+      // Use endOfDay to ensure the entire last day of the month is included
+      const endOfSelectedMonth = format(endOfDay(endOfMonth(currentSelectedMonthWithYear)), 'yyyy-MM-dd HH:mm:ss');
 
       const { data: expensesData, error: expensesError } = await supabase
         .from('expenses')
@@ -190,6 +191,8 @@ const GroupDetail = () => {
         .order('created_at', { ascending: false });
       
       if (expensesError) throw expensesError;
+
+      console.log("Fetched expenses data:", expensesData); // Log the fetched data for debugging
 
       const formattedExpenses = expensesData?.map(exp => {
         const payer = formattedMembers.find(m => m.id === exp.paid_by);
