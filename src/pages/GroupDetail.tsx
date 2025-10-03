@@ -12,8 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover components
-import { Calendar } from "@/components/ui/calendar"; // Import Calendar component
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import {
   DollarSign,
   ArrowLeft,
@@ -35,14 +35,14 @@ import {
   Copy,
   Check,
   UserPlus,
-  CalendarIcon, // Import CalendarIcon
+  CalendarIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { format, endOfMonth, startOfMonth } from "date-fns"; // Import date-fns utilities
-import { vi } from "date-fns/locale"; // Import Vietnamese locale
-import { cn } from "@/lib/utils"; // Import cn utility
+import { format, endOfMonth, startOfMonth } from "date-fns";
+import { vi } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface Participant {
   userId?: string;
@@ -126,14 +126,13 @@ const GroupDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
 
-  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date()); // State for selected month
-  const [showMonthPicker, setShowMonthPicker] = useState(false); // State to control month picker visibility
+  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
 
-  // Load group data
   useEffect(() => {
     if (!id || !user) return;
     loadGroupData();
-  }, [id, user, selectedMonth]); // Add selectedMonth to dependencies
+  }, [id, user, selectedMonth]);
 
   const loadGroupData = async () => {
     if (!id || !user) return [];
@@ -141,7 +140,6 @@ const GroupDetail = () => {
     try {
       setLoading(true);
       
-      // Load group info
       const { data: groupData, error: groupError } = await supabase
         .from('groups')
         .select('name, owner_id')
@@ -152,7 +150,6 @@ const GroupDetail = () => {
       if (groupData) setGroupName(groupData.name);
       const groupOwnerId = groupData?.owner_id;
 
-      // Load member IDs
       const { data: groupMembersData, error: membersError } = await supabase
         .from('group_members')
         .select('user_id')
@@ -160,7 +157,6 @@ const GroupDetail = () => {
       
       if (membersError) throw membersError;
 
-      // Load profiles for these members
       const userIds = groupMembersData?.map(m => m.user_id) || [];
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
@@ -178,11 +174,9 @@ const GroupDetail = () => {
       
       setMembers(formattedMembers);
 
-      // Calculate start and end of the selected month for filtering
       const startOfSelectedMonth = format(startOfMonth(selectedMonth), 'yyyy-MM-dd');
       const endOfSelectedMonth = format(endOfMonth(selectedMonth), 'yyyy-MM-dd');
 
-      // Load expenses, filtered by selected month
       const { data: expensesData, error: expensesError } = await supabase
         .from('expenses')
         .select(`
@@ -190,8 +184,8 @@ const GroupDetail = () => {
           expense_participants(*)
         `)
         .eq('group_id', id)
-        .gte('expense_date', startOfSelectedMonth) // Filter expenses from start of month
-        .lte('expense_date', endOfSelectedMonth)   // Filter expenses to end of month
+        .gte('expense_date', startOfSelectedMonth)
+        .lte('expense_date', endOfSelectedMonth)
         .order('created_at', { ascending: false });
       
       if (expensesError) throw expensesError;
@@ -244,7 +238,6 @@ const GroupDetail = () => {
   const totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0);
   const completedCount = expenses.filter((e) => e.isCompleted).length;
 
-  // Calculate amount to pay (money current user owes to others)
   const amountToPay = expenses
     .filter(exp => !exp.isCompleted)
     .reduce((sum, exp) => {
@@ -254,7 +247,6 @@ const GroupDetail = () => {
       return sum + (myParticipant?.amount || 0);
     }, 0);
 
-  // Calculate amount to collect (money others owe to current user)
   const amountToCollect = expenses
     .filter(exp => !exp.isCompleted)
     .reduce((sum, exp) => {
@@ -270,7 +262,7 @@ const GroupDetail = () => {
   const calculateDetailedBalances = (type: 'pay' | 'collect'): BalanceItem[] => {
     if (!user) return [];
 
-    const balancesMap = new Map<string, BalanceItem>(); // Key: memberId or guestId
+    const balancesMap = new Map<string, BalanceItem>();
 
     expenses.filter(exp => !exp.isCompleted).forEach(exp => {
       const payerId = exp.paidById;
@@ -286,16 +278,15 @@ const GroupDetail = () => {
         if (!participantId || !participantName || p.isPaid) return;
 
         if (type === 'pay' && p.userId === user.id && !p.isPayer) {
-          // Current user owes money to the payer of this expense
           const currentBalance = balancesMap.get(payerId) || {
             id: payerId,
             name: payerName,
             amount: 0,
             avatarUrl: payerAvatar,
             isGuest: false,
-            contributingExpenses: [], // Initialize
+            contributingExpenses: [],
           };
-          currentBalance.amount -= p.amount; // Negative means current user owes
+          currentBalance.amount -= p.amount;
           currentBalance.contributingExpenses.push({
             expenseId: exp.id,
             title: exp.title,
@@ -305,34 +296,32 @@ const GroupDetail = () => {
           });
           balancesMap.set(payerId, currentBalance);
         } else if (type === 'collect' && payerId === user.id && !p.isPayer) {
-          // Participant owes money to the current user (payer)
           const currentBalance = balancesMap.get(participantId) || {
             id: participantId,
             name: participantName,
             amount: 0,
             avatarUrl: participantAvatar,
             isGuest: isGuest,
-            contributingExpenses: [], // Initialize
+            contributingExpenses: [],
           };
-          currentBalance.amount += p.amount; // Positive means they owe current user
+          currentBalance.amount += p.amount;
           currentBalance.contributingExpenses.push({
             expenseId: exp.id,
             title: exp.title,
             amount: p.amount,
             date: exp.date,
-            paidBy: exp.paidBy, // The current user's name as payer
+            paidBy: exp.paidBy,
           });
           balancesMap.set(participantId, currentBalance);
         }
       });
     });
 
-    // Filter out zero balances and sort
     const filteredBalances = Array.from(balancesMap.values()).filter(b => b.amount !== 0);
 
     if (type === 'pay') {
       return filteredBalances.filter(b => b.amount < 0).map(b => ({ ...b, amount: Math.abs(b.amount) }));
-    } else { // 'collect'
+    } else {
       return filteredBalances.filter(b => b.amount > 0);
     }
   };
@@ -367,7 +356,6 @@ const GroupDetail = () => {
     try {
       let receiptUrl = null;
 
-      // Upload receipt image if exists
       if (expenseData.receiptImage) {
         const fileExt = expenseData.receiptImage.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
@@ -387,7 +375,6 @@ const GroupDetail = () => {
         }
       }
 
-      // Insert expense
       const { data: newExpense, error: expenseError } = await supabase
         .from('expenses')
         .insert({
@@ -405,7 +392,6 @@ const GroupDetail = () => {
 
       if (expenseError) throw expenseError;
 
-      // Insert participants
       const participantsToInsert = expenseData.participants.map((p: any) => ({
         expense_id: newExpense.id,
         user_id: p.userId,
@@ -420,10 +406,8 @@ const GroupDetail = () => {
 
       if (participantsError) throw participantsError;
 
-      // Reload expenses
       await loadGroupData();
 
-      // Show success message
       const totalParticipants = expenseData.participants.length;
       if (totalParticipants > 0) {
         const amountPerPerson = expenseData.participants[0]?.amount || 0;
@@ -795,7 +779,7 @@ const GroupDetail = () => {
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-red-500" />
+                    <DollarSign className="w-5 h-5" />
                   </div>
                   <div>
                     <div className="font-medium">Khoản Tiền Phải Trả</div>
@@ -853,7 +837,7 @@ const GroupDetail = () => {
               <PopoverContent className="w-auto p-0 z-[100]" align="end">
                 <Calendar
                   mode="single"
-                  captionLayout="dropdown-buttons" // Enable dropdowns for month/year
+                  captionLayout="dropdown-buttons"
                   selected={selectedMonth}
                   onSelect={(date) => {
                     setSelectedMonth(date || new Date());
