@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label"; // Import Label
 import {
   DollarSign,
   ArrowLeft,
@@ -33,11 +34,12 @@ import {
   Copy,
   Check,
   UserPlus,
+  Loader2, // Import Loader2
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { format, endOfMonth, startOfMonth, getYear, setYear, setMonth } from "date-fns"; // Removed endOfDay
+import { format, endOfMonth, startOfMonth, getYear, setYear, setMonth } from "date-fns";
 import { vi } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import MonthSelector from "@/components/MonthSelector";
@@ -176,7 +178,6 @@ const GroupDetail = () => {
       const currentSelectedMonthWithYear = setYear(selectedMonth, selectedYear);
 
       const startOfSelectedMonth = format(startOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
-      // Revert to yyyy-MM-dd for end of month, assuming expense_date is DATE type in DB
       const endOfSelectedMonth = format(endOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
 
       const { data: expensesData, error: expensesError } = await supabase
@@ -839,21 +840,25 @@ const GroupDetail = () => {
               <Receipt className="w-5 h-5" />
               Chi phí ({expenses.length})
             </h2>
-            <Select onValueChange={handleYearChange} value={selectedYear.toString()}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="Chọn năm" />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-1">
+              <Label htmlFor="year-select" className="text-xs text-muted-foreground">Chọn năm</Label>
+              <Select onValueChange={handleYearChange} value={selectedYear.toString()}>
+                <SelectTrigger id="year-select" className="w-[90px] h-8 text-sm"> {/* Adjusted width and height */}
+                  <SelectValue placeholder="Năm" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="mb-4">
+          <div className="mb-4 space-y-1">
+            <Label className="text-xs text-muted-foreground">Chọn tháng</Label>
             <MonthSelector selectedMonth={selectedMonth} onMonthChange={handleMonthChange} />
           </div>
 
@@ -865,86 +870,101 @@ const GroupDetail = () => {
           </div>
 
           <div className="space-y-3">
-            {expenses.map((expense) => (
-              <Card
-                key={expense.id}
-                className={`${
-                  expense.isCompleted ? "opacity-60" : ""
-                } transition-all`}
-              >
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-lg">{expense.title}</h3>
-                        {expense.isMine && (
-                          <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 text-xs font-medium">
-                            Chi phí của bạn
-                          </span>
-                        )}
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Đang tải chi phí...</p>
+              </div>
+            ) : expenses.length === 0 ? (
+              <div className="text-center py-12">
+                <Receipt className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                <p className="text-xl font-semibold mb-2">Chưa có chi phí nào</p>
+                <p className="text-muted-foreground mb-6">
+                  Thêm chi phí mới để bắt đầu theo dõi.
+                </p>
+              </div>
+            ) : (
+              expenses.map((expense) => (
+                <Card
+                  key={expense.id}
+                  className={`${
+                    expense.isCompleted ? "opacity-60" : ""
+                  } transition-all`}
+                >
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-lg">{expense.title}</h3>
+                          {expense.isMine && (
+                            <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 text-xs font-medium">
+                              Chi phí của bạn
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <User className="w-4 h-4" />
+                          <span>{expense.paidBy}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="w-4 h-4" />
+                          <span>{expense.date}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <User className="w-4 h-4" />
-                        <span>{expense.paidBy}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="w-4 h-4" />
-                        <span>{expense.date}</span>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-red-500">
+                          {expense.amount.toLocaleString()} đ
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Chia đều
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-red-500">
-                        {expense.amount.toLocaleString()} đ
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Chia đều
-                      </div>
+
+                    <div className="flex items-center gap-2 text-sm">
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">
+                        {expense.splitWith.join(", ")}
+                      </span>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2 text-sm">
-                    <Users className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">
-                      {expense.splitWith.join(", ")}
-                    </span>
-                  </div>
-
-                  <div className="flex gap-2 pt-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => handleViewExpenseDetail(expense)}
-                    >
-                      <Eye className="w-4 h-4" />
-                      Xem Chi Tiết
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleViewReceipt(expense.receiptUrl)}
-                      disabled={!expense.receiptUrl}
-                    >
-                      <FileText className="w-4 h-4" />
-                      Hóa đơn
-                    </Button>
-                    <Button
-                      size="sm"
-                      className={`flex-1 ${
-                        expense.isCompleted
-                          ? "bg-muted text-muted-foreground"
-                          : "bg-green-500 hover:bg-green-600"
-                      }`}
-                      onClick={() => handleCompleteExpense(expense.id, expense.isCompleted)}
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      {expense.isCompleted ? "Đã hoàn thành" : "Hoàn thành"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <div className="flex gap-2 pt-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => handleViewExpenseDetail(expense)}
+                      >
+                        <Eye className="w-4 h-4" />
+                        Xem Chi Tiết
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleViewReceipt(expense.receiptUrl)}
+                        disabled={!expense.receiptUrl}
+                      >
+                        <FileText className="w-4 h-4" />
+                        Hóa đơn
+                      </Button>
+                      <Button
+                        size="sm"
+                        className={`flex-1 ${
+                          expense.isCompleted
+                            ? "bg-muted text-muted-foreground"
+                            : "bg-green-500 hover:bg-green-600"
+                        }`}
+                        onClick={() => handleCompleteExpense(expense.id, expense.isCompleted)}
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        {expense.isCompleted ? "Đã hoàn thành" : "Hoàn thành"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </div>
 

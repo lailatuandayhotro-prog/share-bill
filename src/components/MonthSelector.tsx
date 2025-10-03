@@ -28,7 +28,7 @@ const MonthSelector = ({ selectedMonth, onMonthChange }: MonthSelectorProps) => 
           size="sm"
           onClick={() => handleMonthClick(monthIndex)}
           className={cn(
-            "w-12 h-10 text-base font-semibold",
+            "w-9 h-8 text-sm font-semibold", // Adjusted size and text size
             currentMonthIndex === monthIndex && "bg-primary text-primary-foreground hover:bg-primary/90"
           )}
         >
