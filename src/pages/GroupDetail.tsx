@@ -1206,7 +1206,7 @@ const GroupDetail = () => {
             <DialogDescription>
               Chia sẻ mã này để mời người khác tham gia nhóm
             </DialogDescription>
-          </DialogDescription>
+          </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-2">
               <Input
