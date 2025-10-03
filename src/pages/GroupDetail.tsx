@@ -6,12 +6,14 @@ import EditExpenseDialog from "@/components/EditExpenseDialog";
 import InviteMemberDialog from "@/components/InviteMemberDialog";
 import GroupMembersDialog from "@/components/GroupMembersDialog";
 import BalanceDetailDialog from "@/components/BalanceDetailDialog";
-import IndividualBalanceDetailDialog from "@/components/IndividualBalanceDetailDialog"; // Import the new component
+import IndividualBalanceDetailDialog from "@/components/IndividualBalanceDetailDialog";
 import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"; // Import Popover components
+import { Calendar } from "@/components/ui/calendar"; // Import Calendar component
 import {
   DollarSign,
   ArrowLeft,
@@ -33,10 +35,14 @@ import {
   Copy,
   Check,
   UserPlus,
+  CalendarIcon, // Import CalendarIcon
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { format, endOfMonth, startOfMonth } from "date-fns"; // Import date-fns utilities
+import { vi } from "date-fns/locale"; // Import Vietnamese locale
+import { cn } from "@/lib/utils"; // Import cn utility
 
 interface Participant {
   userId?: string;
@@ -103,11 +109,11 @@ const GroupDetail = () => {
   const [balanceDetailTitle, setBalanceDetailTitle] = useState("");
   const [balanceDetailDescription, setBalanceDetailDescription] = useState("");
   const [balancesToDisplay, setBalancesToDisplay] = useState<BalanceItem[]>([]);
-  const [balanceDetailType, setBalanceDetailType] = useState<'pay' | 'collect'>('pay'); // To pass to BalanceDetailDialog
+  const [balanceDetailType, setBalanceDetailType] = useState<'pay' | 'collect'>('pay');
 
-  const [openIndividualBalanceDetail, setOpenIndividualBalanceDetail] = useState(false); // New state
-  const [individualBalancePersonName, setIndividualBalancePersonName] = useState(""); // New state
-  const [individualBalanceExpenses, setIndividualBalanceExpenses] = useState<ContributingExpense[]>([]); // New state
+  const [openIndividualBalanceDetail, setOpenIndividualBalanceDetail] = useState(false);
+  const [individualBalancePersonName, setIndividualBalancePersonName] = useState("");
+  const [individualBalanceExpenses, setIndividualBalanceExpenses] = useState<ContributingExpense[]>([]);
 
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
@@ -120,11 +126,14 @@ const GroupDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
 
+  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date()); // State for selected month
+  const [showMonthPicker, setShowMonthPicker] = useState(false); // State to control month picker visibility
+
   // Load group data
   useEffect(() => {
     if (!id || !user) return;
     loadGroupData();
-  }, [id, user]);
+  }, [id, user, selectedMonth]); // Add selectedMonth to dependencies
 
   const loadGroupData = async () => {
     if (!id || !user) return [];
@@ -169,7 +178,11 @@ const GroupDetail = () => {
       
       setMembers(formattedMembers);
 
-      // Load expenses
+      // Calculate start and end of the selected month for filtering
+      const startOfSelectedMonth = format(startOfMonth(selectedMonth), 'yyyy-MM-dd');
+      const endOfSelectedMonth = format(endOfMonth(selectedMonth), 'yyyy-MM-dd');
+
+      // Load expenses, filtered by selected month
       const { data: expensesData, error: expensesError } = await supabase
         .from('expenses')
         .select(`
@@ -177,6 +190,8 @@ const GroupDetail = () => {
           expense_participants(*)
         `)
         .eq('group_id', id)
+        .gte('expense_date', startOfSelectedMonth) // Filter expenses from start of month
+        .lte('expense_date', endOfSelectedMonth)   // Filter expenses to end of month
         .order('created_at', { ascending: false });
       
       if (expensesError) throw expensesError;
@@ -335,14 +350,14 @@ const GroupDetail = () => {
         ? "Chi tiết các khoản bạn cần trả cho các thành viên khác."
         : "Chi tiết các khoản các thành viên khác cần trả cho bạn."
     );
-    setBalanceDetailType(type); // Set the type for BalanceDetailDialog
+    setBalanceDetailType(type);
     setOpenBalanceDetailDialog(true);
   };
 
   const handleViewIndividualBalance = (personName: string, expenses: ContributingExpense[], type: 'pay' | 'collect') => {
     setIndividualBalancePersonName(personName);
     setIndividualBalanceExpenses(expenses);
-    setBalanceDetailType(type); // Pass the type to the individual balance dialog
+    setBalanceDetailType(type);
     setOpenIndividualBalanceDetail(true);
   };
 
@@ -428,11 +443,9 @@ const GroupDetail = () => {
     if (!id || !user) return;
 
     try {
-      let receiptUrl = updatedExpenseData.receiptUrl; // Keep existing URL if not changed
+      let receiptUrl = updatedExpenseData.receiptUrl;
 
-      // Handle receipt image update
       if (updatedExpenseData.receiptImage instanceof File) {
-        // Delete old receipt if exists
         if (selectedExpense?.receiptUrl) {
           const oldFileName = selectedExpense.receiptUrl.split('/').pop();
           if (oldFileName) {
@@ -440,7 +453,6 @@ const GroupDetail = () => {
           }
         }
 
-        // Upload new receipt image
         const fileExt = updatedExpenseData.receiptImage.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
         
@@ -451,7 +463,7 @@ const GroupDetail = () => {
         if (uploadError) {
           console.error('Upload error:', uploadError);
           toast.error('Không thể tải lên ảnh hóa đơn mới');
-          return; // Stop if upload fails
+          return;
         } else {
           const { data: { publicUrl } } = supabase.storage
             .from('receipts')
@@ -459,7 +471,6 @@ const GroupDetail = () => {
           receiptUrl = publicUrl;
         }
       } else if (updatedExpenseData.receiptImage === null && selectedExpense?.receiptUrl) {
-        // User explicitly removed the receipt image
         const oldFileName = selectedExpense.receiptUrl.split('/').pop();
         if (oldFileName) {
           await supabase.storage.from('receipts').remove([`${user.id}/${oldFileName}`]);
@@ -467,7 +478,6 @@ const GroupDetail = () => {
         receiptUrl = null;
       }
 
-      // Update expense
       const { error: expenseError } = await supabase
         .from('expenses')
         .update({
@@ -484,7 +494,6 @@ const GroupDetail = () => {
 
       if (expenseError) throw expenseError;
 
-      // Delete existing participants and insert new ones
       await supabase.from('expense_participants').delete().eq('expense_id', expenseId);
 
       const participantsToInsert = updatedExpenseData.participants.map((p: any) => ({
@@ -492,7 +501,7 @@ const GroupDetail = () => {
         user_id: p.userId,
         guest_name: p.guestName,
         amount: p.amount,
-        is_paid: p.isPaid // Preserve paid status
+        is_paid: p.isPaid
       }));
 
       const { error: participantsError } = await supabase
@@ -536,8 +545,8 @@ const GroupDetail = () => {
   const handleEditExpense = () => {
     if (selectedExpense) {
       setExpenseToEdit(selectedExpense);
-      setOpenExpenseDetail(false); // Close detail dialog
-      setOpenEditExpense(true); // Open edit dialog
+      setOpenExpenseDetail(false);
+      setOpenEditExpense(true);
     }
   };
 
@@ -545,7 +554,6 @@ const GroupDetail = () => {
     if (!selectedExpense) return;
 
     try {
-      // Delete associated participants first
       const { error: participantsError } = await supabase
         .from('expense_participants')
         .delete()
@@ -553,7 +561,6 @@ const GroupDetail = () => {
 
       if (participantsError) throw participantsError;
 
-      // Delete receipt image from storage if exists
       if (selectedExpense.receiptUrl) {
         const fileName = selectedExpense.receiptUrl.split('/').pop();
         if (fileName) {
@@ -564,7 +571,6 @@ const GroupDetail = () => {
         }
       }
 
-      // Then delete the expense
       const { error: expenseError } = await supabase
         .from('expenses')
         .delete()
@@ -831,10 +837,33 @@ const GroupDetail = () => {
               <Receipt className="w-5 h-5" />
               Chi phí ({expenses.length})
             </h2>
-            <Button variant="outline" size="sm">
-              <Filter className="w-4 h-4" />
-              Lọc
-            </Button>
+            <Popover open={showMonthPicker} onOpenChange={setShowMonthPicker}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[180px] justify-start text-left font-normal",
+                    !selectedMonth && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedMonth ? format(selectedMonth, "MM/yyyy", { locale: vi }) : "Chọn tháng"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 z-[100]" align="end">
+                <Calendar
+                  mode="single"
+                  captionLayout="dropdown-buttons" // Enable dropdowns for month/year
+                  selected={selectedMonth}
+                  onSelect={(date) => {
+                    setSelectedMonth(date || new Date());
+                    setShowMonthPicker(false);
+                  }}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="text-sm text-muted-foreground mb-4">
@@ -1045,8 +1074,8 @@ const GroupDetail = () => {
         description={balanceDetailDescription}
         balances={balancesToDisplay}
         currentUserId={user?.id || ""}
-        onViewIndividualBalance={handleViewIndividualBalance} // Pass the new callback
-        type={balanceDetailType} // Pass the type
+        onViewIndividualBalance={handleViewIndividualBalance}
+        type={balanceDetailType}
       />
 
       {/* Individual Balance Detail Dialog */}
@@ -1055,7 +1084,7 @@ const GroupDetail = () => {
         onOpenChange={setOpenIndividualBalanceDetail}
         personName={individualBalancePersonName}
         expenses={individualBalanceExpenses}
-        type={balanceDetailType} // Use the same type as the parent balance dialog
+        type={balanceDetailType}
       />
 
       {/* Share Dialog */}
