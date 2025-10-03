@@ -15,7 +15,7 @@ const Hero = () => {
             Dễ dàng chia chi phí cùng
             <br />
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              nhóm bạn với ChiTi
+              nhóm bạn với Share Bill
             </span>
           </h1>
           

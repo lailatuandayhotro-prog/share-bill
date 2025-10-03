@@ -98,7 +98,7 @@ const Auth = () => {
               <DollarSign className="w-7 h-7 text-primary" />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              ChiTi
+              Share Bill
             </h1>
           </div>
           <p className="text-muted-foreground">

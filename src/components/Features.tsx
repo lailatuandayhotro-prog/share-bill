@@ -35,7 +35,7 @@ const Features = () => {
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Được thiết kế để đơn giản hoá việc chia tiền trong mọi hoàn cảnh: 
-            từ chuyến đi chơi đến chi tiêu gia đình hay dự án nhóm.
+            từ chuyến đi chơi đến chi tiêu gia đình hay dự án nhóm với Share Bill.
           </p>
         </div>
 

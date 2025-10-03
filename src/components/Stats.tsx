@@ -26,7 +26,7 @@ const Stats = () => {
             Thành tựu của chúng tôi
           </h2>
           <p className="text-lg text-muted-foreground">
-            Những con số ấn tượng từ cộng đồng người dùng ChiTi
+            Những con số ấn tượng từ cộng đồng người dùng Share Bill
           </p>
         </div>
 

@@ -10,7 +10,7 @@ const Footer = () => {
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <DollarSign className="w-5 h-5 text-primary" />
               </div>
-              <span className="text-lg font-bold text-foreground">ChiTi</span>
+              <span className="text-lg font-bold text-foreground">Share Bill</span>
             </div>
             <p className="text-sm text-muted-foreground">
               Giải pháp chia tiền thông minh cho mọi nhóm
@@ -45,7 +45,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          © 2024 ChiTi. All rights reserved.
+          © 2024 Share Bill. All rights reserved.
         </div>
       </div>
     </footer>

@@ -9,7 +9,7 @@ const Header = () => {
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
             <DollarSign className="w-6 h-6 text-primary" />
           </div>
-          <span className="text-xl font-bold text-foreground">ChiTi</span>
+          <span className="text-xl font-bold text-foreground">Share Bill</span>
         </div>
         
         <nav className="hidden md:flex items-center gap-6">
