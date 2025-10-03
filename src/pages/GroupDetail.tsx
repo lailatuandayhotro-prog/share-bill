@@ -404,6 +404,7 @@ const GroupDetail = () => {
         if (uploadError) {
           console.error('Upload error:', uploadError);
           toast.error('Không thể tải lên ảnh hóa đơn');
+          // Do not throw here, continue with expense creation even if receipt upload fails
         } else {
           const { data: { publicUrl } } = supabase.storage
             .from('receipts')
@@ -441,20 +442,23 @@ const GroupDetail = () => {
         is_paid: p.isPaid
       }));
 
-      const { error: participantsError } = await supabase
-        .from('expense_participants')
-        .insert(participantsToInsert);
+      // Only attempt insert if there are participants to insert
+      if (participantsToInsert.length > 0) {
+        const { error: participantsError } = await supabase
+          .from('expense_participants')
+          .insert(participantsToInsert);
 
-      if (participantsError) throw participantsError;
+        if (participantsError) throw participantsError;
+      }
 
       await loadGroupData();
 
       const payerName = members.find(m => m.id === expenseData.paidBy)?.name || currentUserName;
       toast.success(`Chi phí đã thêm! ${payerName} đã trả ${expenseData.amount.toLocaleString()} đ.`);
       
-    } catch (error) {
+    } catch (error: any) { // Explicitly type error as any for better error message access
       console.error('Error adding expense:', error);
-      toast.error('Không thể thêm chi phí');
+      toast.error(`Không thể thêm chi phí: ${error.message || 'Lỗi không xác định'}`);
     }
   };
 
@@ -527,19 +531,22 @@ const GroupDetail = () => {
         is_paid: p.isPaid
       }));
 
-      const { error: participantsError } = await supabase
-        .from('expense_participants')
-        .insert(participantsToInsert);
+      // Only attempt insert if there are participants to insert
+      if (participantsToInsert.length > 0) {
+        const { error: participantsError } = await supabase
+          .from('expense_participants')
+          .insert(participantsToInsert);
 
-      if (participantsError) throw participantsError;
+        if (participantsError) throw participantsError;
+      }
 
       await loadGroupData();
       toast.success("Cập nhật chi phí thành công!");
       setOpenEditExpense(false);
       setExpenseToEdit(null);
-    } catch (error) {
+    } catch (error: any) { // Explicitly type error as any for better error message access
       console.error('Error updating expense:', error);
-      toast.error('Không thể cập nhật chi phí');
+      toast.error(`Không thể cập nhật chi phí: ${error.message || 'Lỗi không xác định'}`);
     }
   };
 
