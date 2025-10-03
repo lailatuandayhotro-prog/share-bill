@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Edit, Trash2, Receipt, Users } from "lucide-react";
+import { CheckCircle2, Edit, Trash2, Receipt, Users, RotateCcw } from "lucide-react"; // Added RotateCcw icon
 import { toast } from "sonner";
 
 interface Participant {
@@ -28,7 +28,7 @@ interface ExpenseDetailDialogProps {
   onComplete: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onMarkPaid: (participantId: string) => void;
+  onMarkPaid: (participantId: string, currentIsPaid: boolean, isGuest: boolean) => void; // Updated signature
 }
 
 const ExpenseDetailDialog = ({
@@ -42,12 +42,11 @@ const ExpenseDetailDialog = ({
 }: ExpenseDetailDialogProps) => {
   if (!expense) return null;
 
-  // Convert participants data to display format
   const participants: Participant[] = expense.participants || [];
 
-  const handleMarkPaid = (participantId: string) => {
-    onMarkPaid(participantId);
-    toast.success("Đã đánh dấu đã trả!");
+  const handleMarkPaidToggle = (participantId: string, currentIsPaid: boolean, isGuest: boolean) => {
+    onMarkPaid(participantId, currentIsPaid, isGuest);
+    toast.success(currentIsPaid ? "Đã đánh dấu chưa trả!" : "Đã đánh dấu đã trả!");
   };
 
   const getInitials = (name: string) => {
@@ -175,14 +174,23 @@ const ExpenseDetailDialog = ({
                           {participant.amount.toLocaleString()} đ
                         </div>
                         
-                        {!participant.isPaid && !participant.isPayer && (
+                        {!participant.isPayer && ( // Payer's status cannot be changed
                           <Button
-                            onClick={() => handleMarkPaid(participantId)}
+                            onClick={() => handleMarkPaidToggle(participantId, participant.isPaid, !!participant.guestName)}
                             size="sm"
-                            className="bg-blue-500 hover:bg-blue-600 text-white"
+                            className={participant.isPaid ? "bg-red-500 hover:bg-red-600 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"}
                           >
-                            <CheckCircle2 className="w-4 h-4 mr-1" />
-                            Đánh Dấu Đã Trả
+                            {participant.isPaid ? (
+                              <>
+                                <RotateCcw className="w-4 h-4 mr-1" />
+                                Đánh Dấu Chưa Trả
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 className="w-4 h-4 mr-1" />
+                                Đánh Dấu Đã Trả
+                              </>
+                            )}
                           </Button>
                         )}
                       </div>

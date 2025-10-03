@@ -438,30 +438,27 @@ const GroupDetail = () => {
     }
   };
 
-  const handleMarkParticipantPaid = async (expenseId: string, participantId: string, isGuest: boolean) => {
+  const handleMarkParticipantPaid = async (expenseId: string, participantId: string, currentIsPaid: boolean, isGuest: boolean) => {
     try {
-      if (isGuest) {
-        // For guests, we update by guest_name and expense_id
-        const { error } = await supabase
-          .from('expense_participants')
-          .update({ is_paid: true, paid_at: new Date().toISOString() })
-          .eq('expense_id', expenseId)
-          .eq('id', participantId); // Assuming participantId is the ID of the expense_participant row for guests
-        if (error) throw error;
-      } else {
-        // For registered users, we update by user_id and expense_id
-        const { error } = await supabase
-          .from('expense_participants')
-          .update({ is_paid: true, paid_at: new Date().toISOString() })
-          .eq('expense_id', expenseId)
-          .eq('id', participantId); // Assuming participantId is the ID of the expense_participant row for users
-        if (error) throw error;
-      }
+      const newPaidStatus = !currentIsPaid;
+      const updateData = {
+        is_paid: newPaidStatus,
+        paid_at: newPaidStatus ? new Date().toISOString() : null,
+      };
+
+      const { error } = await supabase
+        .from('expense_participants')
+        .update(updateData)
+        .eq('expense_id', expenseId)
+        .eq('id', participantId); // participantId here is the ID of the expense_participant row
+
+      if (error) throw error;
+      
       await loadGroupData();
-      toast.success("Đã đánh dấu đã trả!");
+      toast.success(newPaidStatus ? "Đã đánh dấu đã trả!" : "Đã đánh dấu chưa trả!");
     } catch (error) {
       console.error('Error marking participant as paid:', error);
-      toast.error('Không thể đánh dấu đã trả');
+      toast.error('Không thể cập nhật trạng thái đã trả');
     }
   };
 
@@ -850,10 +847,9 @@ const GroupDetail = () => {
         }}
         onEdit={handleEditExpense}
         onDelete={handleDeleteExpense}
-        onMarkPaid={(participantId: string) => {
+        onMarkPaid={(participantId: string, currentIsPaid: boolean, isGuest: boolean) => {
           if (selectedExpense) {
-            const participant = selectedExpense.participants.find(p => (p.userId === user?.id && p.userId === participantId) || p.guestId === participantId);
-            handleMarkParticipantPaid(selectedExpense.id, participantId, !!participant?.guestName);
+            handleMarkParticipantPaid(selectedExpense.id, participantId, currentIsPaid, isGuest);
           }
         }}
       />
