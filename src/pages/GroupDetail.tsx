@@ -133,6 +133,7 @@ const GroupDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
   const [isDeletingExpense, setIsDeletingExpense] = useState(false); // New state for delete loading
+  const [isCompletingMonthExpenses, setIsCompletingMonthExpenses] = useState(false); // New state for completing month expenses
 
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date()));
@@ -568,6 +569,42 @@ const GroupDetail = () => {
     }
   };
 
+  const handleCompleteAllMyExpensesInMonth = async () => {
+    if (!user || !id) {
+      toast.error("Vui lòng đăng nhập và chọn nhóm.");
+      return;
+    }
+
+    setIsCompletingMonthExpenses(true);
+    try {
+      const startOfSelectedMonth = format(startOfMonth(setYear(selectedMonth, selectedYear)), 'yyyy-MM-dd');
+      const endOfSelectedMonth = format(endOfMonth(setYear(selectedMonth, selectedYear)), 'yyyy-MM-dd');
+
+      const { data, error } = await supabase
+        .from('expenses')
+        .update({ is_completed: true, updated_at: new Date().toISOString() })
+        .eq('group_id', id)
+        .eq('paid_by', user.id)
+        .gte('expense_date', startOfSelectedMonth)
+        .lte('expense_date', endOfSelectedMonth)
+        .select(); // Select updated rows to get count
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        toast.success(`Đã hoàn thành ${data.length} chi phí của bạn trong tháng ${format(selectedMonth, 'MM/yyyy', { locale: vi })}!`);
+      } else {
+        toast.info(`Không có chi phí nào của bạn trong tháng ${format(selectedMonth, 'MM/yyyy', { locale: vi })} để hoàn thành.`);
+      }
+      await loadGroupData();
+    } catch (error: any) {
+      console.error('Error completing all my expenses in month:', error);
+      toast.error(`Không thể hoàn thành chi phí: ${error.message || 'Lỗi không xác định'}`);
+    } finally {
+      setIsCompletingMonthExpenses(false);
+    }
+  };
+
   const handleViewExpenseDetail = (expense: Expense) => {
     setSelectedExpense(expense);
     setOpenExpenseDetail(true);
@@ -874,6 +911,19 @@ const GroupDetail = () => {
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </CardContent>
             </Card>
+
+            <Button
+              onClick={handleCompleteAllMyExpensesInMonth}
+              className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white text-base"
+              disabled={isCompletingMonthExpenses}
+            >
+              {isCompletingMonthExpenses ? (
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-5 h-5 mr-2" />
+              )}
+              Hoàn thành chi phí của tôi trong tháng
+            </Button>
           </div>
         </div>
 
