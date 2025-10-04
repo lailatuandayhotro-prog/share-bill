@@ -936,9 +936,11 @@ const GroupDetail = () => {
               disabled={isCompletingMonthExpenses}
             >
               {isCompletingMonthExpenses ? (
-                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> {/* Smaller icon */}
+                // Smaller icon
+                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> 
               ) : (
-                <CheckCircle2 className="w-4 h-4 mr-1.5" /> {/* Smaller icon */}
+                // Smaller icon
+                <CheckCircle2 className="w-4 h-4 mr-1.5" /> 
               )}
               Hoàn thành chi phí của tôi trong tháng
             </Button>
@@ -957,18 +959,12 @@ const GroupDetail = () => {
               <div className="space-y-0.5"> {/* Reduced space-y */}
                 <Label htmlFor="year-select" className="text-xs text-muted-foreground">Chọn năm</Label>
                 <Select onValueChange={handleYearChange} value={selectedYear.toString()}>
-                  <SelectTrigger id="year-select" 
-                    // Reduced width, height and font size
-                    className="w-[80px] h-8 text-xs"
-                  >
+                  <SelectTrigger id="year-select" className="w-[80px] h-8 text-xs"> {/* Reduced width, height and font size */}
                     <SelectValue placeholder="Năm" />
                   </SelectTrigger>
                   <SelectContent>
                     {years.map((year) => (
-                      <SelectItem key={year} value={year.toString()} 
-                        // Reduced font size
-                        className="text-xs"
-                      >
+                      <SelectItem key={year} value={year.toString()} className="text-xs"> {/* Reduced font size */}
                         {year}
                       </SelectItem>
                     ))}
