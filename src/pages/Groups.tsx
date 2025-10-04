@@ -279,8 +279,8 @@ const Groups = () => {
                     placeholder="Nhập mã nhóm..."
                     value={joinCode}
                     onChange={(e) => setJoinCode(e.target.value)}
-                    className="h-9 text-sm" {/* Reduced height and font size */}
-                  />
+                    className="h-9 text-sm" 
+                  /> {/* Reduced height and font size */}
                 </div>
                 <Button onClick={handleJoinGroup} className="w-full h-9 text-sm"> {/* Reduced height and font size */}
                   Tham gia
