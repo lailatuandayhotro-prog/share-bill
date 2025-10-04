@@ -73,7 +73,8 @@ const InviteMemberDialog = ({ open, onOpenChange, onInvite, groupName }: InviteM
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddEmail()}
-                className="h-9 text-sm" {/* Reduced height and font size */}
+                className="h-9 text-sm"
+                /* Reduced height and font size */
               />
               <Button type="button" variant="outline" size="icon" onClick={handleAddEmail} className="h-9 w-9"> {/* Reduced size */}
                 <Plus className="w-4 h-4" /> {/* Reduced size */}
