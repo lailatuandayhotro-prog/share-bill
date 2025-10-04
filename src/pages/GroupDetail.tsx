@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AddExpenseDialog from "@/components/AddExpenseDialog";
 import ExpenseDetailDialog from "@/components/ExpenseDetailDialog";
-import EditExpenseDialog from "@/components/EditExpenseDialog";
+import EditExpenseDialog from "@/components/Edit/ExpenseDialog";
 import InviteMemberDialog from "@/components/InviteMemberDialog";
 import GroupMembersDialog from "@/components/GroupMembersDialog";
 import BalanceDetailDialog from "@/components/BalanceDetailDialog";
@@ -193,7 +193,7 @@ const GroupDetail = () => {
       // Ensure selectedMonth always reflects the selectedYear
       const currentSelectedMonthWithYear = setYear(selectedMonth, selectedYear);
 
-      const startOfSelectedMonth = format(startOfMonth(currentSelectedMonthWithMonth), 'yyyy-MM-dd');
+      const startOfSelectedMonth = format(startOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
       const endOfSelectedMonth = format(endOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
 
       const { data: expensesData, error: expensesError } = await supabase
@@ -815,7 +815,7 @@ const GroupDetail = () => {
 
           <Button
             variant="default"
-            className="h-10 text-sm" {/* Reduced height and font size */}
+            className="h-10 text-sm" /* Reduced height and font size */
             onClick={handleShare}
           >
             <Share2 className="w-4 h-4 mr-1" /> {/* Smaller icon */}
