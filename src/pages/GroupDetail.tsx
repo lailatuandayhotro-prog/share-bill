@@ -759,7 +759,7 @@ const GroupDetail = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate("/groups")}
-                className="w-8 h-8" {/* Smaller button */}
+                className="w-8 h-8" 
               >
                 <ArrowLeft className="w-4 h-4" /> {/* Smaller icon */}
               </Button>
@@ -1117,8 +1117,7 @@ const GroupDetail = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
+                </CardContent>
             </Card>
           ))}
         </div>
