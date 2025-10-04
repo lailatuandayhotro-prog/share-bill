@@ -254,12 +254,13 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
               // Reduced font size
               className="text-sm"
             >Mô tả</Label>
+            {/* Reduced rows */}
             <Textarea
               id="description"
               placeholder="Ăn trưa tại nhà hàng"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={2} {/* Reduced rows */}
+              rows={2}
               // Reduced font size
               className="text-sm"
             />
