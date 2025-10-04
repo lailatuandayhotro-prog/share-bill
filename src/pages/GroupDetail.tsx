@@ -1122,7 +1122,8 @@ const GroupDetail = () => {
                       </div>
                     </div>
                   </div>
-                </CardContent>
+                </div> {/* <-- Thẻ đóng div đã được thêm vào đây */}
+              </CardContent>
             </Card>
           ))}
         </div>
