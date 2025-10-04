@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AddExpenseDialog from "@/components/AddExpenseDialog";
 import ExpenseDetailDialog from "@/components/ExpenseDetailDialog";
-import EditExpenseDialog from "@/components/Edit/ExpenseDialog";
+import EditExpenseDialog from "@/components/EditExpenseDialog";
 import InviteMemberDialog from "@/components/InviteMemberDialog";
 import GroupMembersDialog from "@/components/GroupMembersDialog";
 import BalanceDetailDialog from "@/components/BalanceDetailDialog";
@@ -925,7 +925,7 @@ const GroupDetail = () => {
 
             <Button
               onClick={() => setOpenConfirmMonthCompletionDialog(true)}
-              className="w-full h-10 text-sm bg-blue-500 hover:bg-blue-600 text-white" {/* Reduced height and font size */}
+              className="w-full h-10 text-sm bg-blue-500 hover:bg-blue-600 text-white" /* Reduced height and font size */
               disabled={isCompletingMonthExpenses}
             >
               {isCompletingMonthExpenses ? (
