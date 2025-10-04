@@ -108,7 +108,8 @@ const ExpenseDetailDialog = ({
         <div className="flex gap-2 p-3 pb-2"> {/* Reduced gap and padding */}
           <Button
             onClick={onComplete}
-            className="flex-1 h-9 bg-green-500 hover:bg-green-600 text-white text-xs" {/* Reduced height and font size */}
+            className="flex-1 h-9 bg-green-500 hover:bg-green-600 text-white text-xs"
+            /* Reduced height and font size */
           >
             <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> {/* Smaller icon */}
             Hoàn Thành
@@ -116,7 +117,8 @@ const ExpenseDetailDialog = ({
           <Button
             onClick={onEdit}
             variant="outline"
-            className="flex-1 h-9 text-xs" {/* Reduced height and font size */}
+            className="flex-1 h-9 text-xs"
+            /* Reduced height and font size */
           >
             <Edit className="w-3.5 h-3.5 mr-1" /> {/* Smaller icon */}
             Sửa
@@ -124,7 +126,8 @@ const ExpenseDetailDialog = ({
           <Button
             onClick={onDelete}
             variant="outline"
-            className="flex-1 h-9 text-red-500 hover:text-red-600 hover:bg-red-50 text-xs" {/* Reduced height and font size */}
+            className="flex-1 h-9 text-red-500 hover:text-red-600 hover:bg-red-50 text-xs"
+            /* Reduced height and font size */
             disabled={isDeletingExpense} // Disable button when deleting
           >
             {isDeletingExpense ? (
@@ -217,7 +220,8 @@ const ExpenseDetailDialog = ({
                             <Button
                               onClick={() => handleMarkPaidToggle(id!, participant.isPaid, !isMember)}
                               size="sm"
-                              className={participant.isPaid ? "bg-red-500 hover:bg-red-600 text-white text-xs h-7 px-2" : "bg-blue-500 hover:bg-blue-600 text-white text-xs h-7 px-2"} {/* Reduced height, padding and font size */}
+                              className={participant.isPaid ? "bg-red-500 hover:bg-red-600 text-white text-xs h-7 px-2" : "bg-blue-500 hover:bg-blue-600 text-white text-xs h-7 px-2"}
+                              /* Reduced height, padding and font size */
                               disabled={isMarkingPaid}
                             >
                               <span>
