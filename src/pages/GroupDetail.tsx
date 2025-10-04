@@ -936,10 +936,8 @@ const GroupDetail = () => {
               disabled={isCompletingMonthExpenses}
             >
               {isCompletingMonthExpenses ? (
-                // Smaller icon
                 <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> 
               ) : (
-                // Smaller icon
                 <CheckCircle2 className="w-4 h-4 mr-1.5" /> 
               )}
               Hoàn thành chi phí của tôi trong tháng
@@ -1048,7 +1046,6 @@ const GroupDetail = () => {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        // Reduced height and font size
                         className="flex-1 h-8 text-xs"
                         onClick={() => handleViewExpenseDetail(expense)}
                       >
@@ -1058,7 +1055,6 @@ const GroupDetail = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        // Reduced height and font size
                         className="flex-1 h-8 text-xs"
                         onClick={() => handleViewReceipt(expense.receiptUrl, expense.title)} // Pass expense.title
                         disabled={!expense.receiptUrl}
@@ -1068,7 +1064,6 @@ const GroupDetail = () => {
                       </Button>
                       <Button
                         size="sm"
-                        // Reduced height and font size
                         className={`flex-1 h-8 text-xs ${
                           expense.isCompleted
                             ? "bg-muted text-muted-foreground"
@@ -1095,7 +1090,6 @@ const GroupDetail = () => {
               Thành viên ({members.length})
             </h2>
             <Button variant="outline" size="sm" 
-              // Reduced height and font size
               className="h-8 text-xs"
             >
               <MessageCircle className="w-3.5 h-3.5 mr-1" /> {/* Smaller icon */}
@@ -1108,16 +1102,16 @@ const GroupDetail = () => {
           </div>
 
           {members.map(member => (
-            <Card key={member.id} className="mb-1.5"> {/* Reduced margin */}
-              <CardContent className="p-3"> {/* Reduced padding */}
+            <Card key={member.id} className="mb-1.5">
+              <CardContent className="p-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2"> {/* Reduced gap */}
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center"> {/* Smaller icon container */}
-                      <User className="w-4 h-4 text-primary" /> {/* Smaller icon */}
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="flex items-center gap-1.5"> {/* Reduced gap */}
-                      <span className="font-medium text-sm">{member.name}</span> {/* Reduced font size */}
-                      <div className="flex gap-1"> {/* Reduced gap */}
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-sm">{member.name}</span>
+                      <div className="flex gap-1">
                         {member.id === user?.id && (
                           <span className="px-1.5 py-0.5 rounded-md bg-green-500 text-white text-xs font-medium">
                             Bạn
@@ -1125,7 +1119,7 @@ const GroupDetail = () => {
                         )}
                         {member.isOwner && (
                           <span className="px-1.5 py-0.5 rounded-md bg-yellow-500 text-white text-xs font-medium flex items-center gap-1">
-                            <Crown className="w-3 h-3" /> {/* Smaller icon */}
+                            <Crown className="w-3 h-3" />
                             Trưởng nhóm
                           </span>
                         )}
@@ -1234,13 +1228,11 @@ const GroupDetail = () => {
               <Input
                 value={shareCode}
                 readOnly
-                // Reduced height and font size
                 className="flex-1 h-9 text-sm"
               />
               <Button
                 size="icon"
                 onClick={handleCopyCode}
-                // Reduced size
                 className="flex-shrink-0 w-9 h-9"
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />} {/* Smaller icon */}
@@ -1274,7 +1266,6 @@ const GroupDetail = () => {
       <div className="fixed bottom-4 left-4 right-4 flex justify-between max-w-4xl mx-auto"> {/* Reduced bottom padding */}
         <Button
           size="icon"
-          // Reduced size
           className="w-12 h-12 rounded-full shadow-lg"
           onClick={() => toast.info("Mở chat")}
         >
@@ -1282,7 +1273,6 @@ const GroupDetail = () => {
         </Button>
         <Button
           size="icon"
-          // Reduced size
           className="w-12 h-12 rounded-full shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
           onClick={() => setOpenAddExpense(true)}
         >
