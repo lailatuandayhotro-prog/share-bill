@@ -774,7 +774,7 @@ const GroupDetail = () => {
                   onChange={(e) => setGroupName(e.target.value)}
                   onBlur={() => setIsEditingName(false)}
                   onKeyDown={(e) => e.key === "Enter" && setIsEditingName(false)}
-                  className="w-28 h-7 text-base" {/* Smaller input */}
+                  className="w-28 h-7 text-base" 
                   autoFocus
                 />
               ) : (
