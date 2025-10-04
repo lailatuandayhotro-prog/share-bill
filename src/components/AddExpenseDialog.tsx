@@ -218,8 +218,14 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl max-h-[90vh] flex flex-col p-4"> {/* Reduced max-w, padding, and added flex-col */}
         <DialogHeader className="pb-2"> {/* Reduced padding */}
-          <DialogTitle className="text-xl">Thêm chi phí mới</DialogTitle> {/* Reduced font size */}
-          <DialogDescription className="text-sm">
+          <DialogTitle 
+            // Reduced font size
+            className="text-xl"
+          >Thêm chi phí mới</DialogTitle>
+          <DialogDescription 
+            // Reduced font size
+            className="text-sm"
+          >
             Thêm chi phí mới cho nhóm
           </DialogDescription>
         </DialogHeader>
@@ -227,40 +233,57 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
         <div className="flex-1 overflow-y-auto space-y-4 py-2 -mx-4 px-4"> {/* Added flex-1, overflow-y-auto, reduced space-y, adjusted padding */}
           {/* Số tiền */}
           <div className="space-y-1.5"> {/* Reduced space-y */}
-            <Label htmlFor="amount" className="text-sm">Số tiền (VNĐ)</Label> {/* Reduced font size */}
+            <Label htmlFor="amount" 
+              // Reduced font size
+              className="text-sm"
+            >Số tiền (VNĐ)</Label>
             <Input
               id="amount"
               type="number"
               placeholder="50000"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="text-base h-9" {/* Reduced font size and height */}
+              // Reduced font size and height
+              className="text-base h-9"
             />
           </div>
 
           {/* Mô tả */}
           <div className="space-y-1.5"> {/* Reduced space-y */}
-            <Label htmlFor="description" className="text-sm">Mô tả</Label> {/* Reduced font size */}
+            <Label htmlFor="description" 
+              // Reduced font size
+              className="text-sm"
+            >Mô tả</Label>
             <Textarea
               id="description"
               placeholder="Ăn trưa tại nhà hàng"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2} {/* Reduced rows */}
-              className="text-sm" {/* Reduced font size */}
+              // Reduced font size
+              className="text-sm"
             />
           </div>
 
           {/* Người trả tiền */}
           <div className="space-y-1.5"> {/* Reduced space-y */}
-            <Label className="text-sm">Người trả tiền</Label> {/* Reduced font size */}
+            <Label 
+              // Reduced font size
+              className="text-sm"
+            >Người trả tiền</Label>
             <Select value={paidBy} onValueChange={setPaidBy}>
-              <SelectTrigger className="h-9 text-sm"> {/* Reduced height and font size */}
+              <SelectTrigger 
+                // Reduced height and font size
+                className="h-9 text-sm"
+              >
                 <SelectValue placeholder="Chọn người trả tiền..." />
               </SelectTrigger>
               <SelectContent>
                 {members.map((member) => (
-                  <SelectItem key={member.id} value={member.id} className="text-sm"> {/* Reduced font size */}
+                  <SelectItem key={member.id} value={member.id} 
+                    // Reduced font size
+                    className="text-sm"
+                  >
                     {member.name}
                   </SelectItem>
                 ))}
@@ -270,13 +293,16 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
 
           {/* Ngày */}
           <div className="space-y-1.5"> {/* Reduced space-y */}
-            <Label className="text-sm">Ngày</Label> {/* Reduced font size */}
+            <Label 
+              // Reduced font size
+              className="text-sm"
+            >Ngày</Label>
             <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal h-9 text-sm", {/* Reduced height and font size */}
+                    "w-full justify-start text-left font-normal h-9 text-sm", // Reduced height and font size
                     !date && "text-muted-foreground"
                   )}
                 >
@@ -302,22 +328,34 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
           {/* Người tham gia */}
           <div className="space-y-3 p-3 border border-border rounded-lg bg-muted/20"> {/* Reduced space-y and padding */}
             <div className="flex items-center gap-1.5"> {/* Reduced gap */}
-              <Label className="text-base font-semibold">Người tham gia</Label> {/* Reduced font size */}
+              <Label 
+                // Reduced font size
+                className="text-base font-semibold"
+              >Người tham gia</Label>
             </div>
 
-            <div className="text-xs text-muted-foreground"> {/* Reduced font size */}
+            <div 
+              // Reduced font size
+              className="text-xs text-muted-foreground"
+            >
               Chi phí sẽ được chia đều cho tất cả thành viên được chọn và khách mời không có người trả hộ.
             </div>
 
             {/* Member Selection */}
             <div className="space-y-2"> {/* Reduced space-y */}
               <Select onValueChange={toggleMember}>
-                <SelectTrigger className="bg-background h-9 text-sm"> {/* Reduced height and font size */}
+                <SelectTrigger 
+                  // Reduced height and font size
+                  className="bg-background h-9 text-sm"
+                >
                   <SelectValue placeholder="Chọn người tham gia..." />
                 </SelectTrigger>
                 <SelectContent className="z-[100]">
                   {members.map((member) => (
-                    <SelectItem key={member.id} value={member.id} className="text-sm"> {/* Reduced font size */}
+                    <SelectItem key={member.id} value={member.id} 
+                      // Reduced font size
+                      className="text-sm"
+                    >
                       {member.name}
                     </SelectItem>
                   ))}
@@ -331,7 +369,8 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
                     return member ? (
                       <div
                         key={memberId}
-                        className="flex items-center gap-1.5 px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs" {/* Reduced padding and font size */}
+                        // Reduced padding and font size
+                        className="flex items-center gap-1.5 px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs"
                       >
                         <span>{member.name}</span>
                         <button
@@ -351,13 +390,17 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
           {/* Khách mời */}
           <div className="space-y-3 p-3 border border-border rounded-lg bg-muted/20"> {/* Reduced space-y and padding */}
             <div className="flex items-center justify-between">
-              <Label className="text-base font-semibold">Khách mời</Label> {/* Reduced font size */}
+              <Label 
+                // Reduced font size
+                className="text-base font-semibold"
+              >Khách mời</Label>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={handleAddGuest}
-                className="gap-1.5 h-8 text-xs" {/* Reduced height and font size */}
+                // Reduced height and font size
+                className="gap-1.5 h-8 text-xs"
               >
                 <Plus className="w-3.5 h-3.5" /> {/* Smaller icon */}
                 Thêm khách
@@ -370,16 +413,26 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
                 value={newGuestName}
                 onChange={(e) => setNewGuestName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddGuest()}
-                className="flex-1 h-9 text-sm" {/* Reduced height and font size */}
+                // Reduced height and font size
+                className="flex-1 h-9 text-sm"
               />
               <Select value={newGuestResponsibleMemberId} onValueChange={(value) => setNewGuestResponsibleMemberId(value === "undefined" ? undefined : value)}>
-                <SelectTrigger className="w-full sm:w-[160px] h-9 text-sm"> {/* Reduced width, height and font size */}
+                <SelectTrigger 
+                  // Reduced width, height and font size
+                  className="w-full sm:w-[160px] h-9 text-sm"
+                >
                   <SelectValue placeholder="Người trả tiền hộ (Tùy chọn)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="undefined" className="text-sm">Không có người trả hộ</SelectItem> {/* Reduced font size */}
+                  <SelectItem value="undefined" 
+                    // Reduced font size
+                    className="text-sm"
+                  >Không có người trả hộ</SelectItem>
                   {members.map((member) => (
-                    <SelectItem key={member.id} value={member.id} className="text-sm"> {/* Reduced font size */}
+                    <SelectItem key={member.id} value={member.id} 
+                      // Reduced font size
+                      className="text-sm"
+                    >
                       {member.name}
                     </SelectItem>
                   ))}
@@ -389,26 +442,42 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
 
             {guests.length > 0 && (
               <div className="space-y-2"> {/* Reduced space-y */}
-                <Label className="text-xs text-muted-foreground">Danh sách khách</Label> {/* Reduced font size */}
+                <Label 
+                  // Reduced font size
+                  className="text-xs text-muted-foreground"
+                >Danh sách khách</Label>
                 <div className="space-y-1.5"> {/* Reduced space-y */}
                   {guests.map((guest) => (
                     <div
                       key={guest.id}
-                      className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 bg-background rounded-lg border border-border gap-1.5" {/* Reduced padding and gap */}
+                      // Reduced padding and gap
+                      className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 bg-background rounded-lg border border-border gap-1.5"
                     >
-                      <span className="text-sm font-medium">+ {guest.name}</span> {/* Reduced font size */}
+                      <span 
+                        // Reduced font size
+                        className="text-sm font-medium"
+                      >+ {guest.name}</span>
                       <div className="flex-1 flex items-center justify-end gap-1.5"> {/* Reduced gap */}
                         <Select 
                           value={guest.responsibleMemberId || "undefined"} 
                           onValueChange={(value) => handleUpdateGuestResponsibleMember(guest.id, value === "undefined" ? undefined : value)}
                         >
-                          <SelectTrigger className="h-8 text-xs w-full sm:w-[140px]"> {/* Reduced height, font size and width */}
+                          <SelectTrigger 
+                            // Reduced height, font size and width
+                            className="h-8 text-xs w-full sm:w-[140px]"
+                          >
                             <SelectValue placeholder="Người trả tiền hộ (Tùy chọn)" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="undefined" className="text-xs">Không có người trả hộ</SelectItem> {/* Reduced font size */}
+                            <SelectItem value="undefined" 
+                              // Reduced font size
+                              className="text-xs"
+                            >Không có người trả hộ</SelectItem>
                             {members.map((member) => (
-                              <SelectItem key={member.id} value={member.id} className="text-xs"> {/* Reduced font size */}
+                              <SelectItem key={member.id} value={member.id} 
+                                // Reduced font size
+                                className="text-xs"
+                              >
                                 {member.name}
                               </SelectItem>
                             ))}
@@ -418,7 +487,8 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-5 w-5" {/* Reduced size */}
+                          // Reduced size
+                          className="h-5 w-5"
                           onClick={() => handleRemoveGuest(guest.id)}
                         >
                           <X className="w-3 h-3" /> {/* Smaller icon */}
@@ -433,7 +503,10 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
 
           {/* Ảnh hóa đơn */}
           <div className="space-y-2"> {/* Reduced space-y */}
-            <Label className="text-sm">Ảnh hóa đơn (Tùy chọn)</Label> {/* Reduced font size */}
+            <Label 
+              // Reduced font size
+              className="text-sm"
+            >Ảnh hóa đơn (Tùy chọn)</Label>
             <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer"> {/* Reduced padding */}
               <input
                 type="file"
@@ -451,7 +524,10 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
                     <p className="font-medium text-sm text-foreground"> {/* Reduced font size */}
                       {receiptImage ? receiptImage.name : "Nhấp để tải lên ảnh hóa đơn"}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5"> {/* Reduced font size and margin */}
+                    <p 
+                      // Reduced font size and margin
+                      className="text-xs text-muted-foreground mt-0.5"
+                    >
                       PNG, JPG tối đa 5MB
                     </p>
                   </div>
@@ -464,7 +540,8 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
                 <img
                   src={receiptPreview}
                   alt={`Hóa đơn: ${receiptImage?.name ?? ''}`}
-                  className="w-full max-h-48 object-contain bg-muted" {/* Reduced max-height */}
+                  // Reduced max-height
+                  className="w-full max-h-48 object-contain bg-muted"
                   loading="lazy"
                 />
               </div>
@@ -477,13 +554,15 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="flex-1 h-9 text-sm" {/* Reduced height and font size */}
+            // Reduced height and font size
+            className="flex-1 h-9 text-sm"
           >
             Hủy
           </Button>
           <Button
             onClick={handleSubmit}
-            className="flex-1 h-9 text-sm" {/* Reduced height and font size */}
+            // Reduced height and font size
+            className="flex-1 h-9 text-sm"
           >
             Thêm chi phí
           </Button>

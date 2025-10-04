@@ -262,7 +262,10 @@ const Groups = () => {
         <div className="grid sm:grid-cols-2 gap-3 mb-10"> {/* Reduced gap and margin */}
           <Dialog open={openJoinDialog} onOpenChange={setOpenJoinDialog}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="lg" className="h-12 text-base"> {/* Reduced height */}
+              <Button variant="outline" size="lg" 
+                // Reduced height
+                className="h-12 text-base"
+              >
                 <UserPlus className="w-4 h-4 mr-2" /> {/* Smaller icon */}
                 Tham gia nhóm
               </Button>
@@ -279,10 +282,14 @@ const Groups = () => {
                     placeholder="Nhập mã nhóm..."
                     value={joinCode}
                     onChange={(e) => setJoinCode(e.target.value)}
+                    // Reduced height and font size
                     className="h-9 text-sm" 
-                  /> {/* Reduced height and font size */}
+                  />
                 </div>
-                <Button onClick={handleJoinGroup} className="w-full h-9 text-sm"> {/* Reduced height and font size */}
+                <Button onClick={handleJoinGroup} 
+                  // Reduced height and font size
+                  className="w-full h-9 text-sm"
+                >
                   Tham gia
                 </Button>
               </div>
@@ -291,7 +298,10 @@ const Groups = () => {
 
           <Dialog open={openCreateDialog} onOpenChange={setOpenCreateDialog}>
             <DialogTrigger asChild>
-              <Button size="lg" className="h-12 text-base"> {/* Reduced height */}
+              <Button size="lg" 
+                // Reduced height
+                className="h-12 text-base"
+              >
                 <Plus className="w-4 h-4 mr-2" /> {/* Smaller icon */}
                 Tạo nhóm
               </Button>
@@ -312,7 +322,10 @@ const Groups = () => {
                     className="h-9 text-sm" 
                   />
                 </div>
-                <Button onClick={handleCreateGroup} className="w-full h-9 text-sm"> {/* Reduced height and font size */}
+                <Button onClick={handleCreateGroup} 
+                  // Reduced height and font size
+                  className="w-full h-9 text-sm"
+                >
                   Tạo nhóm
                 </Button>
               </div>
@@ -336,7 +349,8 @@ const Groups = () => {
               placeholder="Tìm kiếm nhóm, thành viên hoặc ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 text-sm" {/* Reduced padding, height and font size */}
+              // Reduced padding, height and font size
+              className="pl-9 h-9 text-sm"
             />
           </div>
 

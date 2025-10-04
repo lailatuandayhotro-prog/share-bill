@@ -806,7 +806,8 @@ const GroupDetail = () => {
         {/* Action Buttons */}
         <div className="grid grid-cols-3 gap-2"> {/* Changed to grid-cols-3 and reduced gap */}
           <Button 
-            className="h-10 text-sm bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" /* Reduced height and font size */
+            // Reduced height and font size
+            className="h-10 text-sm bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
             onClick={() => setOpenAddExpense(true)}
           >
             <Plus className="w-4 h-4 mr-1" /> {/* Smaller icon */}
@@ -815,14 +816,19 @@ const GroupDetail = () => {
 
           <Button
             variant="default"
-            className="h-10 text-sm" /* Reduced height and font size */
+            // Reduced height and font size
+            className="h-10 text-sm"
             onClick={handleShare}
           >
             <Share2 className="w-4 h-4 mr-1" /> {/* Smaller icon */}
             Chia sẻ
           </Button>
 
-          <Button variant="outline" className="h-10 text-sm" onClick={() => setOpenInviteMemberDialog(true)}> {/* Reduced height and font size */}
+          <Button variant="outline" 
+            // Reduced height and font size
+            className="h-10 text-sm" 
+            onClick={() => setOpenInviteMemberDialog(true)}
+          >
             <UserPlus className="w-4 h-4 mr-1" /> {/* Smaller icon */}
             Mời thành viên
           </Button>
@@ -925,7 +931,8 @@ const GroupDetail = () => {
 
             <Button
               onClick={() => setOpenConfirmMonthCompletionDialog(true)}
-              className="w-full h-10 text-sm bg-blue-500 hover:bg-blue-600 text-white" /* Reduced height and font size */
+              // Reduced height and font size
+              className="w-full h-10 text-sm bg-blue-500 hover:bg-blue-600 text-white"
               disabled={isCompletingMonthExpenses}
             >
               {isCompletingMonthExpenses ? (
@@ -950,12 +957,18 @@ const GroupDetail = () => {
               <div className="space-y-0.5"> {/* Reduced space-y */}
                 <Label htmlFor="year-select" className="text-xs text-muted-foreground">Chọn năm</Label>
                 <Select onValueChange={handleYearChange} value={selectedYear.toString()}>
-                  <SelectTrigger id="year-select" className="w-[80px] h-8 text-xs"> {/* Reduced width, height and font size */}
+                  <SelectTrigger id="year-select" 
+                    // Reduced width, height and font size
+                    className="w-[80px] h-8 text-xs"
+                  >
                     <SelectValue placeholder="Năm" />
                   </SelectTrigger>
                   <SelectContent>
                     {years.map((year) => (
-                      <SelectItem key={year} value={year.toString()} className="text-xs"> {/* Reduced font size */}
+                      <SelectItem key={year} value={year.toString()} 
+                        // Reduced font size
+                        className="text-xs"
+                      >
                         {year}
                       </SelectItem>
                     ))}
@@ -1039,7 +1052,8 @@ const GroupDetail = () => {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="flex-1 h-8 text-xs" {/* Reduced height and font size */}
+                        // Reduced height and font size
+                        className="flex-1 h-8 text-xs"
                         onClick={() => handleViewExpenseDetail(expense)}
                       >
                         <Eye className="w-3.5 h-3.5 mr-1" /> {/* Smaller icon */}
@@ -1048,7 +1062,8 @@ const GroupDetail = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 h-8 text-xs" {/* Reduced height and font size */}
+                        // Reduced height and font size
+                        className="flex-1 h-8 text-xs"
                         onClick={() => handleViewReceipt(expense.receiptUrl, expense.title)} // Pass expense.title
                         disabled={!expense.receiptUrl}
                       >
@@ -1057,7 +1072,8 @@ const GroupDetail = () => {
                       </Button>
                       <Button
                         size="sm"
-                        className={`flex-1 h-8 text-xs ${ /* Reduced height and font size */
+                        // Reduced height and font size
+                        className={`flex-1 h-8 text-xs ${
                           expense.isCompleted
                             ? "bg-muted text-muted-foreground"
                             : "bg-green-500 hover:bg-green-600"
@@ -1082,7 +1098,10 @@ const GroupDetail = () => {
               <Users className="w-4 h-4" /> {/* Smaller icon */}
               Thành viên ({members.length})
             </h2>
-            <Button variant="outline" size="sm" className="h-8 text-xs"> {/* Reduced height and font size */}
+            <Button variant="outline" size="sm" 
+              // Reduced height and font size
+              className="h-8 text-xs"
+            >
               <MessageCircle className="w-3.5 h-3.5 mr-1" /> {/* Smaller icon */}
               Chat
             </Button>
@@ -1219,12 +1238,14 @@ const GroupDetail = () => {
               <Input
                 value={shareCode}
                 readOnly
-                className="flex-1 h-9 text-sm" {/* Reduced height and font size */}
+                // Reduced height and font size
+                className="flex-1 h-9 text-sm"
               />
               <Button
                 size="icon"
                 onClick={handleCopyCode}
-                className="flex-shrink-0 w-9 h-9" {/* Reduced size */}
+                // Reduced size
+                className="flex-shrink-0 w-9 h-9"
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />} {/* Smaller icon */}
               </Button>
@@ -1257,14 +1278,16 @@ const GroupDetail = () => {
       <div className="fixed bottom-4 left-4 right-4 flex justify-between max-w-4xl mx-auto"> {/* Reduced bottom padding */}
         <Button
           size="icon"
-          className="w-12 h-12 rounded-full shadow-lg" {/* Reduced size */}
+          // Reduced size
+          className="w-12 h-12 rounded-full shadow-lg"
           onClick={() => toast.info("Mở chat")}
         >
           <MessageCircle className="w-5 h-5" /> {/* Smaller icon */}
         </Button>
         <Button
           size="icon"
-          className="w-12 h-12 rounded-full shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" {/* Reduced size */}
+          // Reduced size
+          className="w-12 h-12 rounded-full shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
           onClick={() => setOpenAddExpense(true)}
         >
           <Plus className="w-5 h-5" /> {/* Smaller icon */}
