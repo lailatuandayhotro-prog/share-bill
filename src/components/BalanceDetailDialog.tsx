@@ -54,7 +54,7 @@ const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances,
               balances.map((item) => (
                 <div 
                   key={item.id} 
-                  className="flex items-center gap-3 p-3 border border-border rounded-lg bg-card cursor-pointer hover:shadow-md transition-shadow" {/* Reduced gap and padding */}
+                  className="flex items-center gap-3 p-3 border border-border rounded-lg bg-card cursor-pointer hover:shadow-md transition-shadow" /* Reduced gap and padding */
                   onClick={() => onViewIndividualBalance(item.name, item.contributingExpenses, type)} // Call new callback
                 >
                   <Avatar className="h-9 w-9"> {/* Reduced size */}
