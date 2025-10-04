@@ -780,10 +780,11 @@ const GroupDetail = () => {
               ) : (
                 <div className="flex items-center gap-1.5"> {/* Reduced gap */}
                   <h1 className="text-lg font-bold text-foreground">{groupName}</h1> {/* Reduced font size */}
+                  {/* Smaller button */}
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="w-7 h-7" {/* Smaller button */}
+                    className="w-7 h-7" 
                     onClick={() => setIsEditingName(true)}
                   >
                     <Pencil className="w-3.5 h-3.5" /> {/* Smaller icon */}
