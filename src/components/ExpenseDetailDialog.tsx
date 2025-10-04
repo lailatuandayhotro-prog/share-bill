@@ -131,9 +131,9 @@ const ExpenseDetailDialog = ({
             disabled={isDeletingExpense} // Disable button when deleting
           >
             {isDeletingExpense ? (
-              <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> {/* Smaller icon */}
+              <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> /* Smaller icon */
             ) : (
-              <Trash2 className="w-3.5 h-3.5 mr-1" /> {/* Smaller icon */}
+              <Trash2 className="w-3.5 h-3.5 mr-1" /> /* Smaller icon */
             )}
             {isDeletingExpense ? "Đang xóa..." : "Xóa"}
           </Button>
@@ -226,11 +226,11 @@ const ExpenseDetailDialog = ({
                             >
                               <span>
                                 {isMarkingPaid ? (
-                                  <Loader2 className="w-3 h-3 mr-1 animate-spin" /> {/* Smaller icon */}
+                                  <Loader2 className="w-3 h-3 mr-1 animate-spin" /> /* Smaller icon */
                                 ) : participant.isPaid ? (
-                                  <RotateCcw className="w-3 h-3 mr-1" /> {/* Smaller icon */}
+                                  <RotateCcw className="w-3 h-3 mr-1" /> /* Smaller icon */
                                 ) : (
-                                  <CheckCircle2 className="w-3 h-3 mr-1" /> {/* Smaller icon */}
+                                  <CheckCircle2 className="w-3 h-3 mr-1" /> /* Smaller icon */
                                 )}
                                 {isMarkingPaid ? "Đang cập nhật..." : (participant.isPaid ? "Đánh Dấu Chưa Trả" : "Đánh Dấu Đã Trả")}
                               </span>
