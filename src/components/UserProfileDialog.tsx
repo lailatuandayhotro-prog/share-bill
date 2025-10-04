@@ -115,19 +115,21 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
               </Avatar>
               <div className="w-full space-y-1.5"> {/* Reduced space-y */}
                 <Label htmlFor="avatar-url" className="text-sm">URL Avatar</Label> {/* Reduced font size */}
+                {/* Reduced height and font size */}
                 <Input
                   id="avatar-url"
                   type="url"
                   placeholder="https://example.com/avatar.jpg"
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
-                  className="h-9 text-sm" {/* Reduced height and font size */}
+                  className="h-9 text-sm"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5"> {/* Reduced space-y */}
               <Label htmlFor="full-name" className="text-sm">Họ và tên</Label> {/* Reduced font size */}
+              {/* Reduced height and font size */}
               <Input
                 id="full-name"
                 type="text"
@@ -135,43 +137,46 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
-                className="h-9 text-sm" {/* Reduced height and font size */}
+                className="h-9 text-sm"
               />
             </div>
 
             <div className="space-y-1.5"> {/* Reduced space-y */}
               <Label htmlFor="nickname" className="text-sm">Biệt danh</Label> {/* Reduced font size */}
+              {/* Reduced height and font size */}
               <Input
                 id="nickname"
                 type="text"
                 placeholder="A Béo"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                className="h-9 text-sm" {/* Reduced height and font size */}
+                className="h-9 text-sm"
               />
             </div>
 
             <div className="space-y-1.5"> {/* Reduced space-y */}
               <Label htmlFor="bank-account-number" className="text-sm">Số tài khoản ngân hàng</Label> {/* Reduced font size */}
+              {/* Reduced height and font size */}
               <Input
                 id="bank-account-number"
                 type="text"
                 placeholder="1234567890"
                 value={bankAccountNumber}
                 onChange={(e) => setBankAccountNumber(e.target.value)}
-                className="h-9 text-sm" {/* Reduced height and font size */}
+                className="h-9 text-sm"
               />
             </div>
 
             <div className="space-y-1.5"> {/* Reduced space-y */}
               <Label htmlFor="bank-name" className="text-sm">Tên ngân hàng</Label> {/* Reduced font size */}
+              {/* Reduced height and font size */}
               <Input
                 id="bank-name"
                 type="text"
                 placeholder="Vietcombank"
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
-                className="h-9 text-sm" {/* Reduced height and font size */}
+                className="h-9 text-sm"
               />
             </div>
 
