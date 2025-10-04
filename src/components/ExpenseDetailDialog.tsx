@@ -162,7 +162,8 @@ const ExpenseDetailDialog = ({
                   return (
                     <div
                       key={id}
-                      className="border border-border rounded-lg p-2.5 bg-card hover:shadow-md transition-shadow" {/* Reduced padding */}
+                      className="border border-border rounded-lg p-2.5 bg-card hover:shadow-md transition-shadow"
+                      /* Reduced padding */
                     >
                       <div className="flex items-start gap-2.5"> {/* Reduced gap */}
                         {/* Avatar */}
