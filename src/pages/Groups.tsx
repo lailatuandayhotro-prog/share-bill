@@ -303,12 +303,13 @@ const Groups = () => {
               <div className="space-y-3 pt-3"> {/* Reduced space-y and padding */}
                 <div className="space-y-1.5"> {/* Reduced space-y */}
                   <Label htmlFor="group-name" className="text-sm">Tên nhóm</Label>
+                  {/* Reduced height and font size */}
                   <Input
                     id="group-name"
                     placeholder="VD: Chuyến đi Đà Lạt"
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
-                    className="h-9 text-sm" {/* Reduced height and font size */}
+                    className="h-9 text-sm" 
                   />
                 </div>
                 <Button onClick={handleCreateGroup} className="w-full h-9 text-sm"> {/* Reduced height and font size */}
