@@ -193,7 +193,7 @@ const GroupDetail = () => {
       // Ensure selectedMonth always reflects the selectedYear
       const currentSelectedMonthWithYear = setYear(selectedMonth, selectedYear);
 
-      const startOfSelectedMonth = format(startOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
+      const startOfSelectedMonth = format(startOfMonth(currentSelectedMonthWithMonth), 'yyyy-MM-dd');
       const endOfSelectedMonth = format(endOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
 
       const { data: expensesData, error: expensesError } = await supabase
@@ -780,7 +780,6 @@ const GroupDetail = () => {
               ) : (
                 <div className="flex items-center gap-1.5"> {/* Reduced gap */}
                   <h1 className="text-lg font-bold text-foreground">{groupName}</h1> {/* Reduced font size */}
-                  {/* Smaller button */}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -807,7 +806,7 @@ const GroupDetail = () => {
         {/* Action Buttons */}
         <div className="grid grid-cols-3 gap-2"> {/* Changed to grid-cols-3 and reduced gap */}
           <Button 
-            className="h-10 text-sm bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" {/* Reduced height and font size */}
+            className="h-10 text-sm bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" /* Reduced height and font size */
             onClick={() => setOpenAddExpense(true)}
           >
             <Plus className="w-4 h-4 mr-1" /> {/* Smaller icon */}
