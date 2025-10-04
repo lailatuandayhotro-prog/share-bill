@@ -36,7 +36,7 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, nickname, avatar_url, bank_account_number, bank_name")
+        .select("full_name, avatar_url")
         .eq("id", user.id)
         .single();
 
@@ -44,10 +44,7 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
 
       if (data) {
         setFullName(data.full_name || "");
-        setNickname(data.nickname || "");
         setAvatarUrl(data.avatar_url || "");
-        setBankAccountNumber(data.bank_account_number || "");
-        setBankName(data.bank_name || "");
       }
     } catch (error: any) {
       console.error("Error fetching user profile:", error.message);
@@ -70,10 +67,7 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
         .from("profiles")
         .update({
           full_name: fullName,
-          nickname: nickname,
           avatar_url: avatarUrl,
-          bank_account_number: bankAccountNumber,
-          bank_name: bankName,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);

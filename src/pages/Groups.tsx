@@ -162,29 +162,15 @@ const Groups = () => {
     }
 
     try {
-      // Check if group exists
-      const { data: existingGroup, error: groupError } = await supabase
-        .from('groups')
-        .select('id')
-        .eq('id', joinCode)
-        .single();
-
-      if (groupError || !existingGroup) {
-        toast.error("Mã nhóm không hợp lệ hoặc nhóm không tồn tại");
-        return;
-      }
-
-      // Check if user is already a member
+      // 1) Kiểm tra nếu đã là thành viên
       const { data: existingMember, error: memberCheckError } = await supabase
         .from('group_members')
         .select('id')
         .eq('group_id', joinCode)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (memberCheckError && memberCheckError.code !== 'PGRST116') { // PGRST116 means no rows found
-        throw memberCheckError;
-      }
+      if (memberCheckError) throw memberCheckError;
 
       if (existingMember) {
         toast.info("Bạn đã là thành viên của nhóm này rồi!");
@@ -194,24 +180,39 @@ const Groups = () => {
         return;
       }
 
-      // Add user to group_members
+      // 2) Thử thêm thành viên trực tiếp (RLS đã cho phép)
       const { error: addMemberError } = await supabase
         .from('group_members')
         .insert({
           group_id: joinCode,
           user_id: user.id,
-          role: 'member', // Default role for new members
+          role: 'member',
         });
 
-      if (addMemberError) throw addMemberError;
+      if (addMemberError) {
+        // Nếu mã nhóm sai/không tồn tại (FK vi phạm)
+        if (
+          addMemberError.code === '23503' ||
+          /foreign key|violates foreign key/i.test(addMemberError.message || '')
+        ) {
+          toast.error("Mã nhóm không hợp lệ hoặc nhóm không tồn tại");
+          return;
+        }
+        // Nếu đã tồn tại (trường hợp có unique constraint)
+        if (addMemberError.code === '23505') {
+          toast.info("Bạn đã là thành viên của nhóm này rồi!");
+        } else {
+          throw addMemberError;
+        }
+      }
 
       setOpenJoinDialog(false);
       setJoinCode("");
       toast.success("Tham gia nhóm thành công!");
       navigate(`/groups/${joinCode}`);
     } catch (error: any) {
-      console.error('Error joining group:', error.message);
-      toast.error("Không thể tham gia nhóm: " + error.message);
+      console.error('Error joining group:', error.message || error);
+      toast.error("Không thể tham gia nhóm: " + (error.message || 'Lỗi không xác định'));
     }
   };
 

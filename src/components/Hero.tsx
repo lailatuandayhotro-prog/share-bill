@@ -26,13 +26,13 @@ const Hero = () => {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3"> {/* Reduced gap and padding */}
             <a href="#features">
-              <Button variant="hero" size="md" className="gap-2 h-10 px-4 text-base"> {/* Smaller button */}
+              <Button variant="hero" size="default" className="gap-2 h-10 px-4 text-base"> {/* Smaller button */}
                 Xem tính năng
                 <ArrowRight className="w-4 h-4" /> {/* Smaller icon */}
               </Button>
             </a>
             <a href="/auth">
-              <Button variant="outline" size="md" className="h-10 px-4 text-base"> {/* Smaller button */}
+              <Button variant="outline" size="default" className="h-10 px-4 text-base"> {/* Smaller button */}
                 Đăng nhập
               </Button>
             </a>

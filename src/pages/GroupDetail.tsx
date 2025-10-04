@@ -452,7 +452,7 @@ const GroupDetail = () => {
 
       await loadGroupData();
 
-      const payerName = members.find(m => m.id === expenseData.paidBy)?.name || currentUserName;
+      const payerName = members.find(m => m.id === expenseData.paidBy)?.name || 'Bạn';
       toast.success(`Chi phí đã thêm! ${payerName} đã trả ${expenseData.amount.toLocaleString()} đ.`);
       
     } catch (error: any) {

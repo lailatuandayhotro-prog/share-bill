@@ -19,7 +19,7 @@ const CTA = () => {
               <a href="/auth">
                 {/* Smaller button */}
                 <Button 
-                  size="md" 
+                  size="default" 
                   variant="secondary"
                   className="bg-white text-primary hover:bg-white/90 shadow-lg gap-2 h-10 px-4 text-base"
                 >
