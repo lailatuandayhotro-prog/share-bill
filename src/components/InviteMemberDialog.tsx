@@ -89,7 +89,7 @@ const InviteMemberDialog = ({ open, onOpenChange, onInvite, groupName }: InviteM
                 {invitedEmails.map((email) => (
                   <div
                     key={email}
-                    className="flex items-center justify-between p-2 bg-background rounded-lg border border-border" {/* Reduced padding */}
+                    className="flex items-center justify-between p-2 bg-background rounded-lg border border-border" /* Reduced padding */
                   >
                     <span className="text-sm">{email}</span> {/* Reduced font size */}
                     <Button
