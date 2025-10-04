@@ -44,13 +44,13 @@ import { vi } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import MonthSelector from "@/components/MonthSelector";
 import ConfirmMonthCompletionDialog from "@/components/ConfirmMonthCompletionDialog";
-import ReceiptViewDialog from "@/components/ReceiptViewDialog"; // Import new component
+import ReceiptViewDialog from "@/components/ReceiptViewDialog";
 
 interface Participant {
   userId?: string;
   userName?: string;
-  guestId?: string; // ID for unabsorbed guest from expense_participants
-  guestName?: string; // Name for unabsorbed guest from expense_participants
+  guestId?: string;
+  guestName?: string;
   amount: number;
   isPaid: boolean;
   isPayer?: boolean;
@@ -59,25 +59,25 @@ interface Participant {
 interface Guest {
   id: string;
   name: string;
-  responsibleMemberId?: string; // Optional: if a member pays for this guest
+  responsibleMemberId?: string;
 }
 
 interface Expense {
   id: string;
   title: string;
   amount: number;
-  paidBy: string; // Name of the payer
-  paidById: string; // ID of the payer
-  splitWith: string[]; // This will now contain members and guests (with responsible member info)
-  date: string; // ISO string from DB
-  displayDate: string; // Formatted date for UI
+  paidBy: string;
+  paidById: string;
+  splitWith: string[];
+  date: string;
+  displayDate: string;
   isCompleted: boolean;
   isMine: boolean;
-  participants: Participant[]; // These are entries from expense_participants (members or unabsorbed guests)
+  participants: Participant[];
   receiptUrl?: string;
   description?: string;
   splitType?: string;
-  guests?: Guest[]; // Full guest list with responsibleMemberId, parsed from description
+  guests?: Guest[];
 }
 
 interface GroupMember {
@@ -90,18 +90,18 @@ interface GroupMember {
 interface ContributingExpense {
   expenseId: string;
   title: string;
-  amount: number; // amount for this specific participant in this expense
+  amount: number;
   date: string;
-  paidBy: string; // name of the payer
+  paidBy: string;
 }
 
 interface BalanceItem {
-  id: string; // user ID or guest ID
+  id: string;
   name: string;
-  amount: number; // positive for money owed to current user, negative for money current user owes
+  amount: number;
   avatarUrl?: string;
   isGuest?: boolean;
-  contributingExpenses: ContributingExpense[]; // New field
+  contributingExpenses: ContributingExpense[];
 }
 
 const GroupDetail = () => {
@@ -138,9 +138,9 @@ const GroupDetail = () => {
   const [isCompletingMonthExpenses, setIsCompletingMonthExpenses] = useState(false);
   const [openConfirmMonthCompletionDialog, setOpenConfirmMonthCompletionDialog] = useState(false);
 
-  const [openReceiptViewDialog, setOpenReceiptViewDialog] = useState(false); // New state for receipt view dialog
-  const [currentReceiptUrl, setCurrentReceiptUrl] = useState<string | null>(null); // New state for current receipt URL
-  const [currentReceiptTitle, setCurrentReceiptTitle] = useState<string>(""); // New state for current receipt title
+  const [openReceiptViewDialog, setOpenReceiptViewDialog] = useState(false);
+  const [currentReceiptUrl, setCurrentReceiptUrl] = useState<string | null>(null);
+  const [currentReceiptTitle, setCurrentReceiptTitle] = useState<string>("");
 
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date()));
@@ -190,7 +190,6 @@ const GroupDetail = () => {
       
       setMembers(formattedMembers);
 
-      // Ensure selectedMonth always reflects the selectedYear
       const currentSelectedMonthWithYear = setYear(selectedMonth, selectedYear);
 
       const startOfSelectedMonth = format(startOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
@@ -209,12 +208,9 @@ const GroupDetail = () => {
       
       if (expensesError) throw expensesError;
 
-      console.log("Fetched expenses data:", expensesData); // Log the fetched data for debugging
-
       const formattedExpenses = expensesData?.map(exp => {
         const payer = formattedMembers.find(m => m.id === exp.paid_by);
         
-        // Parse guests from description
         let guests: Guest[] = [];
         let cleanDescription = exp.description || exp.title;
         const guestsJsonMatch = cleanDescription.match(/guests:(\[.*\])/);
@@ -227,18 +223,16 @@ const GroupDetail = () => {
           }
         }
 
-        // Participants are entries from expense_participants (members or unabsorbed guests)
         const participants = exp.expense_participants.map((p: any) => ({
           userId: p.user_id,
           userName: p.user_id ? formattedMembers.find(m => m.id === p.user_id)?.name : undefined,
-          guestId: p.guest_name ? p.id : undefined, // Use expense_participant ID for guest
+          guestId: p.guest_name ? p.id : undefined,
           guestName: p.guest_name,
           amount: p.amount,
           isPaid: p.is_paid,
           isPayer: p.user_id === exp.paid_by,
         }));
 
-        // Construct splitWith for display
         const allSplitEntitiesNames = new Set<string>();
         participants.forEach(p => {
           if (p.userName) allSplitEntitiesNames.add(p.userName);
@@ -259,14 +253,14 @@ const GroupDetail = () => {
           paidBy: payer?.name || 'Unknown',
           paidById: exp.paid_by,
           splitWith: Array.from(allSplitEntitiesNames).filter(Boolean) as string[],
-          date: exp.expense_date, // ISO string
-          displayDate: new Date(exp.expense_date).toLocaleDateString('vi-VN'), // Formatted for UI
+          date: exp.expense_date,
+          displayDate: new Date(exp.expense_date).toLocaleDateString('vi-VN'),
           isCompleted: exp.is_completed,
           isMine: exp.paid_by === user?.id,
           participants,
           receiptUrl: exp.receipt_url,
           splitType: exp.split_type || 'equal',
-          guests, // Pass full guest list for EditExpenseDialog and ExpenseDetailDialog
+          guests,
         };
       }) || [];
 
@@ -413,7 +407,6 @@ const GroupDetail = () => {
         if (uploadError) {
           console.error('Upload error:', uploadError);
           toast.error('Không thể tải lên ảnh hóa đơn');
-          // Do not throw here, continue with expense creation even if receipt upload fails
         } else {
           const { data: { publicUrl } } = supabase.storage
             .from('receipts')
@@ -422,15 +415,14 @@ const GroupDetail = () => {
         }
       }
 
-      // Append guest details to description for storage, if any
       const descriptionWithGuests = expenseData.description + (expenseData.guests.length > 0 ? `guests:${JSON.stringify(expenseData.guests)}` : '');
 
       const { data: newExpense, error: expenseError } = await supabase
         .from('expenses')
         .insert({
           group_id: id,
-          title: expenseData.description, // Title remains clean
-          description: descriptionWithGuests, // Description includes guest data
+          title: expenseData.description,
+          description: descriptionWithGuests,
           amount: expenseData.amount,
           paid_by: expenseData.paidBy,
           expense_date: expenseData.date,
@@ -442,16 +434,14 @@ const GroupDetail = () => {
 
       if (expenseError) throw expenseError;
 
-      // Insert into expense_participants based on the calculated shares for members and unabsorbed guests
       const participantsToInsert = expenseData.participants.map((p: any) => ({
         expense_id: newExpense.id,
         user_id: p.userId,
-        guest_name: p.guestName, // Will be null for members, name for unabsorbed guests
+        guest_name: p.guestName,
         amount: p.amount,
         is_paid: p.isPaid
       }));
 
-      // Only attempt insert if there are participants to insert
       if (participantsToInsert.length > 0) {
         const { error: participantsError } = await supabase
           .from('expense_participants')
@@ -465,7 +455,7 @@ const GroupDetail = () => {
       const payerName = members.find(m => m.id === expenseData.paidBy)?.name || currentUserName;
       toast.success(`Chi phí đã thêm! ${payerName} đã trả ${expenseData.amount.toLocaleString()} đ.`);
       
-    } catch (error: any) { // Explicitly type error as any for better error message access
+    } catch (error: any) {
       console.error('Error adding expense:', error);
       toast.error(`Không thể thêm chi phí: ${error.message || 'Lỗi không xác định'}`);
     }
@@ -510,14 +500,13 @@ const GroupDetail = () => {
         receiptUrl = null;
       }
 
-      // Append guest details to description for storage, if any
       const descriptionWithGuests = updatedExpenseData.description + (updatedExpenseData.guests.length > 0 ? `guests:${JSON.stringify(updatedExpenseData.guests)}` : '');
 
       const { error: expenseError } = await supabase
         .from('expenses')
         .update({
-          title: updatedExpenseData.description, // Title remains clean
-          description: descriptionWithGuests, // Description includes guest data
+          title: updatedExpenseData.description,
+          description: descriptionWithGuests,
           amount: updatedExpenseData.amount,
           paid_by: updatedExpenseData.paidBy,
           expense_date: updatedExpenseData.date,
@@ -531,16 +520,14 @@ const GroupDetail = () => {
 
       await supabase.from('expense_participants').delete().eq('expense_id', expenseId);
 
-      // Insert updated participants based on the new logic
       const participantsToInsert = updatedExpenseData.participants.map((p: any) => ({
         expense_id: expenseId,
         user_id: p.userId,
-        guest_name: p.guestName, // Will be null for members, name for unabsorbed guests
+        guest_name: p.guestName,
         amount: p.amount,
         is_paid: p.isPaid
       }));
 
-      // Only attempt insert if there are participants to insert
       if (participantsToInsert.length > 0) {
         const { error: participantsError } = await supabase
           .from('expense_participants')
@@ -553,7 +540,7 @@ const GroupDetail = () => {
       toast.success("Cập nhật chi phí thành công!");
       setOpenEditExpense(false);
       setExpenseToEdit(null);
-    } catch (error: any) { // Explicitly type error as any for better error message access
+    } catch (error: any) {
       console.error('Error updating expense:', error);
       toast.error(`Không thể cập nhật chi phí: ${error.message || 'Lỗi không xác định'}`);
     }
@@ -583,7 +570,7 @@ const GroupDetail = () => {
     }
 
     setIsCompletingMonthExpenses(true);
-    setOpenConfirmMonthCompletionDialog(false); // Close dialog immediately after confirmation
+    setOpenConfirmMonthCompletionDialog(false);
     try {
       const startOfSelectedMonth = format(startOfMonth(setYear(selectedMonth, selectedYear)), 'yyyy-MM-dd');
       const endOfSelectedMonth = format(endOfMonth(setYear(selectedMonth, selectedYear)), 'yyyy-MM-dd');
@@ -595,7 +582,7 @@ const GroupDetail = () => {
         .eq('paid_by', user.id)
         .gte('expense_date', startOfSelectedMonth)
         .lte('expense_date', endOfSelectedMonth)
-        .select(); // Select updated rows to get count
+        .select();
 
       if (error) throw error;
 
@@ -629,7 +616,7 @@ const GroupDetail = () => {
   const handleDeleteExpense = async () => {
     if (!selectedExpense) return;
 
-    setIsDeletingExpense(true); // Start loading
+    setIsDeletingExpense(true);
     try {
       const { error: participantsError } = await supabase
         .from('expense_participants')
@@ -663,7 +650,7 @@ const GroupDetail = () => {
       console.error('Error deleting expense:', error);
       toast.error('Không thể xóa chi phí');
     } finally {
-      setIsDeletingExpense(false); // End loading
+      setIsDeletingExpense(false);
     }
   };
 
@@ -680,7 +667,7 @@ const GroupDetail = () => {
         .from('expense_participants')
         .update(updateData)
         .eq('expense_id', expenseId)
-        .eq(isGuest ? 'id' : 'user_id', participantId); // Use 'id' for guest participants
+        .eq(isGuest ? 'id' : 'user_id', participantId);
 
       if (error) throw error;
       
@@ -1122,7 +1109,7 @@ const GroupDetail = () => {
                       </div>
                     </div>
                   </div>
-                </div> {/* <-- Thẻ đóng div đã được thêm vào đây */}
+                </div>
               </CardContent>
             </Card>
           ))}
