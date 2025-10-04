@@ -92,11 +92,12 @@ const InviteMemberDialog = ({ open, onOpenChange, onInvite, groupName }: InviteM
                     className="flex items-center justify-between p-2 bg-background rounded-lg border border-border" /* Reduced padding */
                   >
                     <span className="text-sm">{email}</span> {/* Reduced font size */}
+                    {/* Reduced size */}
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6" {/* Reduced size */}
+                      className="h-6 w-6"
                       onClick={() => handleRemoveEmail(email)}
                     >
                       <X className="w-3.5 h-3.5" /> {/* Reduced size */}
