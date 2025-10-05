@@ -209,6 +209,7 @@ const Groups = () => {
       setOpenJoinDialog(false);
       setJoinCode("");
       toast.success("Tham gia nhóm thành công!");
+      await fetchGroups(); // Refresh danh sách nhóm để cập nhật số thành viên
       navigate(`/groups/${joinCode}`);
     } catch (error: any) {
       console.error('Error joining group:', error.message || error);
