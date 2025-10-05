@@ -436,8 +436,8 @@ const GroupDetail = () => {
 
       const participantsToInsert = expenseData.participants.map((p: any) => ({
         expense_id: newExpense.id,
-        user_id: p.userId,
-        guest_name: p.guestName,
+        user_id: p.userId || null,
+        guest_name: p.guestName || null,
         amount: p.amount,
         is_paid: p.isPaid
       }));
