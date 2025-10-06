@@ -91,19 +91,19 @@ const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances,
                     )}
                   </div>
                   <div className="text-right">
-                    <div className={`font-bold text-base ${item.amount > 0 ? 'text-green-600' : 'text-red-600'}`}> {/* Reduced font size */}
+                    <div className={`font-bold text-base ${type === 'pay' ? 'text-red-600' : 'text-green-600'}`}> {/* MODIFIED LINE */}
                       {item.amount.toLocaleString()} đ
                     </div>
-                    <div className={`flex items-center justify-end gap-1 text-xs ${item.amount > 0 ? 'text-green-500' : 'text-red-500'}`}> {/* Reduced gap and font size */}
-                      {item.amount > 0 ? (
-                        <>
-                          <ArrowDownLeft className="w-3.5 h-3.5" /> {/* Reduced size */}
-                          <span>Cần thu</span>
-                        </>
-                      ) : (
+                    <div className={`flex items-center justify-end gap-1 text-xs ${type === 'pay' ? 'text-red-500' : 'text-green-500'}`}> {/* MODIFIED LINE */}
+                      {type === 'pay' ? ( // MODIFIED LOGIC
                         <>
                           <ArrowUpRight className="w-3.5 h-3.5" /> {/* Reduced size */}
                           <span>Cần trả</span>
+                        </>
+                      ) : (
+                        <>
+                          <ArrowDownLeft className="w-3.5 h-3.5" /> {/* Reduced size */}
+                          <span>Cần thu</span>
                         </>
                       )}
                     </div>
