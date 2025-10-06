@@ -2,6 +2,8 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format, setMonth, getMonth, getYear } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { vi } from 'date-fns/locale'; // Import Vietnamese locale
 
 interface MonthSelectorProps {
   selectedMonth: Date;
@@ -14,28 +16,28 @@ const MonthSelector = ({ selectedMonth, onMonthChange }: MonthSelectorProps) => 
 
   const months = Array.from({ length: 12 }, (_, i) => i); // 0 to 11
 
-  const handleMonthClick = (monthIndex: number) => {
+  const handleMonthSelect = (monthIndexString: string) => {
+    const monthIndex = parseInt(monthIndexString);
     const newDate = setMonth(new Date(currentYear, 0, 1), monthIndex); // Set to first day of selected month in current year
     onMonthChange(newDate);
   };
 
   return (
-    <div className="flex flex-wrap gap-1.5 justify-center md:justify-start"> {/* Reduced gap */}
-      {months.map((monthIndex) => (
-        <Button
-          key={monthIndex}
-          variant="outline"
-          size="sm"
-          onClick={() => handleMonthClick(monthIndex)}
-          className={cn(
-            "w-8 h-7 text-xs font-semibold", // Adjusted size and text size
-            currentMonthIndex === monthIndex && "bg-primary text-primary-foreground hover:bg-primary/90"
-          )}
-        >
-          {format(setMonth(new Date(), monthIndex), 'M')}
-        </Button>
-      ))}
-    </div>
+    <Select
+      value={currentMonthIndex.toString()}
+      onValueChange={handleMonthSelect}
+    >
+      <SelectTrigger className="w-[120px] h-8 text-xs">
+        <SelectValue placeholder="Chọn tháng" />
+      </SelectTrigger>
+      <SelectContent>
+        {months.map((monthIndex) => (
+          <SelectItem key={monthIndex} value={monthIndex.toString()} className="text-xs">
+            {format(setMonth(new Date(), monthIndex), 'MMMM', { locale: vi })} {/* Display full month name */}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };
 
