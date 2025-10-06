@@ -903,7 +903,7 @@ const GroupDetail = () => {
         {/* Action Buttons */}
         <div className="grid grid-cols-3 gap-2">
           <Button 
-            className="h-9 text-xs sm:h-10 sm:text-sm bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" {/* Adjusted height and font size */}
+            className="h-9 text-xs sm:h-10 sm:text-sm bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" 
             onClick={() => setOpenAddExpense(true)}
           >
             <Plus className="w-4 h-4 mr-1" />
@@ -912,7 +912,7 @@ const GroupDetail = () => {
 
           <Button
             variant="default"
-            className="h-9 text-xs sm:h-10 sm:text-sm" {/* Adjusted height and font size */}
+            className="h-9 text-xs sm:h-10 sm:text-sm" 
             onClick={handleShare}
           >
             <Share2 className="w-4 h-4 mr-1" />
@@ -920,7 +920,7 @@ const GroupDetail = () => {
           </Button>
 
           <Button variant="outline" 
-            className="h-9 text-xs sm:h-10 sm:text-sm" {/* Adjusted height and font size */}
+            className="h-9 text-xs sm:h-10 sm:text-sm" 
             onClick={() => setOpenInviteMemberDialog(true)}
           >
             <UserPlus className="w-4 h-4 mr-1" />
@@ -934,13 +934,13 @@ const GroupDetail = () => {
             <CardContent className="p-3 space-y-1.5">
               <div className="flex items-center gap-1.5 text-blue-500">
                 <Receipt className="w-4 h-4" />
-                <span className="text-xs sm:text-sm font-medium">Tổng Chi Phí</span> {/* Adjusted font size */}
+                <span className="text-xs sm:text-sm font-medium">Tổng Chi Phí</span> 
               </div>
               <div className="space-y-0.5">
-                <div className="text-base sm:text-lg font-bold text-foreground"> {/* Adjusted font size */}
+                <div className="text-base sm:text-lg font-bold text-foreground"> 
                   {Math.floor(totalExpense).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} đ
                 </div>
-                <div className="text-xs sm:text-sm text-muted-foreground">Tổng Chi Phí</div> {/* Adjusted font size */}
+                <div className="text-xs sm:text-sm text-muted-foreground">Tổng Chi Phí</div> 
               </div>
             </CardContent>
           </Card>
@@ -952,11 +952,11 @@ const GroupDetail = () => {
             <CardContent className="p-3 space-y-1.5">
               <div className="flex items-center gap-1.5 text-green-500">
                 <Users className="w-4 h-4" />
-                <span className="text-xs sm:text-sm font-medium">Tổng thành viên</span> {/* Adjusted font size */}
+                <span className="text-xs sm:text-sm font-medium">Tổng thành viên</span> 
               </div>
               <div className="space-y-0.5">
-                <div className="text-base sm:text-lg font-bold text-foreground">{members.length}</div> {/* Adjusted font size */}
-                <div className="text-xs sm:text-sm text-muted-foreground">trong nhóm này</div> {/* Adjusted font size */}
+                <div className="text-base sm:text-lg font-bold text-foreground">{members.length}</div> 
+                <div className="text-xs sm:text-sm text-muted-foreground">trong nhóm này</div> 
               </div>
             </CardContent>
           </Card>
@@ -965,13 +965,13 @@ const GroupDetail = () => {
             <CardContent className="p-3 space-y-1.5">
               <div className="flex items-center gap-1.5 text-yellow-500">
                 <User className="w-4 h-4" />
-                <span className="text-xs sm:text-sm font-medium">Phần Của Tôi</span> {/* Adjusted font size */}
+                <span className="text-xs sm:text-sm font-medium">Phần Của Tôi</span> 
               </div>
               <div className="space-y-0.5">
-                <div className="text-base sm:text-lg font-bold text-foreground"> {/* Adjusted font size */}
+                <div className="text-base sm:text-lg font-bold text-foreground"> 
                   {Math.floor(amountToPay).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} đ
                 </div>
-                <div className="text-xs sm:text-sm text-muted-foreground">phần của tôi</div> {/* Adjusted font size */}
+                <div className="text-xs sm:text-sm text-muted-foreground">phần của tôi</div> 
               </div>
             </CardContent>
           </Card>
@@ -979,7 +979,7 @@ const GroupDetail = () => {
 
         {/* Quick Actions */}
         <div>
-          <h2 className="text-sm sm:text-base font-semibold text-foreground mb-2"> {/* Adjusted font size */}
+          <h2 className="text-sm sm:text-base font-semibold text-foreground mb-2"> 
             Thao tác nhanh
           </h2>
           <div className="space-y-2">
@@ -993,8 +993,8 @@ const GroupDetail = () => {
                     <DollarSign className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="font-medium text-xs sm:text-sm">Khoản Tiền Phải Trả</div> {/* Adjusted font size */}
-                    <div className="text-base sm:text-lg font-bold text-red-500"> {/* Adjusted font size */}
+                    <div className="font-medium text-xs sm:text-sm">Khoản Tiền Phải Trả</div> 
+                    <div className="text-base sm:text-lg font-bold text-red-500"> 
                       {Math.floor(amountToPay).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} đ
                     </div>
                   </div>
@@ -1013,8 +1013,8 @@ const GroupDetail = () => {
                     <Clock className="w-4 h-4 text-green-500" />
                   </div>
                   <div>
-                    <div className="font-medium text-xs sm:text-sm">Khoản Tiền Cần Thu</div> {/* Adjusted font size */}
-                    <div className="text-base sm:text-lg font-bold text-green-500"> {/* Adjusted font size */}
+                    <div className="font-medium text-xs sm:text-sm">Khoản Tiền Cần Thu</div> 
+                    <div className="text-base sm:text-lg font-bold text-green-500"> 
                       {Math.floor(amountToCollect).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} đ
                     </div>
                   </div>
@@ -1025,7 +1025,7 @@ const GroupDetail = () => {
 
             <Button
               onClick={() => setOpenConfirmMonthCompletionDialog(true)}
-              className="w-full h-9 text-xs sm:h-10 sm:text-sm bg-blue-500 hover:bg-blue-600 text-white" {/* Adjusted height and font size */}
+              className="w-full h-9 text-xs sm:h-10 sm:text-sm bg-blue-500 hover:bg-blue-600 text-white" 
               disabled={isCompletingMonthExpenses}
             >
               {isCompletingMonthExpenses ? (
@@ -1041,7 +1041,7 @@ const GroupDetail = () => {
         {/* Expenses List */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-1.5"> {/* Adjusted font size */}
+            <h2 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-1.5"> 
               <Receipt className="w-4 h-4" />
               Chi phí ({totalExpensesCount})
             </h2>
@@ -1085,8 +1085,8 @@ const GroupDetail = () => {
             ) : expenses.length === 0 ? (
               <div className="text-center py-10">
                 <Receipt className="w-14 h-14 text-muted-foreground mx-auto mb-3" />
-                <p className="text-base sm:text-lg font-semibold mb-1.5">Chưa có chi phí nào</p> {/* Adjusted font size */}
-                <p className="text-xs sm:text-sm text-muted-foreground mb-5"> {/* Adjusted font size */}
+                <p className="text-base sm:text-lg font-semibold mb-1.5">Chưa có chi phí nào</p> 
+                <p className="text-xs sm:text-sm text-muted-foreground mb-5"> 
                   Thêm chi phí mới để bắt đầu theo dõi.
                 </p>
               </div>
@@ -1102,7 +1102,7 @@ const GroupDetail = () => {
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
                         <div className="flex items-center gap-1.5">
-                          <h3 className="font-semibold text-sm sm:text-base">{expense.title}</h3> {/* Adjusted font size */}
+                          <h3 className="font-semibold text-sm sm:text-base">{expense.title}</h3> 
                           {expense.isMine && (
                             <span className="px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 text-xs font-medium">
                               Chi phí của bạn
@@ -1119,7 +1119,7 @@ const GroupDetail = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg sm:text-xl font-bold text-red-500"> {/* Adjusted font size */}
+                        <div className="text-lg sm:text-xl font-bold text-red-500"> 
                           {Math.floor(expense.amount).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} đ
                         </div>
                         <div className="text-xs text-muted-foreground mt-0.5">
@@ -1178,7 +1178,7 @@ const GroupDetail = () => {
           {/* Pagination Controls */}
           {totalExpensesCount > 0 && (
             <div className="flex items-center justify-between py-4">
-              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground"> {/* Adjusted font size */}
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground"> 
                 <span>Hiển thị</span>
                 <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
                   <SelectTrigger className="w-[70px] h-8 text-xs">
@@ -1202,7 +1202,7 @@ const GroupDetail = () => {
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-xs sm:text-sm font-medium"> {/* Adjusted font size */}
+                <span className="text-xs sm:text-sm font-medium"> 
                   Trang {currentPage} / {totalPages}
                 </span>
                 <Button
@@ -1222,7 +1222,7 @@ const GroupDetail = () => {
         {/* Members */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-1.5"> {/* Adjusted font size */}
+            <h2 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-1.5"> 
               <Users className="w-4 h-4" />
               Thành viên ({members.length})
             </h2>
@@ -1247,7 +1247,7 @@ const GroupDetail = () => {
                       <User className="w-4 h-4 text-primary" />
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="font-medium text-xs sm:text-sm">{member.name}</span> {/* Adjusted font size */}
+                      <span className="font-medium text-xs sm:text-sm">{member.name}</span> 
                       <div className="flex gap-1">
                         {member.id === user?.id && (
                           <span className="px-1.5 py-0.5 rounded-md bg-green-500 text-white text-xs font-medium">
@@ -1375,8 +1375,8 @@ const GroupDetail = () => {
       <Dialog open={openShareDialog} onOpenChange={setOpenShareDialog}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-base sm:text-xl">Chia sẻ nhóm</DialogTitle> {/* Adjusted font size */}
-            <DialogDescription className="text-xs sm:text-sm"> {/* Adjusted font size */}
+            <DialogTitle className="text-base sm:text-xl">Chia sẻ nhóm</DialogTitle> 
+            <DialogDescription className="text-xs sm:text-sm"> 
               Chia sẻ mã này để mời người khác tham gia nhóm
             </DialogDescription>
           </DialogHeader>
@@ -1423,17 +1423,17 @@ const GroupDetail = () => {
       <div className="fixed bottom-4 left-4 right-4 flex justify-between max-w-4xl mx-auto">
         <Button
           size="icon"
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-lg" {/* Adjusted size */}
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-lg" 
           onClick={() => toast.info("Mở chat")}
         >
-          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" /> {/* Adjusted icon size */}
+          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" /> 
         </Button>
         <Button
           size="icon"
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" {/* Adjusted size */}
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" 
           onClick={() => setOpenAddExpense(true)}
         >
-          <Plus className="w-4 h-4 sm:w-5 sm:h-5" /> {/* Adjusted icon size */}
+          <Plus className="w-4 h-4 sm:w-5 sm:h-5" /> 
         </Button>
       </div>
     </div>
