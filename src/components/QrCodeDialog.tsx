@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react"; // Changed from Copy to Download
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 
@@ -25,22 +25,35 @@ const QrCodeDialog = ({
   accountName,
   personName,
 }: QrCodeDialogProps) => {
-  // Removed 'copied' state as it's no longer needed for copying text
-
   const qrCodeUrl = `https://img.vietqr.io/image/${bankId}-${accountNumber}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(description)}&accountName=${encodeURIComponent(accountName)}`;
 
-  const handleDownloadQrCode = () => {
+  const handleDownloadQrCode = async () => {
     if (!qrCodeUrl) {
       toast.error("Không có mã QR để tải về.");
       return;
     }
-    const link = document.createElement('a');
-    link.href = qrCodeUrl;
-    link.download = `QR_ChuyenKhoan_${personName}_${amount}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("Đã tải ảnh mã QR về máy!");
+
+    try {
+      const response = await fetch(qrCodeUrl);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const imageBlob = await response.blob();
+      const blobUrl = URL.createObjectURL(imageBlob);
+
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `QR_ChuyenKhoan_${personName}_${amount}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl); // Clean up the object URL
+
+      toast.success("Đã tải ảnh mã QR về máy!");
+    } catch (error) {
+      console.error("Error downloading QR code:", error);
+      toast.error("Không thể tải ảnh mã QR về máy. Vui lòng thử lại.");
+    }
   };
 
   return (
