@@ -172,6 +172,9 @@ const GroupDetail = () => {
 
   const formattedMonthYear = format(setYear(selectedMonth, selectedYear), 'MM/yyyy', { locale: vi });
 
+  // Get current user's name for QR code description
+  const currentUserName = members.find(m => m.id === user?.id)?.name || user?.email || "Bạn";
+
   useEffect(() => {
     if (!id || !user) return;
     loadGroupData();
@@ -460,7 +463,7 @@ const GroupDetail = () => {
       bankId,
       accountNumber: bankAccountNumber,
       amount,
-      description: `${personName} TT ${formattedMonthYear}`,
+      description: `${currentUserName} TT ${formattedMonthYear}`, // Changed to use currentUserName
       accountName,
       personName,
     });
@@ -478,7 +481,7 @@ const GroupDetail = () => {
       bankId,
       accountNumber: bankAccountNumber,
       amount,
-      description: `${personName} TT ${formattedMonthYear}`,
+      description: `${currentUserName} TT ${formattedMonthYear}`, // Changed to use currentUserName
       accountName,
       personName,
     });
