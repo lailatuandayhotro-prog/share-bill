@@ -38,6 +38,7 @@ interface ExpenseDetailDialogProps {
   onMarkPaid: (participantId: string, currentIsPaid: boolean, isGuest: boolean) => void;
   isMarkingPaid: boolean;
   isDeletingExpense: boolean; // New prop for delete loading state
+  isExpenseCreator: boolean; // New prop to indicate if current user is the expense creator
 }
 
 const ExpenseDetailDialog = ({
@@ -49,7 +50,8 @@ const ExpenseDetailDialog = ({
   onDelete,
   onMarkPaid,
   isMarkingPaid,
-  isDeletingExpense, // Destructure new prop
+  isDeletingExpense,
+  isExpenseCreator, // Destructure new prop
 }: ExpenseDetailDialogProps) => {
   if (!expense) return null;
 
@@ -109,6 +111,7 @@ const ExpenseDetailDialog = ({
           <Button
             onClick={onComplete}
             className="flex-1 h-9 bg-green-500 hover:bg-green-600 text-white text-xs"
+            disabled={!isExpenseCreator} // Disable if not the creator
             /* Reduced height and font size */
           >
             <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> {/* Smaller icon */}
@@ -118,6 +121,7 @@ const ExpenseDetailDialog = ({
             onClick={onEdit}
             variant="outline"
             className="flex-1 h-9 text-xs"
+            disabled={!isExpenseCreator} // Disable if not the creator
             /* Reduced height and font size */
           >
             <Edit className="w-3.5 h-3.5 mr-1" /> {/* Smaller icon */}
@@ -128,7 +132,7 @@ const ExpenseDetailDialog = ({
             variant="outline"
             className="flex-1 h-9 text-red-500 hover:text-red-600 hover:bg-red-50 text-xs"
             /* Reduced height and font size */
-            disabled={isDeletingExpense} // Disable button when deleting
+            disabled={isDeletingExpense || !isExpenseCreator} // Disable button when deleting or if not creator
           >
             {isDeletingExpense ? (
               <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> /* Smaller icon */
@@ -223,7 +227,7 @@ const ExpenseDetailDialog = ({
                               size="sm"
                               className={participant.isPaid ? "bg-red-500 hover:bg-red-600 text-white text-xs h-7 px-2" : "bg-blue-500 hover:bg-blue-600 text-white text-xs h-7 px-2"}
                               /* Reduced height, padding and font size */
-                              disabled={isMarkingPaid}
+                              disabled={isMarkingPaid || !isExpenseCreator} // Disable if marking paid or not creator
                             >
                               <span>
                                 {isMarkingPaid ? (

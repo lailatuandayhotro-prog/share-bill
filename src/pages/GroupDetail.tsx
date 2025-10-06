@@ -1125,6 +1125,7 @@ const GroupDetail = () => {
                             : "bg-green-500 hover:bg-green-600"
                         }`}
                         onClick={() => handleCompleteExpense(expense.id, expense.isCompleted)}
+                        disabled={!expense.isMine} // Disable if not the creator
                       >
                         <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                         {expense.isCompleted ? "Đã hoàn thành" : "Hoàn thành"}
@@ -1218,6 +1219,7 @@ const GroupDetail = () => {
         }}
         isMarkingPaid={isMarkingPaid}
         isDeletingExpense={isDeletingExpense}
+        isExpenseCreator={selectedExpense?.isMine || false} // Pass isExpenseCreator prop
       />
 
       {/* Edit Expense Dialog */}
