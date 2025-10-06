@@ -120,61 +120,34 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
 
     const totalAmount = parseFloat(amount);
     
-    // Determine all entities that will directly split the cost
-    const splitEntities = new Set<string>(); // Stores member IDs and guest IDs (for unabsorbed guests)
-    selectedMembers.forEach(memberId => splitEntities.add(`member-${memberId}`));
-    guests.forEach(guest => {
-      if (!guest.responsibleMemberId) {
-        splitEntities.add(`guest-${guest.id}`); // Unabsorbed guest
-      } else {
-        splitEntities.add(`member-${guest.responsibleMemberId}`); // Absorbed guest's share goes to responsible member
-      }
-    });
+    // Tính số suất chia theo số thành viên được chọn + số khách (khách luôn là một suất riêng)
+    const memberIds = [...selectedMembers];
 
-    if (splitEntities.size === 0) {
+    const totalEntities = memberIds.length + guests.length;
+    if (totalEntities === 0) {
       toast.error("Không có người tham gia hợp lệ để chia chi phí.");
       return;
     }
 
-    const sharePerSplitEntity = totalAmount / splitEntities.size;
+    const sharePerEntity = totalAmount / totalEntities;
 
-    const memberOwesMap = new Map<string, number>(); // Tracks how much each member *owes*
-    const guestOwesMap = new Map<string, number>(); // Tracks how much each unabsorbed guest *owes*
+    // Tạo danh sách participants: mỗi thành viên (trừ người trả tiền) 1 suất, mỗi khách 1 suất
+    const participantsToInsert: any[] = [];
 
-    // Distribute shares
-    splitEntities.forEach(entityKey => {
-      if (entityKey.startsWith('member-')) {
-        const memberId = entityKey.substring(7);
-        memberOwesMap.set(memberId, (memberOwesMap.get(memberId) || 0) + sharePerSplitEntity);
-      } else if (entityKey.startsWith('guest-')) {
-        const guestId = entityKey.substring(6);
-        guestOwesMap.set(guestId, (guestOwesMap.get(guestId) || 0) + sharePerSplitEntity);
+    memberIds.forEach((memberId) => {
+      if (memberId !== paidBy) {
+        participantsToInsert.push({ user_id: memberId, amount: sharePerEntity, is_paid: false });
       }
     });
 
-    // Adjust for the payer: they don't owe their own share to the group.
-    // Their "share" is covered by their payment of the total amount.
-    if (memberOwesMap.has(paidBy)) {
-      memberOwesMap.set(paidBy, (memberOwesMap.get(paidBy) || 0) - sharePerSplitEntity);
-    }
-
-    // Construct participants list for the expense_participants table
-    const participantsToInsert: any[] = [];
-    
-    for (const [memberId, owedAmount] of memberOwesMap.entries()) {
-      if (owedAmount > 0) { // Only add if they actually owe money
-        participantsToInsert.push({ user_id: memberId, amount: owedAmount, is_paid: false });
+    guests.forEach((guest) => {
+      const guestName = guest.name?.trim();
+      if (guestName) {
+        participantsToInsert.push({ guest_name: guestName, amount: sharePerEntity, is_paid: false });
       }
-    }
-    for (const [guestId, owedAmount] of guestOwesMap.entries()) {
-      if (owedAmount > 0) { // Guests always owe
-        const guestName = guests.find(g => g.id === guestId)?.name;
-        if (guestName) {
-          participantsToInsert.push({ guest_name: guestName, amount: owedAmount, is_paid: false });
-        }
-      }
-    }
+    });
 
+    // Gói dữ liệu expense để gửi lên
     const expense = {
       amount: totalAmount,
       description,
@@ -182,11 +155,15 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
       splitType,
       paidBy,
       paidByName: members.find(m => m.id === paidBy)?.name || currentUserName,
-      participants: participantsToInsert, // This now contains members and unabsorbed guests
-      guests: guests, // Full guest list with responsibleMemberId for display/tracking
+      participants: participantsToInsert, // thành viên + khách (khách là 1 suất riêng)
+      guests: guests, // lưu để hiển thị "trả hộ cho"
       receiptImage: receiptImage,
     };
 
+    // Thêm một bản ghi cho người trả tiền (để hiển thị "Người trả tiền")
+    if (!expense.participants.some((p: any) => p.user_id === paidBy)) {
+      expense.participants.push({ user_id: paidBy, amount: 0, is_paid: true });
+    }
     onAddExpense(expense);
     
     // Reset form
