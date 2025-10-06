@@ -110,7 +110,7 @@ const ExpenseDetailDialog = ({
         <div className="flex gap-2 p-3 pb-2">
           <Button
             onClick={onComplete}
-            className="flex-1 h-9 bg-green-500 hover:bg-green-600 text-white text-xs sm:text-sm" {/* Adjusted font size */}
+            className="flex-1 h-9 bg-green-500 hover:bg-green-600 text-white text-xs sm:text-sm" 
             disabled={!isExpenseCreator}
           >
             <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
@@ -119,7 +119,7 @@ const ExpenseDetailDialog = ({
           <Button
             onClick={onEdit}
             variant="outline"
-            className="flex-1 h-9 text-xs sm:text-sm" {/* Adjusted font size */}
+            className="flex-1 h-9 text-xs sm:text-sm" 
             disabled={!isExpenseCreator}
           >
             <Edit className="w-3.5 h-3.5 mr-1" />
@@ -128,7 +128,7 @@ const ExpenseDetailDialog = ({
           <Button
             onClick={onDelete}
             variant="outline"
-            className="flex-1 h-9 text-red-500 hover:text-red-600 hover:bg-red-50 text-xs sm:text-sm" {/* Adjusted font size */}
+            className="flex-1 h-9 text-red-500 hover:text-red-600 hover:bg-red-50 text-xs sm:text-sm" 
             disabled={isDeletingExpense || !isExpenseCreator}
           >
             {isDeletingExpense ? (
