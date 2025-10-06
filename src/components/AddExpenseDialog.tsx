@@ -255,7 +255,7 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
               placeholder="500.000"
               value={amount}
               onChange={(e) => setAmount(formatCurrencyInput(e.target.value))} // Use formatCurrencyInput
-              className="text-sm sm:text-base h-9 placeholder:italic placeholder:text-muted-foreground" {/* Adjusted font size */}
+              className="text-sm sm:text-base h-9 placeholder:italic placeholder:text-muted-foreground" 
             />
           </div>
 
