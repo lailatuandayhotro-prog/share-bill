@@ -17,7 +17,7 @@ const Auth = () => {
   
   // Login form
   const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginLoginPassword] = useState("");
+  const [loginPassword, setLoginPassword] = useState(""); // Corrected: Renamed setLoginLoginPassword to setLoginPassword
   
   // Signup form
   const [signupFullName, setSignupFullName] = useState("");
@@ -34,13 +34,13 @@ const Auth = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!loginEmail || !loginLoginPassword) {
+    if (!loginEmail || !loginPassword) { // Corrected: Used loginPassword instead of loginLoginPassword
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
     setLoading(true);
-    const { error } = await signIn(loginEmail, loginLoginPassword);
+    const { error } = await signIn(loginEmail, loginPassword); // Corrected: Used loginPassword instead of loginLoginPassword
     setLoading(false);
 
     if (error) {
@@ -154,8 +154,8 @@ const Auth = () => {
                       id="login-password"
                       type="password"
                       placeholder="••••••••"
-                      value={loginLoginPassword}
-                      onChange={(e) => setLoginLoginPassword(e.target.value)}
+                      value={loginPassword} // Corrected: Used loginPassword
+                      onChange={(e) => setLoginPassword(e.target.value)} // Corrected: Used setLoginPassword
                       disabled={loading}
                       className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                     />
