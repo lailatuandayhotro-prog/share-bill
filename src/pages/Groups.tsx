@@ -285,7 +285,7 @@ const Groups = () => {
                     value={joinCode}
                     onChange={(e) => setJoinCode(e.target.value)}
                     // Reduced height and font size
-                    className="h-9 text-sm" 
+                    className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground" 
                   />
                 </div>
                 <Button onClick={handleJoinGroup} 
@@ -321,7 +321,7 @@ const Groups = () => {
                     placeholder="VD: Chuyến đi Đà Lạt"
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
-                    className="h-9 text-sm" 
+                    className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground" 
                   />
                 </div>
                 <Button onClick={handleCreateGroup} 
@@ -352,7 +352,7 @@ const Groups = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               // Reduced padding, height and font size
-              className="pl-9 h-9 text-sm"
+              className="pl-9 h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
             />
           </div>
 

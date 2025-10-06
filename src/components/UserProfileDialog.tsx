@@ -122,7 +122,7 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
                   placeholder="https://example.com/avatar.jpg"
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
-                  className="h-9 text-sm"
+                  className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                 />
               </div>
             </div>
@@ -137,7 +137,7 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
-                className="h-9 text-sm"
+                className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
               />
             </div>
 
@@ -150,7 +150,7 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
                 placeholder="A Béo"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                className="h-9 text-sm"
+                className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
               />
             </div>
 
@@ -163,7 +163,7 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
                 placeholder="1234567890"
                 value={bankAccountNumber}
                 onChange={(e) => setBankAccountNumber(e.target.value)}
-                className="h-9 text-sm"
+                className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
               />
             </div>
 
@@ -176,7 +176,7 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
                 placeholder="Vietcombank"
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
-                className="h-9 text-sm"
+                className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
               />
             </div>
 

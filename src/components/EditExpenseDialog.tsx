@@ -277,7 +277,7 @@ const EditExpenseDialog = ({
               placeholder="500.000"
               value={amount}
               onChange={(e) => setAmount(formatCurrencyInput(e.target.value))} // Use formatCurrencyInput
-              className="text-base h-9"
+              className="text-base h-9 placeholder:italic placeholder:text-muted-foreground"
             /> {/* Reduced font size and height */}
           </div>
 
@@ -293,7 +293,7 @@ const EditExpenseDialog = ({
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
               /* Reduced rows */
-              className="text-sm"
+              className="text-sm placeholder:italic placeholder:text-muted-foreground"
             /> {/* Reduced font size */}
           </div>
 
@@ -434,7 +434,7 @@ const EditExpenseDialog = ({
                 value={newGuestName}
                 onChange={(e) => setNewGuestName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddGuest()}
-                className="flex-1 h-9 text-sm"
+                className="flex-1 h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
               /> {/* Reduced height and font size */}
               <Select value={newGuestResponsibleMemberId} onValueChange={(value) => setNewGuestResponsibleMemberId(value === "undefined" ? undefined : value)}>
                 <SelectTrigger 
@@ -513,8 +513,9 @@ const EditExpenseDialog = ({
           {/* Ảnh hóa đơn */}
           <div className="space-y-2"> {/* Reduced space-y */}
             <Label 
+              // Reduced font size
               className="text-sm"
-            >Ảnh hóa đơn (Tùy chọn)</Label> {/* Reduced font size */}
+            >Ảnh hóa đơn (Tùy chọn)</Label>
             <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer"> {/* Reduced padding */}
               <input
                 type="file"
@@ -530,11 +531,12 @@ const EditExpenseDialog = ({
                   </div>
                   <div>
                     <p className="font-medium text-sm text-foreground"> {/* Reduced font size */}
-                      {receiptImage instanceof File ? receiptImage.name : (receiptPreview ? "Đã có ảnh hóa đơn" : "Nhấp để tải lên ảnh hóa đơn")}
+                      {receiptImage ? receiptImage.name : "Nhấp để tải lên ảnh hóa đơn"}
                     </p>
                     <p 
+                      // Reduced font size and margin
                       className="text-xs text-muted-foreground mt-0.5"
-                    > {/* Reduced font size and margin */}
+                    >
                       PNG, JPG tối đa 5MB
                     </p>
                   </div>
@@ -543,20 +545,14 @@ const EditExpenseDialog = ({
             </div>
 
             {receiptPreview && (
-              <div className="rounded-lg border border-border overflow-hidden relative">
+              <div className="rounded-lg border border-border overflow-hidden">
                 <img
                   src={receiptPreview}
-                  alt={`Hóa đơn: ${initialExpense.title}`}
+                  alt={`Hóa đơn: ${receiptImage?.name ?? ''}`}
+                  // Reduced max-height
                   className="w-full max-h-48 object-contain bg-muted"
-                /> {/* Reduced max-height */}
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-1.5 right-1.5 h-7 w-7 rounded-full"
-                  onClick={handleRemoveReceipt}
-                > {/* Reduced size and position */}
-                  <X className="w-3.5 h-3.5" /> {/* Smaller icon */}
-                </Button>
+                  loading="lazy"
+                />
               </div>
             )}
           </div>
@@ -567,15 +563,17 @@ const EditExpenseDialog = ({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
+            // Reduced height and font size
             className="flex-1 h-9 text-sm"
-          > {/* Reduced height and font size */}
+          >
             Hủy
           </Button>
           <Button
             onClick={handleSubmit}
+            // Reduced height and font size
             className="flex-1 h-9 text-sm"
-          > {/* Reduced height and font size */}
-            Lưu thay đổi
+          >
+            Thêm chi phí
           </Button>
         </div>
       </DialogContent>
@@ -583,4 +581,4 @@ const EditExpenseDialog = ({
   );
 };
 
-export default EditExpenseDialog;
+export default AddExpenseDialog;

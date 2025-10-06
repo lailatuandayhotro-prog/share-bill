@@ -17,7 +17,7 @@ const Auth = () => {
   
   // Login form
   const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
+  const [loginPassword, setLoginLoginPassword] = useState("");
   
   // Signup form
   const [signupFullName, setSignupFullName] = useState("");
@@ -34,13 +34,13 @@ const Auth = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!loginEmail || !loginPassword) {
+    if (!loginEmail || !loginLoginPassword) {
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
     setLoading(true);
-    const { error } = await signIn(loginEmail, loginPassword);
+    const { error } = await signIn(loginEmail, loginLoginPassword);
     setLoading(false);
 
     if (error) {
@@ -150,7 +150,7 @@ const Auth = () => {
                       onChange={(e) => setLoginEmail(e.target.value)}
                       disabled={loading}
                       // Reduced height and font size
-                      className="h-9 text-sm"
+                      className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                     />
                   </div>
                   <div className="space-y-1.5"> {/* Reduced space-y */}
@@ -162,11 +162,11 @@ const Auth = () => {
                       id="login-password"
                       type="password"
                       placeholder="••••••••"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
+                      value={loginLoginPassword}
+                      onChange={(e) => setLoginLoginPassword(e.target.value)}
                       disabled={loading}
                       // Reduced height and font size
-                      className="h-9 text-sm"
+                      className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                     />
                   </div>
                   <Button type="submit" 
@@ -211,7 +211,7 @@ const Auth = () => {
                       onChange={(e) => setSignupFullName(e.target.value)}
                       disabled={loading}
                       // Reduced height and font size
-                      className="h-9 text-sm"
+                      className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                     />
                   </div>
                   <div className="space-y-1.5"> {/* Reduced space-y */}
@@ -227,7 +227,7 @@ const Auth = () => {
                       onChange={(e) => setSignupEmail(e.target.value)}
                       disabled={loading}
                       // Reduced height and font size
-                      className="h-9 text-sm"
+                      className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                     />
                   </div>
                   <div className="space-y-1.5"> {/* Reduced space-y */}
@@ -243,7 +243,7 @@ const Auth = () => {
                       onChange={(e) => setSignupPassword(e.target.value)}
                       disabled={loading}
                       // Reduced height and font size
-                      className="h-9 text-sm"
+                      className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                     />
                   </div>
                   <div className="space-y-1.5"> {/* Reduced space-y */}
@@ -259,7 +259,7 @@ const Auth = () => {
                       onChange={(e) => setSignupConfirmPassword(e.target.value)}
                       disabled={loading}
                       // Reduced height and font size
-                      className="h-9 text-sm"
+                      className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                     />
                   </div>
                   <Button type="submit" 

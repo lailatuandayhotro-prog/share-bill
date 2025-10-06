@@ -265,7 +265,7 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
               value={amount}
               onChange={(e) => setAmount(formatCurrencyInput(e.target.value))} // Use formatCurrencyInput
               // Reduced font size and height
-              className="text-base h-9"
+              className="text-base h-9 placeholder:italic placeholder:text-muted-foreground"
             />
           </div>
 
@@ -283,7 +283,7 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
               // Reduced font size
-              className="text-sm"
+              className="text-sm placeholder:italic placeholder:text-muted-foreground"
             />
           </div>
 
@@ -420,7 +420,7 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
                 onChange={(e) => setNewGuestName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddGuest()}
                 // Reduced height and font size
-                className="flex-1 h-9 text-sm"
+                className="flex-1 h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
               />
               <Select value={newGuestResponsibleMemberId} onValueChange={(value) => setNewGuestResponsibleMemberId(value === "undefined" ? undefined : value)}>
                 <SelectTrigger 
