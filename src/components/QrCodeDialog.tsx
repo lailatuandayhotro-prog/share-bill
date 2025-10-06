@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Copy, Check } from "lucide-react";
+import { Download } from "lucide-react"; // Changed from Copy to Download
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 
@@ -25,26 +25,22 @@ const QrCodeDialog = ({
   accountName,
   personName,
 }: QrCodeDialogProps) => {
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    if (!open) {
-      setCopied(false); // Reset copied state when dialog closes
-    }
-  }, [open]);
+  // Removed 'copied' state as it's no longer needed for copying text
 
   const qrCodeUrl = `https://img.vietqr.io/image/${bankId}-${accountNumber}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(description)}&accountName=${encodeURIComponent(accountName)}`;
 
-  const handleCopyAccountInfo = async () => {
-    const textToCopy = `Ngân hàng: ${bankId}\nSố tài khoản: ${accountNumber}\nTên tài khoản: ${accountName}\nSố tiền: ${amount.toLocaleString()} đ\nNội dung: ${description}`;
-    try {
-      await navigator.clipboard.writeText(textToCopy);
-      setCopied(true);
-      toast.success("Đã sao chép thông tin chuyển khoản!");
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      toast.error("Không thể sao chép thông tin.");
+  const handleDownloadQrCode = () => {
+    if (!qrCodeUrl) {
+      toast.error("Không có mã QR để tải về.");
+      return;
     }
+    const link = document.createElement('a');
+    link.href = qrCodeUrl;
+    link.download = `QR_ChuyenKhoan_${personName}_${amount}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Đã tải ảnh mã QR về máy!");
   };
 
   return (
@@ -72,9 +68,9 @@ const QrCodeDialog = ({
                 <p><strong>Số tiền:</strong> {amount.toLocaleString()} đ</p>
                 <p><strong>Nội dung:</strong> {description}</p>
               </div>
-              <Button onClick={handleCopyAccountInfo} className="w-full gap-2 h-9 text-sm">
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                {copied ? "Đã sao chép!" : "Sao chép thông tin"}
+              <Button onClick={handleDownloadQrCode} className="w-full gap-2 h-9 text-sm">
+                <Download className="w-4 h-4" />
+                Lưu ảnh
               </Button>
             </>
           ) : (
