@@ -235,15 +235,15 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm sm:max-w-xl max-h-[90vh] flex flex-col p-4"> {/* Adjusted max-w */}
-        <DialogHeader className="pb-2">
+      <DialogContent className="max-w-sm sm:max-w-xl max-h-[90vh] flex flex-col p-0"> {/* Removed p-4 */}
+        <DialogHeader className="px-4 pt-4 pb-2"> {/* Added px-4 pt-4 */}
           <DialogTitle className="text-base sm:text-xl">Thêm chi phí mới</DialogTitle> {/* Adjusted font size */}
           <DialogDescription className="text-xs sm:text-sm"> {/* Adjusted font size */}
             Thêm chi phí mới cho nhóm
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-4 py-2 -mx-4 px-4">
+        <div className="flex-1 overflow-y-auto space-y-4 px-4 py-2"> {/* Changed -mx-4 to px-4, added py-2 */}
           {/* Số tiền */}
           <div className="space-y-1.5">
             <Label htmlFor="amount" className="text-sm">Số tiền (VNĐ)</Label>
@@ -485,7 +485,7 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 pt-3 border-t">
+        <div className="flex gap-2 px-4 py-3 border-t"> {/* Added px-4 py-3 */}
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
