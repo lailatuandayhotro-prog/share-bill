@@ -1073,11 +1073,11 @@ const GroupDetail = () => {
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           <User className="w-3.5 h-3.5" />
-                          <span>{expense.paidBy}</span>
+                          <span>Người trả: {expense.paidBy}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           <Clock className="w-3.5 h-3.5" />
-                          <span>{expense.displayDate}</span>
+                          <span>Ngày: {expense.displayDate}</span>
                         </div>
                       </div>
                       <div className="text-right">
@@ -1181,7 +1181,7 @@ const GroupDetail = () => {
                       </div>
                     </div>
                   </div>
-                </div
+                </div>
               </CardContent>
             </Card>
           ))}
