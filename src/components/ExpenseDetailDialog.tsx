@@ -80,7 +80,7 @@ const ExpenseDetailDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm sm:max-w-md p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]"> {/* Adjusted max-w and added flex-col max-h */}
+      <DialogContent className="max-w-sm sm:max-w-md p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
         <DialogHeader className="sr-only">
           <DialogTitle>Chi tiết chi phí: {expense.title}</DialogTitle>
           <DialogDescription>Hóa đơn và người tham gia</DialogDescription>
@@ -92,16 +92,16 @@ const ExpenseDetailDialog = ({
               <Receipt className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
-              <h2 className="text-base sm:text-lg font-bold mb-0.5">{expense.title}</h2> {/* Adjusted font size */}
-              <p className="text-xs text-white/90"> {/* Adjusted font size */}
+              <h2 className="text-base sm:text-lg font-bold mb-0.5">{expense.title}</h2>
+              <p className="text-xs text-white/90">
                 Được trả bởi {expense.paidBy} • {expense.date}
               </p>
             </div>
           </div>
 
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 flex items-center justify-between">
-            <span className="text-sm text-white/80">Tổng chia</span> {/* Adjusted font size */}
-            <span className="text-lg sm:text-xl font-bold"> {/* Adjusted font size */}
+            <span className="text-sm text-white/80">Tổng chia</span>
+            <span className="text-lg sm:text-xl font-bold">
               {Math.floor(expense.amount).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} đ
             </span>
           </div>
@@ -142,7 +142,7 @@ const ExpenseDetailDialog = ({
         </div>
 
         {/* Participants Section */}
-        <ScrollArea className="flex-1 h-full"> {/* Wrap participants section with ScrollArea */}
+        <ScrollArea className="flex-1"> {/* Removed h-full */}
           <div className="px-3 pb-3 space-y-2">
             <div className="flex items-center gap-1.5 text-sm font-semibold">
               <Users className="w-3.5 h-3.5 text-primary" />
@@ -215,7 +215,7 @@ const ExpenseDetailDialog = ({
 
                           {/* Amount and Action */}
                           <div className="text-right flex-shrink-0">
-                            <div className="text-sm sm:text-base font-bold text-foreground mb-0.5"> {/* Adjusted font size */}
+                            <div className="text-sm sm:text-base font-bold text-foreground mb-0.5">
                               {Math.floor(participant.amount).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} đ
                             </div>
                             

@@ -58,14 +58,14 @@ const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col p-0"> {/* Removed p-4 */}
-        <DialogHeader className="px-4 pt-4 pb-2"> {/* Added px-4 pt-4 */}
-          <DialogTitle className="text-base sm:text-xl">{title}</DialogTitle> {/* Adjusted font size */}
-          <DialogDescription className="text-xs sm:text-sm">{description}</DialogDescription> {/* Adjusted font size */}
+      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col p-0">
+        <DialogHeader className="px-4 pt-4 pb-2">
+          <DialogTitle className="text-base sm:text-xl">{title}</DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">{description}</DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 h-full"> {/* Added h-full */}
-          <div className="space-y-3 px-4 py-2"> {/* Added px-4 py-2 */}
+        <ScrollArea className="flex-1"> {/* Removed h-full */}
+          <div className="space-y-3 px-4 py-2">
             {balances.length === 0 ? (
               <div className="text-center text-muted-foreground py-6 text-sm">
                 Không có khoản nào cần hiển thị.
@@ -92,7 +92,7 @@ const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances,
                     )}
                   </div>
                   <div className="text-right">
-                    <div className={`font-bold text-base sm:text-lg ${type === 'pay' ? 'text-red-600' : 'text-green-600'}`}> {/* Adjusted font size */}
+                    <div className={`font-bold text-base sm:text-lg ${type === 'pay' ? 'text-red-600' : 'text-green-600'}`}>
                       {Math.floor(item.amount).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} đ
                     </div>
                     <div className={`flex items-center justify-end gap-1 text-xs ${type === 'pay' ? 'text-red-500' : 'text-green-500'}`}>
