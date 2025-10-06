@@ -35,16 +35,17 @@ interface BalanceDetailDialogProps {
   onViewIndividualBalance: (personName: string, expenses: ContributingExpense[], type: 'pay' | 'collect', bankAccountNumber?: string, bankName?: string) => void; // Updated callback
   onShowQrCodeForTotal: (bankAccountNumber: string, bankName: string, amount: number, description: string, accountName: string, personName: string) => void; // New callback
   type: 'pay' | 'collect'; // New prop to pass down
+  formattedMonthYear: string; // New prop
 }
 
-const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances, currentUserId, onViewIndividualBalance, onShowQrCodeForTotal, type }: BalanceDetailDialogProps) => {
+const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances, currentUserId, onViewIndividualBalance, onShowQrCodeForTotal, type, formattedMonthYear }: BalanceDetailDialogProps) => {
   const { user } = useAuth();
 
   const handleItemClick = (item: BalanceItem) => {
     if (type === 'pay') {
       // For 'pay' type, clicking the item should show the QR for the total amount
       if (item.bankAccountNumber && item.bankName) {
-        const qrDescription = `Thanh toan tong no cho ${item.name}`;
+        const qrDescription = `TT tháng ${formattedMonthYear}`; // Modified here
         onShowQrCodeForTotal(item.bankAccountNumber, item.bankName, item.amount, qrDescription, item.name, item.name);
       } else {
         toast.error(`Không có thông tin ngân hàng cho ${item.name}. Vui lòng cập nhật thông tin cá nhân của họ.`);

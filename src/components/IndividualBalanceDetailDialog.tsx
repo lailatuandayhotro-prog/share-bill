@@ -21,6 +21,7 @@ interface IndividualBalanceDetailDialogProps {
   personBankAccountNumber?: string; // New prop for bank account number
   personBankName?: string; // New prop for bank name
   onShowQrCode: (bankAccountNumber: string, bankName: string, amount: number, description: string, accountName: string, personName: string) => void; // New callback
+  formattedMonthYear: string; // New prop
 }
 
 const IndividualBalanceDetailDialog = ({ 
@@ -31,14 +32,15 @@ const IndividualBalanceDetailDialog = ({
   type, 
   personBankAccountNumber, 
   personBankName, 
-  onShowQrCode 
+  onShowQrCode,
+  formattedMonthYear // Accept new prop
 }: IndividualBalanceDetailDialogProps) => {
   const title = type === 'pay' ? `Khoản bạn nợ ${personName}` : `Khoản ${personName} nợ bạn`;
   const description = type === 'pay' ? `Chi tiết các chi phí bạn cần trả cho ${personName}.` : `Chi tiết các chi phí ${personName} cần trả cho bạn.`;
 
   const handleShowQrCode = (expense: ContributingExpense) => {
     if (personBankAccountNumber && personBankName) {
-      const qrDescription = `Thanh toan ${expense.title} cho ${personName}`;
+      const qrDescription = `TT tháng ${formattedMonthYear}`; // Modified here
       onShowQrCode(personBankAccountNumber, personBankName, expense.amount, qrDescription, personName, personName);
     }
   };

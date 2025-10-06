@@ -163,6 +163,8 @@ const GroupDetail = () => {
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date()));
 
+  const formattedMonthYear = format(setYear(selectedMonth, selectedYear), 'MM/yyyy', { locale: vi }); // New: Formatted month/year
+
   useEffect(() => {
     if (!id || !user) return;
     loadGroupData();
@@ -435,7 +437,7 @@ const GroupDetail = () => {
       bankId,
       accountNumber: bankAccountNumber,
       amount,
-      description,
+      description: `TT tháng ${formattedMonthYear}`, // Modified description
       accountName,
       personName,
     });
@@ -453,7 +455,7 @@ const GroupDetail = () => {
       bankId,
       accountNumber: bankAccountNumber,
       amount,
-      description,
+      description: `TT tháng ${formattedMonthYear}`, // Modified description
       accountName,
       personName,
     });
@@ -564,7 +566,7 @@ const GroupDetail = () => {
         }
       } else if (updatedExpenseData.receiptImage === null && selectedExpense?.receiptUrl) {
         const oldFileName = selectedExpense.receiptUrl.split('/').pop();
-        if (oldFileName) {
+        if (fileName) {
           await supabase.storage.from('receipts').remove([`${user.id}/${oldFileName}`]);
         }
         receiptUrl = null;
@@ -1179,7 +1181,7 @@ const GroupDetail = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </div
               </CardContent>
             </Card>
           ))}
@@ -1258,6 +1260,7 @@ const GroupDetail = () => {
         onViewIndividualBalance={handleViewIndividualBalance}
         onShowQrCodeForTotal={handleShowQrCodeForTotal} // Pass the new handler
         type={balanceDetailType}
+        formattedMonthYear={formattedMonthYear} // New prop
       />
 
       {/* Individual Balance Detail Dialog */}
@@ -1270,6 +1273,7 @@ const GroupDetail = () => {
         personBankAccountNumber={individualBalancePersonBankAccountNumber}
         personBankName={individualBalancePersonBankName}
         onShowQrCode={handleShowQrCode}
+        formattedMonthYear={formattedMonthYear} // New prop
       />
 
       {/* QR Code Dialog */}
