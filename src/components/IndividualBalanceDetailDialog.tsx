@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DollarSign, Clock, User } from "lucide-react";
+import { DollarSign, Clock, User, QrCode } from "lucide-react"; // Import QrCode icon
+import { Button } from "@/components/ui/button"; // Import Button component
 
 interface ContributingExpense {
   expenseId: string;
@@ -17,11 +18,30 @@ interface IndividualBalanceDetailDialogProps {
   personName: string; // The person whose balance details are being shown
   expenses: ContributingExpense[];
   type: 'pay' | 'collect'; // To adjust title/description
+  personBankAccountNumber?: string; // New prop for bank account number
+  personBankName?: string; // New prop for bank name
+  onShowQrCode: (bankAccountNumber: string, bankName: string, amount: number, description: string, accountName: string, personName: string) => void; // New callback
 }
 
-const IndividualBalanceDetailDialog = ({ open, onOpenChange, personName, expenses, type }: IndividualBalanceDetailDialogProps) => {
+const IndividualBalanceDetailDialog = ({ 
+  open, 
+  onOpenChange, 
+  personName, 
+  expenses, 
+  type, 
+  personBankAccountNumber, 
+  personBankName, 
+  onShowQrCode 
+}: IndividualBalanceDetailDialogProps) => {
   const title = type === 'pay' ? `Khoản bạn nợ ${personName}` : `Khoản ${personName} nợ bạn`;
   const description = type === 'pay' ? `Chi tiết các chi phí bạn cần trả cho ${personName}.` : `Chi tiết các chi phí ${personName} cần trả cho bạn.`;
+
+  const handleShowQrCode = (expense: ContributingExpense) => {
+    if (personBankAccountNumber && personBankName) {
+      const qrDescription = `Thanh toan ${expense.title} cho ${personName}`;
+      onShowQrCode(personBankAccountNumber, personBankName, expense.amount, qrDescription, personName, personName);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -53,6 +73,17 @@ const IndividualBalanceDetailDialog = ({ open, onOpenChange, personName, expense
                     <div className="text-base font-bold text-foreground mt-1.5"> {/* Reduced font size and margin */}
                       {exp.amount.toLocaleString()} đ
                     </div>
+                    {type === 'pay' && personBankAccountNumber && personBankName && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full mt-2 h-8 text-xs"
+                        onClick={() => handleShowQrCode(exp)}
+                      >
+                        <QrCode className="w-3.5 h-3.5 mr-1" />
+                        Chuyển khoản
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               ))

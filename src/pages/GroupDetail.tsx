@@ -7,6 +7,7 @@ import InviteMemberDialog from "@/components/InviteMemberDialog";
 import GroupMembersDialog from "@/components/GroupMembersDialog";
 import BalanceDetailDialog from "@/components/BalanceDetailDialog";
 import IndividualBalanceDetailDialog from "@/components/IndividualBalanceDetailDialog";
+import QrCodeDialog from "@/components/QrCodeDialog"; // Import QrCodeDialog
 import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -45,6 +46,7 @@ import { cn } from "@/lib/utils";
 import MonthSelector from "@/components/MonthSelector";
 import ConfirmMonthCompletionDialog from "@/components/ConfirmMonthCompletionDialog";
 import ReceiptViewDialog from "@/components/ReceiptViewDialog";
+import { getBankIdFromName } from "@/utils/bank-mapping"; // Import bank mapping utility
 
 interface Participant {
   userId?: string;
@@ -85,6 +87,8 @@ interface GroupMember {
   name: string;
   isOwner: boolean;
   avatarUrl?: string;
+  bankAccountNumber?: string; // Add bank account number
+  bankName?: string; // Add bank name
 }
 
 interface ContributingExpense {
@@ -102,6 +106,8 @@ interface BalanceItem {
   avatarUrl?: string;
   isGuest?: boolean;
   contributingExpenses: ContributingExpense[];
+  bankAccountNumber?: string; // Add bank account number
+  bankName?: string; // Add bank name
 }
 
 const GroupDetail = () => {
@@ -123,6 +129,18 @@ const GroupDetail = () => {
   const [openIndividualBalanceDetail, setOpenIndividualBalanceDetail] = useState(false);
   const [individualBalancePersonName, setIndividualBalancePersonName] = useState("");
   const [individualBalanceExpenses, setIndividualBalanceExpenses] = useState<ContributingExpense[]>([]);
+  const [individualBalancePersonBankAccountNumber, setIndividualBalancePersonBankAccountNumber] = useState<string | undefined>(undefined);
+  const [individualBalancePersonBankName, setIndividualBalancePersonBankName] = useState<string | undefined>(undefined);
+
+  const [openQrCodeDialog, setOpenQrCodeDialog] = useState(false); // New state for QR dialog
+  const [qrCodeData, setQrCodeData] = useState({ // New state for QR data
+    bankId: "",
+    accountNumber: "",
+    amount: 0,
+    description: "",
+    accountName: "",
+    personName: "",
+  });
 
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
@@ -176,7 +194,7 @@ const GroupDetail = () => {
       const userIds = groupMembersData?.map(m => m.user_id) || [];
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, full_name, avatar_url')
+        .select('id, full_name, avatar_url, bank_account_number, bank_name') // Fetch bank details
         .in('id', userIds);
       
       if (profilesError) throw profilesError;
@@ -186,6 +204,8 @@ const GroupDetail = () => {
         name: p.full_name,
         isOwner: p.id === groupOwnerId,
         avatarUrl: p.avatar_url || undefined,
+        bankAccountNumber: p.bank_account_number || undefined, // Assign bank account number
+        bankName: p.bank_name || undefined, // Assign bank name
       })) || [];
       
       setMembers(formattedMembers);
@@ -305,26 +325,34 @@ const GroupDetail = () => {
     const balancesMap = new Map<string, BalanceItem>();
 
     expenses.filter(exp => !exp.isCompleted).forEach(exp => {
-      const payerId = exp.paidById;
-      const payerName = members.find(m => m.id === payerId)?.name || 'Unknown';
-      const payerAvatar = members.find(m => m.id === payerId)?.avatarUrl;
+      const payer = members.find(m => m.id === exp.paidById);
+      const payerId = payer?.id;
+      const payerName = payer?.name || 'Unknown';
+      const payerAvatar = payer?.avatarUrl;
+      const payerBankAccountNumber = payer?.bankAccountNumber;
+      const payerBankName = payer?.bankName;
 
       exp.participants.forEach(p => {
+        const participant = p.userId ? members.find(m => m.id === p.userId) : undefined;
         const participantId = p.userId || p.guestId;
         const participantName = p.userName || p.guestName;
-        const participantAvatar = p.userId ? members.find(m => m.id === p.userId)?.avatarUrl : undefined;
+        const participantAvatar = participant?.avatarUrl;
+        const participantBankAccountNumber = participant?.bankAccountNumber;
+        const participantBankName = participant?.bankName;
         const isGuest = !!p.guestName;
 
         if (!participantId || !participantName || p.isPaid) return;
 
         if (type === 'pay' && p.userId === user.id && !p.isPayer) {
-          const currentBalance = balancesMap.get(payerId) || {
-            id: payerId,
+          const currentBalance = balancesMap.get(payerId!) || {
+            id: payerId!,
             name: payerName,
             amount: 0,
             avatarUrl: payerAvatar,
             isGuest: false,
             contributingExpenses: [],
+            bankAccountNumber: payerBankAccountNumber,
+            bankName: payerBankName,
           };
           currentBalance.amount -= p.amount;
           currentBalance.contributingExpenses.push({
@@ -334,7 +362,7 @@ const GroupDetail = () => {
             date: exp.displayDate,
             paidBy: payerName,
           });
-          balancesMap.set(payerId, currentBalance);
+          balancesMap.set(payerId!, currentBalance);
         } else if (type === 'collect' && payerId === user.id && !p.isPayer) {
           const currentBalance = balancesMap.get(participantId) || {
             id: participantId,
@@ -343,6 +371,8 @@ const GroupDetail = () => {
             avatarUrl: participantAvatar,
             isGuest: isGuest,
             contributingExpenses: [],
+            bankAccountNumber: participantBankAccountNumber,
+            bankName: participantBankName,
           };
           currentBalance.amount += p.amount;
           currentBalance.contributingExpenses.push({
@@ -387,7 +417,31 @@ const GroupDetail = () => {
     setIndividualBalancePersonName(personName);
     setIndividualBalanceExpenses(expenses);
     setBalanceDetailType(type);
+    
+    // Find the member's bank details
+    const member = members.find(m => m.name === personName);
+    setIndividualBalancePersonBankAccountNumber(member?.bankAccountNumber);
+    setIndividualBalancePersonBankName(member?.bankName);
+
     setOpenIndividualBalanceDetail(true);
+  };
+
+  const handleShowQrCode = (bankAccountNumber: string, bankName: string, amount: number, description: string, accountName: string, personName: string) => {
+    const bankId = getBankIdFromName(bankName);
+    if (!bankId) {
+      toast.error(`Không tìm thấy mã ngân hàng cho '${bankName}'. Vui lòng cập nhật thông tin ngân hàng.`);
+      return;
+    }
+
+    setQrCodeData({
+      bankId,
+      accountNumber: bankAccountNumber,
+      amount,
+      description,
+      accountName,
+      personName,
+    });
+    setOpenQrCodeDialog(true);
   };
 
   const handleAddExpense = async (expenseData: any) => {
@@ -1196,6 +1250,21 @@ const GroupDetail = () => {
         personName={individualBalancePersonName}
         expenses={individualBalanceExpenses}
         type={balanceDetailType}
+        personBankAccountNumber={individualBalancePersonBankAccountNumber}
+        personBankName={individualBalancePersonBankName}
+        onShowQrCode={handleShowQrCode}
+      />
+
+      {/* QR Code Dialog */}
+      <QrCodeDialog
+        open={openQrCodeDialog}
+        onOpenChange={setOpenQrCodeDialog}
+        bankId={qrCodeData.bankId}
+        accountNumber={qrCodeData.accountNumber}
+        amount={qrCodeData.amount}
+        description={qrCodeData.description}
+        accountName={qrCodeData.accountName}
+        personName={qrCodeData.personName}
       />
 
       {/* Share Dialog */}
