@@ -152,7 +152,8 @@ const GroupDetail = () => {
   const [groupName, setGroupName] = useState("Test");
   const [isEditingName, setIsEditingName] = useState(false);
   const [members, setMembers] = useState<GroupMember[]>([]);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]); // For paginated display
+  const [allMonthlyExpenses, setAllMonthlyExpenses] = useState<Expense[]>([]); // For total calculations
   const [loading, setLoading] = useState(true);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
   const [isDeletingExpense, setIsDeletingExpense] = useState(false);
@@ -228,7 +229,82 @@ const GroupDetail = () => {
       const startOfSelectedMonth = format(startOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
       const endOfSelectedMonth = format(endOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
 
-      // Fetch total count of expenses for the selected month/year
+      // --- Fetch ALL expenses for the month for total calculations ---
+      const { data: allExpensesData, error: allExpensesError } = await supabase
+        .from('expenses')
+        .select(`
+          *,
+          expense_participants(*)
+        `)
+        .eq('group_id', id)
+        .gte('expense_date', startOfSelectedMonth)
+        .lte('expense_date', endOfSelectedMonth)
+        .order('created_at', { ascending: false });
+
+      if (allExpensesError) throw allExpensesError;
+
+      const formatExpenses = (expensesRawData: any[]) => {
+        return expensesRawData?.map(exp => {
+          const payer = formattedMembers.find(m => m.id === exp.paid_by);
+          
+          let guests: Guest[] = [];
+          let cleanDescription = exp.description || exp.title;
+          const guestsJsonMatch = cleanDescription.match(/guests:(\[.*\])/);
+          if (guestsJsonMatch && guestsJsonMatch[1]) {
+            try {
+              guests = JSON.parse(guestsJsonMatch[1]);
+              cleanDescription = cleanDescription.replace(guestsJsonMatch[0], '').trim();
+            } catch (e) {
+              console.error("Error parsing guests JSON from description:", e);
+            }
+          }
+
+          const participants = exp.expense_participants.map((p: any) => ({
+            userId: p.user_id,
+            userName: p.user_id ? formattedMembers.find(m => m.id === p.user_id)?.name : undefined,
+            guestId: p.guest_name ? p.id : undefined,
+            guestName: p.guest_name,
+            amount: p.amount,
+            isPaid: p.is_paid,
+            isPayer: p.user_id === exp.paid_by,
+          }));
+
+          const allSplitEntitiesNames = new Set<string>();
+          participants.forEach(p => {
+            if (p.userName) allSplitEntitiesNames.add(p.userName);
+            if (p.guestName) allSplitEntitiesNames.add(p.guestName);
+          });
+          guests.forEach(guest => {
+            if (guest.responsibleMemberId) {
+              const responsibleMemberName = formattedMembers.find(m => m.id === guest.responsibleMemberId)?.name || 'Unknown';
+              allSplitEntitiesNames.add(`${guest.name} (trả hộ bởi ${responsibleMemberName})`);
+            }
+          });
+
+          return {
+            id: exp.id,
+            title: exp.title,
+            description: cleanDescription,
+            amount: exp.amount,
+            paidBy: payer?.name || 'Unknown',
+            paidById: exp.paid_by,
+            splitWith: Array.from(allSplitEntitiesNames).filter(Boolean) as string[],
+            date: exp.expense_date,
+            displayDate: new Date(exp.expense_date).toLocaleDateString('vi-VN'),
+            isCompleted: exp.is_completed,
+            isMine: exp.paid_by === user?.id,
+            participants,
+            receiptUrl: exp.receipt_url,
+            splitType: exp.split_type || 'equal',
+            guests,
+          };
+        }) || [];
+      };
+
+      const formattedAllMonthlyExpenses = formatExpenses(allExpensesData);
+      setAllMonthlyExpenses(formattedAllMonthlyExpenses); // Store all monthly expenses for totals
+
+      // --- Fetch paginated expenses for display ---
       const { count, error: countError } = await supabase
         .from('expenses')
         .select('*', { count: 'exact', head: true })
@@ -239,11 +315,10 @@ const GroupDetail = () => {
       if (countError) throw countError;
       setTotalExpensesCount(count || 0);
 
-      // Calculate offset and limit for pagination
       const offset = (currentPage - 1) * itemsPerPage;
       const limit = itemsPerPage;
 
-      const { data: expensesData, error: expensesError } = await supabase
+      const { data: paginatedExpensesData, error: paginatedExpensesError } = await supabase
         .from('expenses')
         .select(`
           *,
@@ -253,68 +328,14 @@ const GroupDetail = () => {
         .gte('expense_date', startOfSelectedMonth)
         .lte('expense_date', endOfSelectedMonth)
         .order('created_at', { ascending: false })
-        .range(offset, offset + limit - 1); // Supabase range is inclusive
+        .range(offset, offset + limit - 1);
 
-      if (expensesError) throw expensesError;
+      if (paginatedExpensesError) throw paginatedExpensesError;
 
-      const formattedExpenses = expensesData?.map(exp => {
-        const payer = formattedMembers.find(m => m.id === exp.paid_by);
-        
-        let guests: Guest[] = [];
-        let cleanDescription = exp.description || exp.title;
-        const guestsJsonMatch = cleanDescription.match(/guests:(\[.*\])/);
-        if (guestsJsonMatch && guestsJsonMatch[1]) {
-          try {
-            guests = JSON.parse(guestsJsonMatch[1]);
-            cleanDescription = cleanDescription.replace(guestsJsonMatch[0], '').trim();
-          } catch (e) {
-            console.error("Error parsing guests JSON from description:", e);
-          }
-        }
+      const formattedPaginatedExpenses = formatExpenses(paginatedExpensesData);
+      setExpenses(formattedPaginatedExpenses); // Store paginated expenses for display
 
-        const participants = exp.expense_participants.map((p: any) => ({
-          userId: p.user_id,
-          userName: p.user_id ? formattedMembers.find(m => m.id === p.user_id)?.name : undefined,
-          guestId: p.guest_name ? p.id : undefined,
-          guestName: p.guest_name,
-          amount: p.amount,
-          isPaid: p.is_paid,
-          isPayer: p.user_id === exp.paid_by,
-        }));
-
-        const allSplitEntitiesNames = new Set<string>();
-        participants.forEach(p => {
-          if (p.userName) allSplitEntitiesNames.add(p.userName);
-          if (p.guestName) allSplitEntitiesNames.add(p.guestName);
-        });
-        guests.forEach(guest => {
-          if (guest.responsibleMemberId) {
-            const responsibleMemberName = formattedMembers.find(m => m.id === guest.responsibleMemberId)?.name || 'Unknown';
-            allSplitEntitiesNames.add(`${guest.name} (trả hộ bởi ${responsibleMemberName})`);
-          }
-        });
-
-        return {
-          id: exp.id,
-          title: exp.title,
-          description: cleanDescription,
-          amount: exp.amount,
-          paidBy: payer?.name || 'Unknown',
-          paidById: exp.paid_by,
-          splitWith: Array.from(allSplitEntitiesNames).filter(Boolean) as string[],
-          date: exp.expense_date,
-          displayDate: new Date(exp.expense_date).toLocaleDateString('vi-VN'),
-          isCompleted: exp.is_completed,
-          isMine: exp.paid_by === user?.id,
-          participants,
-          receiptUrl: exp.receipt_url,
-          splitType: exp.split_type || 'equal',
-          guests,
-        };
-      }) || [];
-
-      setExpenses(formattedExpenses);
-      return formattedExpenses;
+      return formattedAllMonthlyExpenses; // Return all monthly expenses for further processing if needed
     } catch (error) {
       console.error('Error loading group data:', error);
       toast.error('Không thể tải dữ liệu nhóm');
@@ -324,10 +345,10 @@ const GroupDetail = () => {
     }
   };
 
-  const totalExpense = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-  const completedCount = expenses.filter((e) => e.isCompleted).length;
+  const totalExpense = allMonthlyExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const completedCount = allMonthlyExpenses.filter((e) => e.isCompleted).length;
 
-  const amountToPay = expenses
+  const amountToPay = allMonthlyExpenses
     .filter(exp => !exp.isCompleted)
     .reduce((sum, exp) => {
       const myParticipant = exp.participants.find(
@@ -336,7 +357,7 @@ const GroupDetail = () => {
       return sum + (myParticipant?.amount || 0);
     }, 0);
 
-  const amountToCollect = expenses
+  const amountToCollect = allMonthlyExpenses
     .filter(exp => !exp.isCompleted)
     .reduce((sum, exp) => {
       if (exp.paidById === user?.id) {
@@ -353,7 +374,7 @@ const GroupDetail = () => {
 
     const balancesMap = new Map<string, BalanceItem>();
 
-    expenses.filter(exp => !exp.isCompleted).forEach(exp => {
+    allMonthlyExpenses.filter(exp => !exp.isCompleted).forEach(exp => {
       const payer = members.find(m => m.id === exp.paidById);
       const payerId = payer?.id;
       const payerName = payer?.name || 'Unknown';
@@ -1088,7 +1109,7 @@ const GroupDetail = () => {
           <div className="text-xs text-muted-foreground mb-3">
             Hoàn thành:{" "}
             <span className="font-medium text-primary">
-              {completedCount}/{expenses.length}
+              {completedCount}/{allMonthlyExpenses.length}
             </span>
           </div>
 
