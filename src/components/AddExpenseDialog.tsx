@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
 
 interface Member {
   id: string;
@@ -51,15 +52,19 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
 
   useEffect(() => {
     // Ensure current user is selected by default in members
-    if (!selectedMembers.includes(currentUserId)) {
+    if (open) { // Only reset when dialog opens
       setSelectedMembers([currentUserId]);
-    }
-    if (paidBy === "") { // Set default payer if not already set
       setPaidBy(currentUserId);
-    }
-    // Reset newGuestResponsibleMemberId when dialog opens
-    if (open) {
       setNewGuestResponsibleMemberId(undefined);
+      setAmount("");
+      setDescription("");
+      setDate(new Date());
+      setSplitType("equal");
+      setGuests([]);
+      setNewGuestName("");
+      setReceiptImage(null);
+      if (receiptPreview) URL.revokeObjectURL(receiptPreview);
+      setReceiptPreview(null);
     }
   }, [currentUserId, open]);
 
@@ -204,11 +209,11 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
     onOpenChange(false);
   };
 
-  const toggleMember = (memberId: string) => {
+  const toggleMember = (memberId: string, checked: boolean) => {
     setSelectedMembers(prev => 
-      prev.includes(memberId) 
-        ? prev.filter(id => id !== memberId)
-        : [...prev, memberId]
+      checked
+        ? [...prev, memberId]
+        : prev.filter(id => id !== memberId)
     );
   };
 
@@ -340,49 +345,23 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
               Chi phí sẽ được chia đều cho tất cả thành viên được chọn và khách mời không có người trả hộ.
             </div>
 
-            {/* Member Selection */}
+            {/* Member Selection with Checkboxes */}
             <div className="space-y-2"> {/* Reduced space-y */}
-              <Select onValueChange={toggleMember}>
-                <SelectTrigger 
-                  // Reduced height and font size
-                  className="bg-background h-9 text-sm"
-                >
-                  <SelectValue placeholder="Chọn người tham gia..." />
-                </SelectTrigger>
-                <SelectContent className="z-[100]">
-                  {members.map((member) => (
-                    <SelectItem key={member.id} value={member.id} 
-                      // Reduced font size
-                      className="text-sm"
-                    >
-                      {member.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {selectedMembers.length > 0 && (
-                <div className="flex flex-wrap gap-1.5"> {/* Reduced gap */}
-                  {selectedMembers.map((memberId) => {
-                    const member = members.find(m => m.id === memberId);
-                    return member ? (
-                      <div
-                        key={memberId}
-                        // Reduced padding and font size
-                        className="flex items-center gap-1.5 px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs"
-                      >
-                        <span>{member.name}</span>
-                        <button
-                          onClick={() => toggleMember(memberId)}
-                          className="hover:bg-primary/20 rounded-full p-0.5"
-                        >
-                          <X className="w-3 h-3" /> {/* Smaller icon */}
-                        </button>
-                      </div>
-                    ) : null;
-                  })}
-                </div>
-              )}
+              <div className="grid grid-cols-2 gap-2"> {/* Display members in a grid */}
+                {members.map((member) => (
+                  <div key={member.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`member-${member.id}`}
+                      checked={selectedMembers.includes(member.id)}
+                      onCheckedChange={(checked: boolean) => toggleMember(member.id, checked)}
+                      disabled={member.id === currentUserId} // Disable checkbox for current user
+                    />
+                    <Label htmlFor={`member-${member.id}`} className="text-sm font-normal">
+                      {member.name} {member.id === currentUserId && "(Bạn)"}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
