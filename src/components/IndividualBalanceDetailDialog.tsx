@@ -47,13 +47,13 @@ const IndividualBalanceDetailDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col p-0">
+      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col p-0 overflow-hidden"> {/* Added overflow-hidden */}
         <DialogHeader className="px-4 pt-4 pb-2">
           <DialogTitle className="text-base sm:text-xl">{title}</DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">{description}</DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1"> {/* Removed h-full */}
+        <ScrollArea className="flex-1">
           <div className="space-y-2 px-4 py-2">
             {expenses.length === 0 ? (
               <div className="text-center text-muted-foreground py-6 text-sm">

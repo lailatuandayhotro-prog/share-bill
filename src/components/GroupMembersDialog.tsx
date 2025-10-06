@@ -24,16 +24,16 @@ const GroupMembersDialog = ({ open, onOpenChange, members, groupName }: GroupMem
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col p-4">
-        <DialogHeader className="pb-2">
-          <DialogTitle className="text-base sm:text-xl">Thành viên nhóm "{groupName}"</DialogTitle> {/* Adjusted font size */}
-          <DialogDescription className="text-xs sm:text-sm"> {/* Adjusted font size */}
+      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col p-0 overflow-hidden"> {/* Changed p-4 to p-0 and added overflow-hidden */}
+        <DialogHeader className="px-4 pt-4 pb-2"> {/* Added padding */}
+          <DialogTitle className="text-base sm:text-xl">Thành viên nhóm "{groupName}"</DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">
             Danh sách tất cả thành viên trong nhóm này.
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-3 -mr-3">
-          <div className="space-y-3 py-2">
+        <ScrollArea className="flex-1"> {/* Removed pr-3 -mr-3 */}
+          <div className="space-y-3 px-4 py-2"> {/* Added px-4 */}
             {members.length === 0 ? (
               <div className="text-center text-muted-foreground py-6 text-sm">
                 Chưa có thành viên nào trong nhóm.
