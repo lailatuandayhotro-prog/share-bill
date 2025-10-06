@@ -14,6 +14,7 @@ import { format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { formatCurrencyInput, parseFormattedCurrency } from "@/utils/formatters"; // Import formatters
 
 interface Member {
   id: string;
@@ -84,7 +85,7 @@ const EditExpenseDialog = ({
 
   useEffect(() => {
     if (open && initialExpense) {
-      setAmount(initialExpense.amount.toString());
+      setAmount(formatCurrencyInput(initialExpense.amount)); // Format initial amount
       setDescription(initialExpense.description || initialExpense.title);
       setDate(parseISO(initialExpense.date));
       setSplitType((initialExpense.splitType as "equal" | "custom") || "equal");
@@ -166,7 +167,7 @@ const EditExpenseDialog = ({
       return;
     }
 
-    const totalAmount = parseFloat(amount);
+    const totalAmount = parseFormattedCurrency(amount); // Use parseFormattedCurrency
     
     // Tính số suất chia theo số thành viên được chọn + số khách
     const memberIds = [...selectedMembers];
@@ -270,10 +271,12 @@ const EditExpenseDialog = ({
             >Số tiền (VNĐ)</Label> {/* Reduced font size */}
             <Input
               id="amount"
-              type="number"
-              placeholder="50000"
+              type="text" // Changed to text to allow custom formatting
+              inputMode="numeric" // Suggest numeric keyboard on mobile
+              pattern="[0-9.]*" // Allow digits and dots for formatting
+              placeholder="500.000"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => setAmount(formatCurrencyInput(e.target.value))} // Use formatCurrencyInput
               className="text-base h-9"
             /> {/* Reduced font size and height */}
           </div>
