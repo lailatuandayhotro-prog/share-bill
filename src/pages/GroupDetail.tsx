@@ -437,7 +437,7 @@ const GroupDetail = () => {
       bankId,
       accountNumber: bankAccountNumber,
       amount,
-      description: `TT tháng ${formattedMonthYear}`, // Modified description
+      description: `${personName} TT ${formattedMonthYear}`, // Updated description format
       accountName,
       personName,
     });
@@ -455,7 +455,7 @@ const GroupDetail = () => {
       bankId,
       accountNumber: bankAccountNumber,
       amount,
-      description: `TT tháng ${formattedMonthYear}`, // Modified description
+      description: `${personName} TT ${formattedMonthYear}`, // Updated description format
       accountName,
       personName,
     });
