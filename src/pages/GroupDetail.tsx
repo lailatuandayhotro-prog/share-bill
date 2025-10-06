@@ -413,20 +413,36 @@ const GroupDetail = () => {
     setOpenBalanceDetailDialog(true);
   };
 
-  const handleViewIndividualBalance = (personName: string, expenses: ContributingExpense[], type: 'pay' | 'collect') => {
+  const handleViewIndividualBalance = (personName: string, expenses: ContributingExpense[], type: 'pay' | 'collect', bankAccountNumber?: string, bankName?: string) => {
     setIndividualBalancePersonName(personName);
     setIndividualBalanceExpenses(expenses);
     setBalanceDetailType(type);
     
-    // Find the member's bank details
-    const member = members.find(m => m.name === personName);
-    setIndividualBalancePersonBankAccountNumber(member?.bankAccountNumber);
-    setIndividualBalancePersonBankName(member?.bankName);
+    setIndividualBalancePersonBankAccountNumber(bankAccountNumber);
+    setIndividualBalancePersonBankName(bankName);
 
     setOpenIndividualBalanceDetail(true);
   };
 
   const handleShowQrCode = (bankAccountNumber: string, bankName: string, amount: number, description: string, accountName: string, personName: string) => {
+    const bankId = getBankIdFromName(bankName);
+    if (!bankId) {
+      toast.error(`Không tìm thấy mã ngân hàng cho '${bankName}'. Vui lòng cập nhật thông tin ngân hàng.`);
+      return;
+    }
+
+    setQrCodeData({
+      bankId,
+      accountNumber: bankAccountNumber,
+      amount,
+      description,
+      accountName,
+      personName,
+    });
+    setOpenQrCodeDialog(true);
+  };
+
+  const handleShowQrCodeForTotal = (bankAccountNumber: string, bankName: string, amount: number, description: string, accountName: string, personName: string) => {
     const bankId = getBankIdFromName(bankName);
     if (!bankId) {
       toast.error(`Không tìm thấy mã ngân hàng cho '${bankName}'. Vui lòng cập nhật thông tin ngân hàng.`);
@@ -1240,6 +1256,7 @@ const GroupDetail = () => {
         balances={balancesToDisplay}
         currentUserId={user?.id || ""}
         onViewIndividualBalance={handleViewIndividualBalance}
+        onShowQrCodeForTotal={handleShowQrCodeForTotal} // Pass the new handler
         type={balanceDetailType}
       />
 

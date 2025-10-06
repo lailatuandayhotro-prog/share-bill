@@ -4,6 +4,7 @@ import { User as UserIcon, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner"; // Import toast for error messages
 
 interface ContributingExpense {
   expenseId: string;
@@ -20,6 +21,8 @@ interface BalanceItem {
   avatarUrl?: string;
   isGuest?: boolean;
   contributingExpenses: ContributingExpense[]; // New field
+  bankAccountNumber?: string; // Add bank account number
+  bankName?: string; // Add bank name
 }
 
 interface BalanceDetailDialogProps {
@@ -29,12 +32,28 @@ interface BalanceDetailDialogProps {
   description: string;
   balances: BalanceItem[];
   currentUserId: string;
-  onViewIndividualBalance: (personName: string, expenses: ContributingExpense[], type: 'pay' | 'collect') => void; // New callback
+  onViewIndividualBalance: (personName: string, expenses: ContributingExpense[], type: 'pay' | 'collect', bankAccountNumber?: string, bankName?: string) => void; // Updated callback
+  onShowQrCodeForTotal: (bankAccountNumber: string, bankName: string, amount: number, description: string, accountName: string, personName: string) => void; // New callback
   type: 'pay' | 'collect'; // New prop to pass down
 }
 
-const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances, currentUserId, onViewIndividualBalance, type }: BalanceDetailDialogProps) => {
+const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances, currentUserId, onViewIndividualBalance, onShowQrCodeForTotal, type }: BalanceDetailDialogProps) => {
   const { user } = useAuth();
+
+  const handleItemClick = (item: BalanceItem) => {
+    if (type === 'pay') {
+      // For 'pay' type, clicking the item should show the QR for the total amount
+      if (item.bankAccountNumber && item.bankName) {
+        const qrDescription = `Thanh toan tong no cho ${item.name}`;
+        onShowQrCodeForTotal(item.bankAccountNumber, item.bankName, item.amount, qrDescription, item.name, item.name);
+      } else {
+        toast.error(`Không có thông tin ngân hàng cho ${item.name}. Vui lòng cập nhật thông tin cá nhân của họ.`);
+      }
+    } else {
+      // For 'collect' type, clicking the item should show individual balance details
+      onViewIndividualBalance(item.name, item.contributingExpenses, type, item.bankAccountNumber, item.bankName);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -55,7 +74,7 @@ const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances,
                 <div 
                   key={item.id} 
                   className="flex items-center gap-3 p-3 border border-border rounded-lg bg-card cursor-pointer hover:shadow-md transition-shadow" /* Reduced gap and padding */
-                  onClick={() => onViewIndividualBalance(item.name, item.contributingExpenses, type)} // Call new callback
+                  onClick={() => handleItemClick(item)} // Call new handler
                 >
                   <Avatar className="h-9 w-9"> {/* Reduced size */}
                     <AvatarImage src={item.avatarUrl} alt={item.name} />
