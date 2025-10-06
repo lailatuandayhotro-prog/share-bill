@@ -254,7 +254,7 @@ const Groups = () => {
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Hero Text */}
         <div className="mb-6">
-          <p className="text-sm text-muted-foreground"> {/* Adjusted font size */}
+          <p className="text-sm text-muted-foreground">
             Chia sẻ chi phí với bạn bè và gia đình một cách dễ dàng. Theo dõi chi phí chung
             và thanh toán chi với vài cú nhấp chuột.
           </p>
@@ -265,7 +265,7 @@ const Groups = () => {
           <Dialog open={openJoinDialog} onOpenChange={setOpenJoinDialog}>
             <DialogTrigger asChild>
               <Button variant="outline" size="lg" 
-                className="h-10 text-sm sm:h-12 sm:text-base" {/* Adjusted height and font size */}
+                className="h-10 text-sm sm:h-12 sm:text-base"
               >
                 <UserPlus className="w-4 h-4 mr-2" />
                 Tham gia nhóm
@@ -273,7 +273,7 @@ const Groups = () => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-sm">
               <DialogHeader>
-                <DialogTitle className="text-base sm:text-xl">Tham gia nhóm</DialogTitle> {/* Adjusted font size */}
+                <DialogTitle className="text-base sm:text-xl">Tham gia nhóm</DialogTitle>
               </DialogHeader>
               <div className="space-y-3 pt-3">
                 <div className="space-y-1.5">
@@ -298,7 +298,7 @@ const Groups = () => {
           <Dialog open={openCreateDialog} onOpenChange={setOpenCreateDialog}>
             <DialogTrigger asChild>
               <Button size="lg" 
-                className="h-10 text-sm sm:h-12 sm:text-base" {/* Adjusted height and font size */}
+                className="h-10 text-sm sm:h-12 sm:text-base"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Tạo nhóm
@@ -306,7 +306,7 @@ const Groups = () => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-sm">
               <DialogHeader>
-                <DialogTitle className="text-base sm:text-xl">Tạo nhóm mới</DialogTitle> {/* Adjusted font size */}
+                <DialogTitle className="text-base sm:text-xl">Tạo nhóm mới</DialogTitle>
               </DialogHeader>
               <div className="space-y-3 pt-3">
                 <div className="space-y-1.5">
@@ -332,7 +332,7 @@ const Groups = () => {
         {/* Groups List */}
         <div className="space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-base sm:text-xl font-bold text-foreground flex items-center gap-2"> {/* Adjusted font size */}
+            <h2 className="text-base sm:text-xl font-bold text-foreground flex items-center gap-2">
               <Users className="w-5 h-5" />
               Nhóm của bạn ({filteredGroups.length})
             </h2>
@@ -359,8 +359,8 @@ const Groups = () => {
             ) : filteredGroups.length === 0 ? (
               <div className="text-center py-10">
                 <Users className="w-14 h-14 text-muted-foreground mx-auto mb-3" />
-                <p className="text-base sm:text-lg font-semibold mb-1.5">Chưa có nhóm nào</p> {/* Adjusted font size */}
-                <p className="text-xs sm:text-sm text-muted-foreground mb-5"> {/* Adjusted font size */}
+                <p className="text-base sm:text-lg font-semibold mb-1.5">Chưa có nhóm nào</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-5">
                   Tạo nhóm mới hoặc tham gia nhóm có sẵn để bắt đầu
                 </p>
               </div>
@@ -379,7 +379,7 @@ const Groups = () => {
                         </div>
                         
                         <div className="space-y-2 flex-1">
-                          <h3 className="text-base sm:text-lg font-semibold text-foreground"> {/* Adjusted font size */}
+                          <h3 className="text-base sm:text-lg font-semibold text-foreground">
                             {group.name}
                           </h3>
                           
