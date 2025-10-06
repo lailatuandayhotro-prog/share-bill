@@ -217,6 +217,21 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
     );
   };
 
+  const handleSelectAllMembers = (checked: boolean) => {
+    if (checked) {
+      // Select all members, ensuring currentUserId is always included
+      setSelectedMembers(members.map(member => member.id));
+    } else {
+      // Deselect all members except currentUserId
+      setSelectedMembers([currentUserId]);
+    }
+  };
+
+  // Determine if all *other* members are selected to control the "Select All" checkbox state
+  const allOtherMembersSelected = members
+    .filter(member => member.id !== currentUserId)
+    .every(member => selectedMembers.includes(member.id));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl max-h-[90vh] flex flex-col p-4"> {/* Reduced max-w, padding, and added flex-col */}
@@ -347,6 +362,16 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
 
             {/* Member Selection with Checkboxes */}
             <div className="space-y-2"> {/* Reduced space-y */}
+              <div className="flex items-center space-x-2 mb-2">
+                <Checkbox
+                  id="select-all-members"
+                  checked={allOtherMembersSelected}
+                  onCheckedChange={(checked: boolean) => handleSelectAllMembers(checked)}
+                />
+                <Label htmlFor="select-all-members" className="text-sm font-semibold">
+                  Chọn tất cả
+                </Label>
+              </div>
               <div className="grid grid-cols-2 gap-2"> {/* Display members in a grid */}
                 {members.map((member) => (
                   <div key={member.id} className="flex items-center space-x-2">
