@@ -38,6 +38,7 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight as ChevronRightIcon, // Renamed to avoid conflict
+  RefreshCw, // Import RefreshCw icon
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -1041,10 +1042,25 @@ const GroupDetail = () => {
         {/* Expenses List */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-1.5"> 
-              <Receipt className="w-4 h-4" />
-              Chi phí ({totalExpensesCount})
-            </h2>
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-sm sm:text-base font-semibold text-foreground flex items-center gap-1.5"> 
+                <Receipt className="w-4 h-4" />
+                Chi phí ({totalExpensesCount})
+              </h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={loadGroupData}
+                className="w-7 h-7"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-3.5 h-3.5" />
+                )}
+              </Button>
+            </div>
             {/* Month and Year Selectors on the same line */}
             <div className="flex items-end gap-2">
               <div className="space-y-0.5">
