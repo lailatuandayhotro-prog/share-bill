@@ -168,63 +168,60 @@ const EditExpenseDialog = ({
 
     const totalAmount = parseFloat(amount);
     
-    // Determine all entities that will directly split the cost
-    const splitEntities = new Set<string>(); // Stores member IDs and guest IDs (for unabsorbed guests)
-    selectedMembers.forEach(memberId => splitEntities.add(`member-${memberId}`));
-    guests.forEach(guest => {
-      if (!guest.responsibleMemberId) {
-        splitEntities.add(`guest-${guest.id}`); // Unabsorbed guest
-      } else {
-        splitEntities.add(`member-${guest.responsibleMemberId}`); // Absorbed guest's share goes to responsible member
-      }
-    });
-
-    if (splitEntities.size === 0) {
+    // Tính số suất chia theo số thành viên được chọn + số khách
+    const memberIds = [...selectedMembers];
+    const totalEntities = memberIds.length + guests.length;
+    
+    if (totalEntities === 0) {
       toast.error("Không có người tham gia hợp lệ để chia chi phí.");
       return;
     }
 
-    const sharePerSplitEntity = totalAmount / splitEntities.size;
+    const sharePerEntity = totalAmount / totalEntities;
 
-    const memberOwesMap = new Map<string, number>(); // Tracks how much each member *owes*
-    const guestOwesMap = new Map<string, number>(); // Tracks how much each unabsorbed guest *owes*
+    // Map để lưu số tiền mà mỗi member phải trả (bao gồm cả trả hộ cho guest)
+    const memberAmountMap = new Map<string, number>();
 
-    // Distribute shares
-    splitEntities.forEach(entityKey => {
-      if (entityKey.startsWith('member-')) {
-        const memberId = entityKey.substring(7);
-        memberOwesMap.set(memberId, (memberOwesMap.get(memberId) || 0) + sharePerSplitEntity);
-      } else if (entityKey.startsWith('guest-')) {
-        const guestId = entityKey.substring(6);
-        guestOwesMap.set(guestId, (guestOwesMap.get(guestId) || 0) + sharePerSplitEntity);
+    // Thêm suất cho mỗi member được chọn
+    memberIds.forEach((memberId) => {
+      memberAmountMap.set(memberId, sharePerEntity);
+    });
+
+    // Xử lý guests: nếu có người trả hộ thì gộp vào người đó, không thì tạo participant riêng
+    const guestParticipants: any[] = [];
+    
+    guests.forEach((guest) => {
+      const guestName = guest.name?.trim();
+      if (!guestName) return;
+      
+      if (guest.responsibleMemberId) {
+        // Có người trả hộ: gộp suất của guest vào người chịu trách nhiệm
+        const currentAmount = memberAmountMap.get(guest.responsibleMemberId) || 0;
+        memberAmountMap.set(guest.responsibleMemberId, currentAmount + sharePerEntity);
+      } else {
+        // Không có người trả hộ: guest tự trả
+        const existingGuestParticipant = initialExpense.participants.find(p => p.guestName === guestName);
+        guestParticipants.push({ 
+          guest_name: guestName, 
+          amount: sharePerEntity, 
+          is_paid: existingGuestParticipant?.isPaid || false 
+        });
       }
     });
 
-    // Adjust for the payer: they don't owe their own share to the group.
-    // Their "share" is covered by their payment of the total amount.
-    if (memberOwesMap.has(paidBy)) {
-      memberOwesMap.set(paidBy, (memberOwesMap.get(paidBy) || 0) - sharePerSplitEntity);
-    }
-
-    // Construct participants list for the expense_participants table
+    // Tạo danh sách participants từ memberAmountMap (trừ người trả tiền)
     const updatedParticipants: any[] = [];
     
-    for (const [memberId, owedAmount] of memberOwesMap.entries()) {
-      if (owedAmount > 0) { // Only add if they actually owe money
+    memberAmountMap.forEach((amount, memberId) => {
+      if (memberId !== paidBy) {
         // Preserve existing paid status if the participant was already in the expense
         const existingParticipant = initialExpense.participants.find(p => p.userId === memberId);
-        updatedParticipants.push({ user_id: memberId, amount: owedAmount, is_paid: existingParticipant?.isPaid || false });
+        updatedParticipants.push({ user_id: memberId, amount, is_paid: existingParticipant?.isPaid || false });
       }
-    }
-    for (const [guestId, owedAmount] of guestOwesMap.entries()) {
-      if (owedAmount > 0) { // Guests always owe
-        const guestName = guests.find(g => g.id === guestId)?.name;
-        if (guestName) {
-          const existingGuestParticipant = initialExpense.participants.find(p => p.guestId === guestId);
-          updatedParticipants.push({ guest_name: guestName, amount: owedAmount, is_paid: existingGuestParticipant?.isPaid || false });
-        }
-      }
-    }
+    });
+
+    // Thêm guests không có người trả hộ
+    updatedParticipants.push(...guestParticipants);
 
     const updatedExpense = {
       amount: totalAmount,

@@ -120,10 +120,10 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
 
     const totalAmount = parseFloat(amount);
     
-    // Tính số suất chia theo số thành viên được chọn + số khách (khách luôn là một suất riêng)
+    // Tính số suất chia theo số thành viên được chọn + số khách
     const memberIds = [...selectedMembers];
-
     const totalEntities = memberIds.length + guests.length;
+    
     if (totalEntities === 0) {
       toast.error("Không có người tham gia hợp lệ để chia chi phí.");
       return;
@@ -131,21 +131,42 @@ const AddExpenseDialog = ({ open, onOpenChange, onAddExpense, members, currentUs
 
     const sharePerEntity = totalAmount / totalEntities;
 
-    // Tạo danh sách participants: mỗi thành viên (trừ người trả tiền) 1 suất, mỗi khách 1 suất
-    const participantsToInsert: any[] = [];
+    // Map để lưu số tiền mà mỗi member phải trả (bao gồm cả trả hộ cho guest)
+    const memberAmountMap = new Map<string, number>();
 
+    // Thêm suất cho mỗi member được chọn
     memberIds.forEach((memberId) => {
-      if (memberId !== paidBy) {
-        participantsToInsert.push({ user_id: memberId, amount: sharePerEntity, is_paid: false });
-      }
+      memberAmountMap.set(memberId, sharePerEntity);
     });
 
+    // Xử lý guests: nếu có người trả hộ thì gộp vào người đó, không thì tạo participant riêng
+    const guestParticipants: any[] = [];
+    
     guests.forEach((guest) => {
       const guestName = guest.name?.trim();
-      if (guestName) {
-        participantsToInsert.push({ guest_name: guestName, amount: sharePerEntity, is_paid: false });
+      if (!guestName) return;
+      
+      if (guest.responsibleMemberId) {
+        // Có người trả hộ: gộp suất của guest vào người chịu trách nhiệm
+        const currentAmount = memberAmountMap.get(guest.responsibleMemberId) || 0;
+        memberAmountMap.set(guest.responsibleMemberId, currentAmount + sharePerEntity);
+      } else {
+        // Không có người trả hộ: guest tự trả
+        guestParticipants.push({ guest_name: guestName, amount: sharePerEntity, is_paid: false });
       }
     });
+
+    // Tạo danh sách participants từ memberAmountMap (trừ người trả tiền)
+    const participantsToInsert: any[] = [];
+    
+    memberAmountMap.forEach((amount, memberId) => {
+      if (memberId !== paidBy) {
+        participantsToInsert.push({ user_id: memberId, amount, is_paid: false });
+      }
+    });
+
+    // Thêm guests không có người trả hộ
+    participantsToInsert.push(...guestParticipants);
 
     // Gói dữ liệu expense để gửi lên
     const expense = {
