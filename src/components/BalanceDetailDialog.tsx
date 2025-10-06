@@ -64,7 +64,7 @@ const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances,
           <DialogDescription className="text-xs sm:text-sm">{description}</DialogDescription> {/* Adjusted font size */}
         </DialogHeader>
 
-        <ScrollArea className="flex-1"> {/* Removed pr-3 -mr-3 */}
+        <ScrollArea className="flex-1 h-full"> {/* Added h-full */}
           <div className="space-y-3 px-4 py-2"> {/* Added px-4 py-2 */}
             {balances.length === 0 ? (
               <div className="text-center text-muted-foreground py-6 text-sm">

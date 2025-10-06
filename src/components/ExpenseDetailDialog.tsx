@@ -142,7 +142,7 @@ const ExpenseDetailDialog = ({
         </div>
 
         {/* Participants Section */}
-        <ScrollArea className="flex-1"> {/* Wrap participants section with ScrollArea */}
+        <ScrollArea className="flex-1 h-full"> {/* Wrap participants section with ScrollArea */}
           <div className="px-3 pb-3 space-y-2">
             <div className="flex items-center gap-1.5 text-sm font-semibold">
               <Users className="w-3.5 h-3.5 text-primary" />
