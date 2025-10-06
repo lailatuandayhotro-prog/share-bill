@@ -36,6 +36,8 @@ import {
   Check,
   UserPlus,
   Loader2,
+  ChevronLeft,
+  ChevronRight as ChevronRightIcon, // Renamed to avoid conflict
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -87,8 +89,8 @@ interface GroupMember {
   name: string;
   isOwner: boolean;
   avatarUrl?: string;
-  bankAccountNumber?: string; // Add bank account number
-  bankName?: string; // Add bank name
+  bankAccountNumber?: string;
+  bankName?: string;
 }
 
 interface ContributingExpense {
@@ -106,8 +108,8 @@ interface BalanceItem {
   avatarUrl?: string;
   isGuest?: boolean;
   contributingExpenses: ContributingExpense[];
-  bankAccountNumber?: string; // Add bank account number
-  bankName?: string; // Add bank name
+  bankAccountNumber?: string;
+  bankName?: string;
 }
 
 const GroupDetail = () => {
@@ -132,8 +134,8 @@ const GroupDetail = () => {
   const [individualBalancePersonBankAccountNumber, setIndividualBalancePersonBankAccountNumber] = useState<string | undefined>(undefined);
   const [individualBalancePersonBankName, setIndividualBalancePersonBankName] = useState<string | undefined>(undefined);
 
-  const [openQrCodeDialog, setOpenQrCodeDialog] = useState(false); // New state for QR dialog
-  const [qrCodeData, setQrCodeData] = useState({ // New state for QR data
+  const [openQrCodeDialog, setOpenQrCodeDialog] = useState(false);
+  const [qrCodeData, setQrCodeData] = useState({
     bankId: "",
     accountNumber: "",
     amount: 0,
@@ -163,12 +165,17 @@ const GroupDetail = () => {
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date()));
 
-  const formattedMonthYear = format(setYear(selectedMonth, selectedYear), 'MM/yyyy', { locale: vi }); // New: Formatted month/year
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalExpensesCount, setTotalExpensesCount] = useState(0);
+
+  const formattedMonthYear = format(setYear(selectedMonth, selectedYear), 'MM/yyyy', { locale: vi });
 
   useEffect(() => {
     if (!id || !user) return;
     loadGroupData();
-  }, [id, user, selectedMonth, selectedYear]);
+  }, [id, user, selectedMonth, selectedYear, currentPage, itemsPerPage]); // Add pagination states to dependencies
 
   const loadGroupData = async () => {
     if (!id || !user) return [];
@@ -196,7 +203,7 @@ const GroupDetail = () => {
       const userIds = groupMembersData?.map(m => m.user_id) || [];
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, full_name, avatar_url, bank_account_number, bank_name') // Fetch bank details
+        .select('id, full_name, avatar_url, bank_account_number, bank_name')
         .in('id', userIds);
       
       if (profilesError) throw profilesError;
@@ -206,8 +213,8 @@ const GroupDetail = () => {
         name: p.full_name,
         isOwner: p.id === groupOwnerId,
         avatarUrl: p.avatar_url || undefined,
-        bankAccountNumber: p.bank_account_number || undefined, // Assign bank account number
-        bankName: p.bank_name || undefined, // Assign bank name
+        bankAccountNumber: p.bank_account_number || undefined,
+        bankName: p.bank_name || undefined,
       })) || [];
       
       setMembers(formattedMembers);
@@ -216,6 +223,21 @@ const GroupDetail = () => {
 
       const startOfSelectedMonth = format(startOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
       const endOfSelectedMonth = format(endOfMonth(currentSelectedMonthWithYear), 'yyyy-MM-dd');
+
+      // Fetch total count of expenses for the selected month/year
+      const { count, error: countError } = await supabase
+        .from('expenses')
+        .select('*', { count: 'exact', head: true })
+        .eq('group_id', id)
+        .gte('expense_date', startOfSelectedMonth)
+        .lte('expense_date', endOfSelectedMonth);
+
+      if (countError) throw countError;
+      setTotalExpensesCount(count || 0);
+
+      // Calculate offset and limit for pagination
+      const offset = (currentPage - 1) * itemsPerPage;
+      const limit = itemsPerPage;
 
       const { data: expensesData, error: expensesError } = await supabase
         .from('expenses')
@@ -226,8 +248,9 @@ const GroupDetail = () => {
         .eq('group_id', id)
         .gte('expense_date', startOfSelectedMonth)
         .lte('expense_date', endOfSelectedMonth)
-        .order('created_at', { ascending: false });
-      
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1); // Supabase range is inclusive
+
       if (expensesError) throw expensesError;
 
       const formattedExpenses = expensesData?.map(exp => {
@@ -437,7 +460,7 @@ const GroupDetail = () => {
       bankId,
       accountNumber: bankAccountNumber,
       amount,
-      description: `${personName} TT ${formattedMonthYear}`, // Updated description format
+      description: `${personName} TT ${formattedMonthYear}`,
       accountName,
       personName,
     });
@@ -455,7 +478,7 @@ const GroupDetail = () => {
       bankId,
       accountNumber: bankAccountNumber,
       amount,
-      description: `${personName} TT ${formattedMonthYear}`, // Updated description format
+      description: `${personName} TT ${formattedMonthYear}`,
       accountName,
       personName,
     });
@@ -796,14 +819,26 @@ const GroupDetail = () => {
 
   const handleMonthChange = (newMonth: Date) => {
     setSelectedMonth(newMonth);
+    setCurrentPage(1); // Reset to first page when month changes
   };
 
   const handleYearChange = (year: string) => {
     const newYear = parseInt(year);
     setSelectedYear(newYear);
     setSelectedMonth(prevMonth => setYear(prevMonth, newYear));
+    setCurrentPage(1); // Reset to first page when year changes
   };
 
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(parseInt(value));
+    setCurrentPage(1); // Reset to first page when items per page changes
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  const totalPages = Math.ceil(totalExpensesCount / itemsPerPage);
   const currentYear = getYear(new Date());
   const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
@@ -1005,7 +1040,7 @@ const GroupDetail = () => {
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-base font-semibold text-foreground flex items-center gap-1.5">
               <Receipt className="w-4 h-4" />
-              Chi phí ({expenses.length})
+              Chi phí ({totalExpensesCount})
             </h2>
             {/* Month and Year Selectors on the same line */}
             <div className="flex items-end gap-2">
@@ -1136,6 +1171,49 @@ const GroupDetail = () => {
               ))
             )}
           </div>
+
+          {/* Pagination Controls */}
+          {totalExpensesCount > 0 && (
+            <div className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Hiển thị</span>
+                <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+                  <SelectTrigger className="w-[70px] h-8 text-xs">
+                    <SelectValue placeholder="10" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10" className="text-xs">10</SelectItem>
+                    <SelectItem value="50" className="text-xs">50</SelectItem>
+                    <SelectItem value="100" className="text-xs">100</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span>trên {totalExpensesCount} chi phí</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm font-medium">
+                  Trang {currentPage} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                >
+                  <ChevronRightIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Members */}
@@ -1219,7 +1297,7 @@ const GroupDetail = () => {
         }}
         isMarkingPaid={isMarkingPaid}
         isDeletingExpense={isDeletingExpense}
-        isExpenseCreator={selectedExpense?.isMine || false} // Pass isExpenseCreator prop
+        isExpenseCreator={selectedExpense?.isMine || false}
       />
 
       {/* Edit Expense Dialog */}
@@ -1260,9 +1338,9 @@ const GroupDetail = () => {
         balances={balancesToDisplay}
         currentUserId={user?.id || ""}
         onViewIndividualBalance={handleViewIndividualBalance}
-        onShowQrCodeForTotal={handleShowQrCodeForTotal} // Pass the new handler
+        onShowQrCodeForTotal={handleShowQrCodeForTotal}
         type={balanceDetailType}
-        formattedMonthYear={formattedMonthYear} // New prop
+        formattedMonthYear={formattedMonthYear}
       />
 
       {/* Individual Balance Detail Dialog */}
@@ -1275,7 +1353,7 @@ const GroupDetail = () => {
         personBankAccountNumber={individualBalancePersonBankAccountNumber}
         personBankName={individualBalancePersonBankName}
         onShowQrCode={handleShowQrCode}
-        formattedMonthYear={formattedMonthYear} // New prop
+        formattedMonthYear={formattedMonthYear}
       />
 
       {/* QR Code Dialog */}
