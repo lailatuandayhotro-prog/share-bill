@@ -18,26 +18,26 @@ const testimonials = [
 
 const Testimonials = () => {
   return (
-    <section id="testimonials" className="py-16 px-4"> {/* Reduced padding */}
+    <section id="testimonials" className="py-16 px-4">
       <div className="container mx-auto max-w-6xl">
-        <div className="text-center space-y-3 mb-10"> {/* Reduced space-y and margin */}
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground"> {/* Reduced font size */}
+        <div className="text-center space-y-3 mb-10">
+          <h2 className="text-xl md:text-3xl font-bold text-foreground"> {/* Adjusted font size */}
             Người dùng nói gì?
           </h2>
-          <p className="text-base text-muted-foreground"> {/* Reduced font size */}
+          <p className="text-sm md:text-base text-muted-foreground"> {/* Adjusted font size */}
             Những phản hồi tích cực từ cộng đồng sử dụng hằng ngày
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-5"> {/* Reduced gap */}
+        <div className="grid md:grid-cols-3 gap-5">
           {testimonials.map((testimonial, index) => (
             <Card key={index} className="border-border hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-5 space-y-3"> {/* Reduced padding and space-y */}
-                <Quote className="w-7 h-7 text-primary/40" /> {/* Smaller icon */}
-                <p className="text-sm text-foreground italic"> {/* Reduced font size */}
+              <CardContent className="p-5 space-y-3">
+                <Quote className="w-7 h-7 text-primary/40" />
+                <p className="text-sm italic text-foreground"> {/* Adjusted font size */}
                   "{testimonial.content}"
                 </p>
-                <p className="text-xs font-semibold text-muted-foreground"> {/* Reduced font size */}
+                <p className="text-xs font-semibold text-muted-foreground">
                   — {testimonial.author}
                 </p>
               </CardContent>

@@ -58,52 +58,52 @@ const BalanceDetailDialog = ({ open, onOpenChange, title, description, balances,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col p-4"> {/* Reduced max-w, padding, and added flex-col */}
-        <DialogHeader className="pb-2"> {/* Reduced padding */}
-          <DialogTitle className="text-xl">{title}</DialogTitle> {/* Reduced font size */}
-          <DialogDescription className="text-sm">{description}</DialogDescription> {/* Reduced font size */}
+      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col p-4">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base sm:text-xl">{title}</DialogTitle> {/* Adjusted font size */}
+          <DialogDescription className="text-xs sm:text-sm">{description}</DialogDescription> {/* Adjusted font size */}
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-3 -mr-3"> {/* Reduced padding */}
-          <div className="space-y-3 py-2"> {/* Reduced space-y and padding */}
+        <ScrollArea className="flex-1 pr-3 -mr-3">
+          <div className="space-y-3 py-2">
             {balances.length === 0 ? (
-              <div className="text-center text-muted-foreground py-6 text-sm"> {/* Reduced padding and font size */}
+              <div className="text-center text-muted-foreground py-6 text-sm">
                 Không có khoản nào cần hiển thị.
               </div>
             ) : (
               balances.map((item) => (
                 <div 
                   key={item.id} 
-                  className="flex items-center gap-3 p-3 border border-border rounded-lg bg-card cursor-pointer hover:shadow-md transition-shadow" /* Reduced gap and padding */
-                  onClick={() => handleItemClick(item)} // Call new handler
+                  className="flex items-center gap-3 p-3 border border-border rounded-lg bg-card cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => handleItemClick(item)}
                 >
-                  <Avatar className="h-9 w-9"> {/* Reduced size */}
+                  <Avatar className="h-9 w-9">
                     <AvatarImage src={item.avatarUrl} alt={item.name} />
                     <AvatarFallback>
-                      <UserIcon className="h-4 w-4 text-muted-foreground" /> {/* Reduced size */}
+                      <UserIcon className="h-4 w-4 text-muted-foreground" />
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <div className="font-medium text-sm text-foreground">{item.name}</div> {/* Reduced font size */}
+                    <div className="font-medium text-sm text-foreground">{item.name}</div>
                     {item.isGuest && (
-                      <span className="px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground text-xs"> {/* Reduced padding and font size */}
+                      <span className="px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground text-xs">
                         Khách
                       </span>
                     )}
                   </div>
                   <div className="text-right">
-                    <div className={`font-bold text-base ${type === 'pay' ? 'text-red-600' : 'text-green-600'}`}> {/* MODIFIED LINE */}
-                      {item.amount.toLocaleString()} đ
+                    <div className={`font-bold text-base sm:text-lg ${type === 'pay' ? 'text-red-600' : 'text-green-600'}`}> {/* Adjusted font size */}
+                      {Math.floor(item.amount).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} đ
                     </div>
-                    <div className={`flex items-center justify-end gap-1 text-xs ${type === 'pay' ? 'text-red-500' : 'text-green-500'}`}> {/* MODIFIED LINE */}
-                      {type === 'pay' ? ( // MODIFIED LOGIC
+                    <div className={`flex items-center justify-end gap-1 text-xs ${type === 'pay' ? 'text-red-500' : 'text-green-500'}`}>
+                      {type === 'pay' ? (
                         <>
-                          <ArrowUpRight className="w-3.5 h-3.5" /> {/* Reduced size */}
+                          <ArrowUpRight className="w-3.5 h-3.5" />
                           <span>Cần trả</span>
                         </>
                       ) : (
                         <>
-                          <ArrowDownLeft className="w-3.5 h-3.5" /> {/* Reduced size */}
+                          <ArrowDownLeft className="w-3.5 h-3.5" />
                           <span>Cần thu</span>
                         </>
                       )}

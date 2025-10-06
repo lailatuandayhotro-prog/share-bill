@@ -93,29 +93,28 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm p-4"> {/* Reduced max-w and padding */}
-        <DialogHeader className="pb-2"> {/* Reduced padding */}
-          <DialogTitle className="text-xl">Chỉnh sửa thông tin cá nhân</DialogTitle> {/* Reduced font size */}
-          <DialogDescription className="text-sm">
+      <DialogContent className="max-w-sm p-4">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base sm:text-xl">Chỉnh sửa thông tin cá nhân</DialogTitle> {/* Adjusted font size */}
+          <DialogDescription className="text-xs sm:text-sm"> {/* Adjusted font size */}
             Cập nhật tên, biệt danh, avatar và thông tin ngân hàng của bạn.
           </DialogDescription>
         </DialogHeader>
         {loading ? (
-          <div className="flex justify-center items-center h-32"> {/* Reduced height */}
-            <Loader2 className="h-7 w-7 animate-spin text-primary" /> {/* Reduced size */}
+          <div className="flex justify-center items-center h-32">
+            <Loader2 className="h-7 w-7 animate-spin text-primary" />
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-3 py-2"> {/* Reduced space-y and padding */}
-            <div className="flex flex-col items-center gap-3"> {/* Reduced gap */}
-              <Avatar className="h-20 w-20"> {/* Reduced size */}
+          <form onSubmit={handleSubmit} className="space-y-3 py-2">
+            <div className="flex flex-col items-center gap-3">
+              <Avatar className="h-20 w-20">
                 <AvatarImage src={avatarUrl} alt="Avatar" />
                 <AvatarFallback>
-                  <User className="h-10 w-10 text-muted-foreground" /> {/* Reduced size */}
+                  <User className="h-10 w-10 text-muted-foreground" />
                 </AvatarFallback>
               </Avatar>
-              <div className="w-full space-y-1.5"> {/* Reduced space-y */}
-                <Label htmlFor="avatar-url" className="text-sm">URL Avatar</Label> {/* Reduced font size */}
-                {/* Reduced height and font size */}
+              <div className="w-full space-y-1.5">
+                <Label htmlFor="avatar-url" className="text-sm">URL Avatar</Label>
                 <Input
                   id="avatar-url"
                   type="url"
@@ -127,9 +126,8 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
               </div>
             </div>
 
-            <div className="space-y-1.5"> {/* Reduced space-y */}
-              <Label htmlFor="full-name" className="text-sm">Họ và tên</Label> {/* Reduced font size */}
-              {/* Reduced height and font size */}
+            <div className="space-y-1.5">
+              <Label htmlFor="full-name" className="text-sm">Họ và tên</Label>
               <Input
                 id="full-name"
                 type="text"
@@ -141,9 +139,8 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
               />
             </div>
 
-            <div className="space-y-1.5"> {/* Reduced space-y */}
-              <Label htmlFor="nickname" className="text-sm">Biệt danh</Label> {/* Reduced font size */}
-              {/* Reduced height and font size */}
+            <div className="space-y-1.5">
+              <Label htmlFor="nickname" className="text-sm">Biệt danh</Label>
               <Input
                 id="nickname"
                 type="text"
@@ -154,9 +151,8 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
               />
             </div>
 
-            <div className="space-y-1.5"> {/* Reduced space-y */}
-              <Label htmlFor="bank-account-number" className="text-sm">Số tài khoản ngân hàng</Label> {/* Reduced font size */}
-              {/* Reduced height and font size */}
+            <div className="space-y-1.5">
+              <Label htmlFor="bank-account-number" className="text-sm">Số tài khoản ngân hàng</Label>
               <Input
                 id="bank-account-number"
                 type="text"
@@ -167,9 +163,8 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
               />
             </div>
 
-            <div className="space-y-1.5"> {/* Reduced space-y */}
-              <Label htmlFor="bank-name" className="text-sm">Tên ngân hàng</Label> {/* Reduced font size */}
-              {/* Reduced height and font size */}
+            <div className="space-y-1.5">
+              <Label htmlFor="bank-name" className="text-sm">Tên ngân hàng</Label>
               <Input
                 id="bank-name"
                 type="text"
@@ -180,7 +175,7 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
               />
             </div>
 
-            <Button type="submit" className="w-full h-9 text-sm" disabled={loading}> {/* Reduced height and font size */}
+            <Button type="submit" className="w-full h-9 text-sm" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Lưu thay đổi
             </Button>

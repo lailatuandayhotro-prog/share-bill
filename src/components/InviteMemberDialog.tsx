@@ -54,17 +54,17 @@ const InviteMemberDialog = ({ open, onOpenChange, onInvite, groupName }: InviteM
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm p-4"> {/* Reduced max-w and padding */}
-        <DialogHeader className="pb-2"> {/* Reduced padding */}
-          <DialogTitle className="text-xl">Mời thành viên vào nhóm</DialogTitle> {/* Reduced font size */}
-          <DialogDescription className="text-sm">
+      <DialogContent className="max-w-sm p-4">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base sm:text-xl">Mời thành viên vào nhóm</DialogTitle> {/* Adjusted font size */}
+          <DialogDescription className="text-xs sm:text-sm"> {/* Adjusted font size */}
             Gửi lời mời tham gia nhóm "{groupName}" qua email.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 py-2"> {/* Reduced space-y and padding */}
-          <div className="space-y-1.5"> {/* Reduced space-y */}
-            <Label htmlFor="email-invite" className="text-sm">Địa chỉ Email</Label> {/* Reduced font size */}
+        <div className="space-y-3 py-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="email-invite" className="text-sm">Địa chỉ Email</Label>
             <div className="flex gap-2">
               <Input
                 id="email-invite"
@@ -74,25 +74,23 @@ const InviteMemberDialog = ({ open, onOpenChange, onInvite, groupName }: InviteM
                 onChange={(e) => setEmailInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddEmail()}
                 className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
-                /* Reduced height and font size */
               />
-              <Button type="button" variant="outline" size="icon" onClick={handleAddEmail} className="h-9 w-9"> {/* Reduced size */}
-                <Plus className="w-4 h-4" /> {/* Reduced size */}
+              <Button type="button" variant="outline" size="icon" onClick={handleAddEmail} className="h-9 w-9">
+                <Plus className="w-4 h-4" />
               </Button>
             </div>
           </div>
 
           {invitedEmails.length > 0 && (
-            <div className="space-y-2"> {/* Reduced space-y */}
-              <Label className="text-xs text-muted-foreground">Danh sách email sẽ mời:</Label> {/* Reduced font size */}
-              <div className="space-y-1.5"> {/* Reduced space-y */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Danh sách email sẽ mời:</Label>
+              <div className="space-y-1.5">
                 {invitedEmails.map((email) => (
                   <div
                     key={email}
-                    className="flex items-center justify-between p-2 bg-background rounded-lg border border-border" /* Reduced padding */
+                    className="flex items-center justify-between p-2 bg-background rounded-lg border border-border"
                   >
-                    <span className="text-sm">{email}</span> {/* Reduced font size */}
-                    {/* Reduced size */}
+                    <span className="text-sm">{email}</span>
                     <Button
                       type="button"
                       variant="ghost"
@@ -100,7 +98,7 @@ const InviteMemberDialog = ({ open, onOpenChange, onInvite, groupName }: InviteM
                       className="h-6 w-6"
                       onClick={() => handleRemoveEmail(email)}
                     >
-                      <X className="w-3.5 h-3.5" /> {/* Reduced size */}
+                      <X className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 ))}
@@ -108,8 +106,8 @@ const InviteMemberDialog = ({ open, onOpenChange, onInvite, groupName }: InviteM
             </div>
           )}
 
-          <Button onClick={handleSendInvitations} className="w-full gap-2 h-9 text-sm"> {/* Reduced height and font size */}
-            <Mail className="w-4 h-4" /> {/* Reduced size */}
+          <Button onClick={handleSendInvitations} className="w-full gap-2 h-9 text-sm">
+            <Mail className="w-4 h-4" />
             Gửi lời mời
           </Button>
         </div>

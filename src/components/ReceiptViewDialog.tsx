@@ -11,14 +11,14 @@ interface ReceiptViewDialogProps {
 const ReceiptViewDialog = ({ open, onOpenChange, receiptUrl, expenseTitle }: ReceiptViewDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl max-h-[90vh] flex flex-col p-4"> {/* Reduced max-w and padding */}
-        <DialogHeader className="p-0 pb-2"> {/* Reduced padding */}
-          <DialogTitle className="text-xl">Hóa đơn: {expenseTitle}</DialogTitle> {/* Reduced font size */}
-          <DialogDescription className="text-sm">
+      <DialogContent className="max-w-sm sm:max-w-xl max-h-[90vh] flex flex-col p-4"> {/* Adjusted max-w */}
+        <DialogHeader className="p-0 pb-2">
+          <DialogTitle className="text-base sm:text-xl">Hóa đơn: {expenseTitle}</DialogTitle> {/* Adjusted font size */}
+          <DialogDescription className="text-xs sm:text-sm"> {/* Adjusted font size */}
             Xem chi tiết hóa đơn của chi phí này.
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="flex-1 p-0 pt-2"> {/* Reduced padding */}
+        <ScrollArea className="flex-1 p-0 pt-2">
           {receiptUrl ? (
             <img
               src={receiptUrl}
@@ -27,7 +27,7 @@ const ReceiptViewDialog = ({ open, onOpenChange, receiptUrl, expenseTitle }: Rec
               loading="lazy"
             />
           ) : (
-            <div className="text-center text-muted-foreground py-6 text-sm"> {/* Reduced padding and font size */}
+            <div className="text-center text-muted-foreground py-6 text-sm">
               Không có hóa đơn để hiển thị.
             </div>
           )}

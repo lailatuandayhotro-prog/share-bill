@@ -239,10 +239,10 @@ const EditExpenseDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl max-h-[90vh] flex flex-col p-4">
+      <DialogContent className="max-w-sm sm:max-w-xl max-h-[90vh] flex flex-col p-4"> {/* Adjusted max-w */}
         <DialogHeader className="pb-2">
-          <DialogTitle className="text-xl">Chỉnh sửa chi phí</DialogTitle>
-          <DialogDescription className="text-sm">
+          <DialogTitle className="text-base sm:text-xl">Chỉnh sửa chi phí</DialogTitle> {/* Adjusted font size */}
+          <DialogDescription className="text-xs sm:text-sm"> {/* Adjusted font size */}
             Chỉnh sửa chi phí cho {initialExpense.title}
           </DialogDescription>
         </DialogHeader>
@@ -258,7 +258,7 @@ const EditExpenseDialog = ({
               placeholder="500.000"
               value={amount}
               onChange={(e) => setAmount(formatCurrencyInput(e.target.value))}
-              className="text-base h-9 placeholder:italic placeholder:text-muted-foreground"
+              className="text-sm sm:text-base h-9 placeholder:italic placeholder:text-muted-foreground" {/* Adjusted font size */}
             />
           </div>
 
@@ -322,7 +322,7 @@ const EditExpenseDialog = ({
 
           <div className="space-y-3 p-3 border border-border rounded-lg bg-muted/20">
             <div className="flex items-center gap-1.5">
-              <Label className="text-base font-semibold">Người tham gia</Label>
+              <Label className="text-sm sm:text-base font-semibold">Người tham gia</Label> {/* Adjusted font size */}
             </div>
 
             <div className="text-xs text-muted-foreground">
@@ -369,7 +369,7 @@ const EditExpenseDialog = ({
 
           <div className="space-y-3 p-3 border border-border rounded-lg bg-muted/20">
             <div className="flex items-center justify-between">
-              <Label className="text-base font-semibold">Khách mời</Label>
+              <Label className="text-sm sm:text-base font-semibold">Khách mời</Label> {/* Adjusted font size */}
               <Button
                 type="button"
                 variant="outline"

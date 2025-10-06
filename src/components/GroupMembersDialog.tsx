@@ -24,32 +24,32 @@ const GroupMembersDialog = ({ open, onOpenChange, members, groupName }: GroupMem
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col p-4"> {/* Reduced max-w, padding, and added flex-col */}
-        <DialogHeader className="pb-2"> {/* Reduced padding */}
-          <DialogTitle className="text-xl">Thành viên nhóm "{groupName}"</DialogTitle> {/* Reduced font size */}
-          <DialogDescription className="text-sm">
+      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col p-4">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base sm:text-xl">Thành viên nhóm "{groupName}"</DialogTitle> {/* Adjusted font size */}
+          <DialogDescription className="text-xs sm:text-sm"> {/* Adjusted font size */}
             Danh sách tất cả thành viên trong nhóm này.
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-3 -mr-3"> {/* Reduced padding */}
-          <div className="space-y-3 py-2"> {/* Reduced space-y and padding */}
+        <ScrollArea className="flex-1 pr-3 -mr-3">
+          <div className="space-y-3 py-2">
             {members.length === 0 ? (
-              <div className="text-center text-muted-foreground py-6 text-sm"> {/* Reduced padding and font size */}
+              <div className="text-center text-muted-foreground py-6 text-sm">
                 Chưa có thành viên nào trong nhóm.
               </div>
             ) : (
               members.map((member) => (
-                <div key={member.id} className="flex items-center gap-3"> {/* Reduced gap */}
-                  <Avatar className="h-9 w-9"> {/* Reduced size */}
+                <div key={member.id} className="flex items-center gap-3">
+                  <Avatar className="h-9 w-9">
                     <AvatarImage src={member.avatarUrl} alt={member.name} />
                     <AvatarFallback>
-                      <UserIcon className="h-4 w-4 text-muted-foreground" /> {/* Reduced size */}
+                      <UserIcon className="h-4 w-4 text-muted-foreground" />
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <div className="font-medium text-sm text-foreground">{member.name}</div> {/* Reduced font size */}
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground"> {/* Reduced gap and font size */}
+                    <div className="font-medium text-sm text-foreground">{member.name}</div>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       {member.id === user?.id && (
                         <span className="px-1.5 py-0.5 rounded-md bg-green-500 text-white text-xs font-medium">
                           Bạn
@@ -57,7 +57,7 @@ const GroupMembersDialog = ({ open, onOpenChange, members, groupName }: GroupMem
                       )}
                       {member.isOwner && (
                         <span className="px-1.5 py-0.5 rounded-md bg-yellow-500 text-white text-xs font-medium flex items-center gap-1">
-                          <Crown className="w-3 h-3" /> {/* Reduced size */}
+                          <Crown className="w-3 h-3" />
                           Trưởng nhóm
                         </span>
                       )}

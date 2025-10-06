@@ -41,39 +41,39 @@ const IndividualBalanceDetailDialog = ({
   const handleShowQrCode = (expense: ContributingExpense) => {
     if (personBankAccountNumber && personBankName) {
       const qrDescription = `TT tháng ${formattedMonthYear}`; // Modified here
-      onShowQrCode(personBankAccountNumber, personBankName, expense.amount, qrDescription, personName, personName);
+      onShowQrCode(personBankAccountNumber, personBankName, Math.floor(expense.amount), qrDescription, personName, personName); // Ensure no decimals
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col p-4"> {/* Reduced max-w, padding, and added flex-col */}
-        <DialogHeader className="pb-2"> {/* Reduced padding */}
-          <DialogTitle className="text-xl">{title}</DialogTitle> {/* Reduced font size */}
-          <DialogDescription className="text-sm">{description}</DialogDescription> {/* Reduced font size */}
+      <DialogContent className="max-w-sm max-h-[80vh] flex flex-col p-4">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base sm:text-xl">{title}</DialogTitle> {/* Adjusted font size */}
+          <DialogDescription className="text-xs sm:text-sm">{description}</DialogDescription> {/* Adjusted font size */}
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-3 -mr-3"> {/* Reduced padding */}
-          <div className="space-y-2 py-2"> {/* Reduced space-y and padding */}
+        <ScrollArea className="flex-1 pr-3 -mr-3">
+          <div className="space-y-2 py-2">
             {expenses.length === 0 ? (
-              <div className="text-center text-muted-foreground py-6 text-sm"> {/* Reduced padding and font size */}
+              <div className="text-center text-muted-foreground py-6 text-sm">
                 Không có chi phí nào.
               </div>
             ) : (
               expenses.map((exp) => (
                 <Card key={exp.expenseId} className="border-border">
-                  <CardContent className="p-3 space-y-1.5"> {/* Reduced padding and space-y */}
-                    <h3 className="font-semibold text-base">{exp.title}</h3> {/* Reduced font size */}
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground"> {/* Reduced gap and font size */}
-                      <User className="w-3.5 h-3.5" /> {/* Reduced size */}
+                  <CardContent className="p-3 space-y-1.5">
+                    <h3 className="font-semibold text-sm sm:text-base">{exp.title}</h3> {/* Adjusted font size */}
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <User className="w-3.5 h-3.5" />
                       <span>Người trả: {exp.paidBy}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground"> {/* Reduced gap and font size */}
-                      <Clock className="w-3.5 h-3.5" /> {/* Reduced size */}
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Clock className="w-3.5 h-3.5" />
                       <span>Ngày: {exp.date}</span>
                     </div>
-                    <div className="text-base font-bold text-foreground mt-1.5"> {/* Reduced font size and margin */}
-                      {exp.amount.toLocaleString()} đ
+                    <div className="text-base sm:text-lg font-bold text-foreground mt-1.5"> {/* Adjusted font size */}
+                      {Math.floor(exp.amount).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} đ
                     </div>
                     {type === 'pay' && personBankAccountNumber && personBankName && (
                       <Button 

@@ -90,58 +90,52 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-3"> {/* Reduced padding */}
-      <div className="w-full max-w-sm"> {/* Reduced max-w */}
-        <div className="text-center mb-6"> {/* Reduced margin */}
-          <div className="inline-flex items-center gap-2 mb-3"> {/* Reduced margin */}
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"> {/* Smaller icon container */}
-              <DollarSign className="w-6 h-6 text-primary" /> {/* Smaller icon */}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-3">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 mb-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> {/* Reduced font size */}
+            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> {/* Adjusted font size */}
               Share Bill
             </h1>
           </div>
-          <p className="text-sm text-muted-foreground"> {/* Reduced font size */}
+          <p className="text-xs sm:text-sm text-muted-foreground"> {/* Adjusted font size */}
             Chia tiền nhóm thông minh và dễ dàng
           </p>
         </div>
 
         <Tabs defaultValue="login" className="w-full">
           <TabsList 
-            // Reduced height
             className="grid w-full grid-cols-2 h-9"
           >
             <TabsTrigger value="login" 
-              // Reduced font size
               className="text-sm"
-            >Đăng nhập</TabsTrigger> {/* Reduced font size */}
+            >Đăng nhập</TabsTrigger>
             <TabsTrigger value="signup" 
-              // Reduced font size
               className="text-sm"
-            >Đăng ký</TabsTrigger> {/* Reduced font size */}
+            >Đăng ký</TabsTrigger>
           </TabsList>
 
           <TabsContent value="login">
             <Card>
-              <CardHeader className="p-4 pb-2"> {/* Reduced padding */}
+              <CardHeader className="p-4 pb-2">
                 <CardTitle 
-                  // Reduced font size
-                  className="text-xl"
-                >Đăng nhập</CardTitle> {/* Reduced font size */}
+                  className="text-base sm:text-xl"
+                >Đăng nhập</CardTitle> {/* Adjusted font size */}
                 <CardDescription 
-                  // Reduced font size
-                  className="text-sm"
+                  className="text-xs sm:text-sm"
                 >
                   Đăng nhập vào tài khoản của bạn
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-4 pt-2"> {/* Reduced padding */}
-                <form onSubmit={handleLogin} className="space-y-3"> {/* Reduced space-y */}
-                  <div className="space-y-1.5"> {/* Reduced space-y */}
+              <CardContent className="p-4 pt-2">
+                <form onSubmit={handleLogin} className="space-y-3">
+                  <div className="space-y-1.5">
                     <Label htmlFor="login-email" 
-                      // Reduced font size
                       className="text-sm"
-                    >Email</Label> {/* Reduced font size */}
+                    >Email</Label>
                     <Input
                       id="login-email"
                       type="email"
@@ -149,15 +143,13 @@ const Auth = () => {
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
                       disabled={loading}
-                      // Reduced height and font size
                       className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                     />
                   </div>
-                  <div className="space-y-1.5"> {/* Reduced space-y */}
+                  <div className="space-y-1.5">
                     <Label htmlFor="login-password" 
-                      // Reduced font size
                       className="text-sm"
-                    >Mật khẩu</Label> {/* Reduced font size */}
+                    >Mật khẩu</Label>
                     <Input
                       id="login-password"
                       type="password"
@@ -165,12 +157,10 @@ const Auth = () => {
                       value={loginLoginPassword}
                       onChange={(e) => setLoginLoginPassword(e.target.value)}
                       disabled={loading}
-                      // Reduced height and font size
                       className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                     />
                   </div>
                   <Button type="submit" 
-                    // Reduced height and font size
                     className="w-full h-9 text-sm" 
                     disabled={loading}
                   >
@@ -184,25 +174,22 @@ const Auth = () => {
 
           <TabsContent value="signup">
             <Card>
-              <CardHeader className="p-4 pb-2"> {/* Reduced padding */}
+              <CardHeader className="p-4 pb-2">
                 <CardTitle 
-                  // Reduced font size
-                  className="text-xl"
-                >Đăng ký</CardTitle> {/* Reduced font size */}
+                  className="text-base sm:text-xl"
+                >Đăng ký</CardTitle> {/* Adjusted font size */}
                 <CardDescription 
-                  // Reduced font size
-                  className="text-sm"
+                  className="text-xs sm:text-sm"
                 >
                   Tạo tài khoản mới để bắt đầu
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-4 pt-2"> {/* Reduced padding */}
-                <form onSubmit={handleSignup} className="space-y-3"> {/* Reduced space-y */}
-                  <div className="space-y-1.5"> {/* Reduced space-y */}
+              <CardContent className="p-4 pt-2">
+                <form onSubmit={handleSignup} className="space-y-3">
+                  <div className="space-y-1.5">
                     <Label htmlFor="signup-name" 
-                      // Reduced font size
                       className="text-sm"
-                    >Họ và tên</Label> {/* Reduced font size */}
+                    >Họ và tên</Label>
                     <Input
                       id="signup-name"
                       type="text"
@@ -210,15 +197,13 @@ const Auth = () => {
                       value={signupFullName}
                       onChange={(e) => setSignupFullName(e.target.value)}
                       disabled={loading}
-                      // Reduced height and font size
                       className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                     />
                   </div>
-                  <div className="space-y-1.5"> {/* Reduced space-y */}
+                  <div className="space-y-1.5">
                     <Label htmlFor="signup-email" 
-                      // Reduced font size
                       className="text-sm"
-                    >Email</Label> {/* Reduced font size */}
+                    >Email</Label>
                     <Input
                       id="signup-email"
                       type="email"
@@ -226,15 +211,13 @@ const Auth = () => {
                       value={signupEmail}
                       onChange={(e) => setSignupEmail(e.target.value)}
                       disabled={loading}
-                      // Reduced height and font size
                       className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                     />
                   </div>
-                  <div className="space-y-1.5"> {/* Reduced space-y */}
+                  <div className="space-y-1.5">
                     <Label htmlFor="signup-password" 
-                      // Reduced font size
                       className="text-sm"
-                    >Mật khẩu</Label> {/* Reduced font size */}
+                    >Mật khẩu</Label>
                     <Input
                       id="signup-password"
                       type="password"
@@ -242,15 +225,13 @@ const Auth = () => {
                       value={signupPassword}
                       onChange={(e) => setSignupPassword(e.target.value)}
                       disabled={loading}
-                      // Reduced height and font size
                       className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                     />
                   </div>
-                  <div className="space-y-1.5"> {/* Reduced space-y */}
+                  <div className="space-y-1.5">
                     <Label htmlFor="signup-confirm" 
-                      // Reduced font size
                       className="text-sm"
-                    >Xác nhận mật khẩu</Label> {/* Reduced font size */}
+                    >Xác nhận mật khẩu</Label>
                     <Input
                       id="signup-confirm"
                       type="password"
@@ -258,12 +239,10 @@ const Auth = () => {
                       value={signupConfirmPassword}
                       onChange={(e) => setSignupConfirmPassword(e.target.value)}
                       disabled={loading}
-                      // Reduced height and font size
                       className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
                     />
                   </div>
                   <Button type="submit" 
-                    // Reduced height and font size
                     className="w-full h-9 text-sm" 
                     disabled={loading}
                   >
@@ -276,9 +255,8 @@ const Auth = () => {
           </TabsContent>
         </Tabs>
 
-        <div className="mt-5 text-center"> {/* Reduced margin */}
+        <div className="mt-5 text-center">
           <a href="/" 
-            // Reduced font size
             className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             ← Quay lại trang chủ

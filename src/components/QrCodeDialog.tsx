@@ -25,7 +25,7 @@ const QrCodeDialog = ({
   accountName,
   personName,
 }: QrCodeDialogProps) => {
-  const qrCodeUrl = `https://img.vietqr.io/image/${bankId}-${accountNumber}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(description)}&accountName=${encodeURIComponent(accountName)}`;
+  const qrCodeUrl = `https://img.vietqr.io/image/${bankId}-${accountNumber}-compact2.png?amount=${Math.floor(amount)}&addInfo=${encodeURIComponent(description)}&accountName=${encodeURIComponent(accountName)}`; // Ensure no decimals
 
   const handleDownloadQrCode = async () => {
     if (!qrCodeUrl) {
@@ -43,7 +43,7 @@ const QrCodeDialog = ({
 
       const link = document.createElement('a');
       link.href = blobUrl;
-      link.download = `QR_ChuyenKhoan_${personName}_${amount}.png`;
+      link.download = `QR_ChuyenKhoan_${personName}_${Math.floor(amount)}.png`; // Ensure no decimals
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -60,8 +60,8 @@ const QrCodeDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm p-4">
         <DialogHeader className="pb-2">
-          <DialogTitle className="text-xl">Chuyển khoản cho {personName}</DialogTitle>
-          <DialogDescription className="text-sm">
+          <DialogTitle className="text-base sm:text-xl">Chuyển khoản cho {personName}</DialogTitle> {/* Adjusted font size */}
+          <DialogDescription className="text-xs sm:text-sm"> {/* Adjusted font size */}
             Sử dụng mã QR hoặc thông tin bên dưới để chuyển khoản.
           </DialogDescription>
         </DialogHeader>
@@ -78,7 +78,7 @@ const QrCodeDialog = ({
                 <p><strong>Ngân hàng:</strong> {bankId}</p>
                 <p><strong>Số tài khoản:</strong> {accountNumber}</p>
                 <p><strong>Tên tài khoản:</strong> {accountName}</p>
-                <p><strong>Số tiền:</strong> {amount.toLocaleString()} đ</p>
+                <p><strong>Số tiền:</strong> {Math.floor(amount).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} đ</p> {/* Ensure no decimals */}
                 <p><strong>Nội dung:</strong> {description}</p>
               </div>
               <Button onClick={handleDownloadQrCode} className="w-full gap-2 h-9 text-sm">

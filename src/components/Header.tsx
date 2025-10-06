@@ -4,15 +4,15 @@ import { Button } from "@/components/ui/button";
 const Header = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-      <div className="container mx-auto px-4 h-14 flex items-center justify-between"> {/* Reduced height */}
+      <div className="container mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center"> {/* Smaller icon container */}
-            <DollarSign className="w-5 h-5 text-primary" /> {/* Smaller icon */}
+          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+            <DollarSign className="w-5 h-5 text-primary" />
           </div>
-          <span className="text-lg font-bold text-foreground">Share Bill</span> {/* Smaller text */}
+          <span className="text-base sm:text-lg font-bold text-foreground">Share Bill</span> {/* Adjusted font size */}
         </div>
         
-        <nav className="hidden md:flex items-center gap-4"> {/* Reduced gap */}
+        <nav className="hidden md:flex items-center gap-4">
           <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Tính năng
           </a>
@@ -28,7 +28,7 @@ const Header = () => {
         </nav>
 
         <a href="/auth">
-          <Button variant="outline" size="sm" className="h-8 px-3 text-sm"> {/* Smaller button */}
+          <Button variant="outline" size="sm" className="h-8 px-3 text-sm">
             Đăng nhập
           </Button>
         </a>
