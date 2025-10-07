@@ -614,7 +614,7 @@ const GroupDetail = () => {
         }
       } else if (updatedExpenseData.receiptImage === null && selectedExpense?.receiptUrl) {
         const oldFileName = selectedExpense.receiptUrl.split('/').pop();
-        if (fileName) {
+        if (oldFileName) {
           await supabase.storage.from('receipts').remove([`${user.id}/${oldFileName}`]);
         }
         receiptUrl = null;

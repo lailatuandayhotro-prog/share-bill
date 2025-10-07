@@ -142,8 +142,8 @@ const ExpenseDetailDialog = ({
         </div>
 
         {/* Participants Section */}
-        <ScrollArea className="flex-1"> {/* Removed h-full */}
-          <div className="px-3 pb-3 space-y-2">
+        <ScrollArea className="flex-1 overflow-auto">
+          <div className="px-3 pb-4 space-y-2">
             <div className="flex items-center gap-1.5 text-sm font-semibold">
               <Users className="w-3.5 h-3.5 text-primary" />
               <span>Người tham gia ({participants.length + guests.filter(g => !g.responsibleMemberId).length})</span>
