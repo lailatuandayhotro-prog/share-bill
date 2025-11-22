@@ -8,6 +8,7 @@ import GroupMembersDialog from "@/components/GroupMembersDialog";
 import BalanceDetailDialog from "@/components/BalanceDetailDialog";
 import IndividualBalanceDetailDialog from "@/components/IndividualBalanceDetailDialog";
 import QrCodeDialog from "@/components/QrCodeDialog"; // Import QrCodeDialog
+import { ImportExpensesDialog } from "@/components/ImportExpensesDialog";
 import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,6 +40,7 @@ import {
   ChevronLeft,
   ChevronRight as ChevronRightIcon, // Renamed to avoid conflict
   RefreshCw, // Import RefreshCw icon
+  Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -124,6 +126,7 @@ const GroupDetail = () => {
   const [openInviteMemberDialog, setOpenInviteMemberDialog] = useState(false);
   const [openMembersDialog, setOpenMembersDialog] = useState(false);
   const [openBalanceDetailDialog, setOpenBalanceDetailDialog] = useState(false);
+  const [openImportExpenses, setOpenImportExpenses] = useState(false);
   const [balanceDetailTitle, setBalanceDetailTitle] = useState("");
   const [balanceDetailDescription, setBalanceDetailDescription] = useState("");
   const [balancesToDisplay, setBalancesToDisplay] = useState<BalanceItem[]>([]);
@@ -923,13 +926,22 @@ const GroupDetail = () => {
 
       <div className="container mx-auto px-4 py-5 max-w-4xl space-y-5">
         {/* Action Buttons */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           <Button 
             className="h-9 text-xs sm:h-10 sm:text-sm bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" 
             onClick={() => setOpenAddExpense(true)}
           >
             <Plus className="w-4 h-4 mr-1" />
             Thêm chi phí
+          </Button>
+
+          <Button 
+            variant="outline"
+            className="h-9 text-xs sm:h-10 sm:text-sm" 
+            onClick={() => setOpenImportExpenses(true)}
+          >
+            <Upload className="w-4 h-4 mr-1" />
+            Import
           </Button>
 
           <Button
@@ -1315,6 +1327,15 @@ const GroupDetail = () => {
         members={members}
         currentUserId={user?.id || ""}
         currentUserName={members.find(m => m.id === user?.id)?.name || ""}
+      />
+
+      {/* Import Expenses Dialog */}
+      <ImportExpensesDialog
+        open={openImportExpenses}
+        onOpenChange={setOpenImportExpenses}
+        groupId={id || ""}
+        currentUserId={user?.id || ""}
+        onImportSuccess={loadGroupData}
       />
 
       {/* Expense Detail Dialog */}
