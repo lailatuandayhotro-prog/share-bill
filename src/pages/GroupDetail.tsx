@@ -9,8 +9,10 @@ import BalanceDetailDialog from "@/components/BalanceDetailDialog";
 import IndividualBalanceDetailDialog from "@/components/IndividualBalanceDetailDialog";
 import QrCodeDialog from "@/components/QrCodeDialog"; // Import QrCodeDialog
 import { ImportExpensesDialog } from "@/components/ImportExpensesDialog";
+import { BulkAddParticipantsDialog } from "@/components/BulkAddParticipantsDialog";
 import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -174,6 +176,10 @@ const GroupDetail = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalExpensesCount, setTotalExpensesCount] = useState(0);
+
+  // Bulk operations states
+  const [selectedExpenseIds, setSelectedExpenseIds] = useState<string[]>([]);
+  const [openBulkAddParticipants, setOpenBulkAddParticipants] = useState(false);
 
   const formattedMonthYear = format(setYear(selectedMonth, selectedYear), 'MM/yyyy', { locale: vi });
 
@@ -926,22 +932,23 @@ const GroupDetail = () => {
 
       <div className="container mx-auto px-4 py-5 max-w-4xl space-y-5">
         {/* Action Buttons */}
-        <div className="grid grid-cols-4 gap-2">
-          <Button 
-            className="h-9 text-xs sm:h-10 sm:text-sm bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" 
-            onClick={() => setOpenAddExpense(true)}
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Thêm chi phí
-          </Button>
+        <div className="space-y-2">
+          <div className="grid grid-cols-4 gap-2">
+            <Button 
+              className="h-9 text-xs sm:h-10 sm:text-sm bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" 
+              onClick={() => setOpenAddExpense(true)}
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Thêm chi phí
+            </Button>
 
-          <Button 
-            variant="outline"
-            className="h-9 text-xs sm:h-10 sm:text-sm" 
-            onClick={() => setOpenImportExpenses(true)}
-          >
-            <Upload className="w-4 h-4 mr-1" />
-            Import
+            <Button 
+              variant="outline"
+              className="h-9 text-xs sm:h-10 sm:text-sm" 
+              onClick={() => setOpenImportExpenses(true)}
+            >
+              <Upload className="w-4 h-4 mr-1" />
+              Import
           </Button>
 
           <Button
@@ -960,6 +967,34 @@ const GroupDetail = () => {
             <UserPlus className="w-4 h-4 mr-1" />
             Mời thành viên
           </Button>
+        </div>
+
+        {/* Bulk Actions - Shows when expenses are selected */}
+        {selectedExpenseIds.length > 0 && (
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">
+                Đã chọn {selectedExpenseIds.length} chi phí
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedExpenseIds([])}
+                >
+                  Bỏ chọn
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => setOpenBulkAddParticipants(true)}
+                >
+                  <Users className="w-4 h-4 mr-1" />
+                  Thêm người tham gia
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
         </div>
 
         {/* Stats Cards */}
@@ -1148,43 +1183,56 @@ const GroupDetail = () => {
                   } transition-all`}
                 >
                   <CardContent className="p-3 space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1.5">
-                          <h3 className="font-semibold text-sm sm:text-base">{expense.title}</h3> 
-                          {expense.isMine && (
-                            <span className="px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 text-xs font-medium">
-                              Chi phí của bạn
-                            </span>
-                          )}
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        checked={selectedExpenseIds.includes(expense.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedExpenseIds([...selectedExpenseIds, expense.id]);
+                          } else {
+                            setSelectedExpenseIds(selectedExpenseIds.filter(id => id !== expense.id));
+                          }
+                        }}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5">
+                              <h3 className="font-semibold text-sm sm:text-base">{expense.title}</h3> 
+                              {expense.isMine && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 text-xs font-medium">
+                                  Chi phí của bạn
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <User className="w-3.5 h-3.5" />
+                              <span>Người trả: {expense.paidBy}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>Ngày: {expense.displayDate}</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg sm:text-xl font-bold text-red-500"> 
+                              {Math.floor(expense.amount).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} đ
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              Chia đều
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <User className="w-3.5 h-3.5" />
-                          <span>Người trả: {expense.paidBy}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>Ngày: {expense.displayDate}</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-lg sm:text-xl font-bold text-red-500"> 
-                          {Math.floor(expense.amount).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} đ
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          Chia đều
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <Users className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        {expense.splitWith.join(", ")}
-                      </span>
-                    </div>
+                        <div className="flex items-center gap-1.5 text-xs">
+                          <Users className="w-3.5 h-3.5 text-muted-foreground" />
+                          <span className="text-muted-foreground">
+                            {expense.splitWith.join(", ")}
+                          </span>
+                        </div>
 
-                    <div className="flex gap-2 pt-1.5">
+                        <div className="flex gap-2 pt-1.5">
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -1217,6 +1265,8 @@ const GroupDetail = () => {
                         <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                         {expense.isCompleted ? "Đã hoàn thành" : "Hoàn thành"}
                       </Button>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -1427,6 +1477,18 @@ const GroupDetail = () => {
         description={qrCodeData.description}
         accountName={qrCodeData.accountName}
         personName={qrCodeData.personName}
+      />
+
+      {/* Bulk Add Participants Dialog */}
+      <BulkAddParticipantsDialog
+        open={openBulkAddParticipants}
+        onOpenChange={setOpenBulkAddParticipants}
+        selectedExpenseIds={selectedExpenseIds}
+        members={members.map(m => ({ id: m.id, name: m.name }))}
+        onComplete={() => {
+          loadGroupData();
+          setSelectedExpenseIds([]);
+        }}
       />
 
       {/* Share Dialog */}
