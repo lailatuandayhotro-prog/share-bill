@@ -1184,18 +1184,20 @@ const GroupDetail = () => {
                 >
                   <CardContent className="p-3 space-y-2">
                     <div className="flex items-start gap-3">
-                      <Checkbox
-                        checked={selectedExpenseIds.includes(expense.id)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedExpenseIds([...selectedExpenseIds, expense.id]);
-                          } else {
-                            setSelectedExpenseIds(selectedExpenseIds.filter(id => id !== expense.id));
-                          }
-                        }}
-                        className="mt-1"
-                      />
-                      <div className="flex-1 space-y-2">
+                      {expense.isMine && (
+                        <Checkbox
+                          checked={selectedExpenseIds.includes(expense.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedExpenseIds([...selectedExpenseIds, expense.id]);
+                            } else {
+                              setSelectedExpenseIds(selectedExpenseIds.filter(id => id !== expense.id));
+                            }
+                          }}
+                          className="mt-1"
+                        />
+                      )}
+                      <div className={`${expense.isMine ? 'flex-1' : 'flex-1'} space-y-2`}>
                         <div className="flex items-start justify-between">
                           <div className="space-y-1">
                             <div className="flex items-center gap-1.5">
@@ -1485,6 +1487,7 @@ const GroupDetail = () => {
         onOpenChange={setOpenBulkAddParticipants}
         selectedExpenseIds={selectedExpenseIds}
         members={members.map(m => ({ id: m.id, name: m.name }))}
+        currentUserId={user?.id || ""}
         onComplete={() => {
           loadGroupData();
           setSelectedExpenseIds([]);
