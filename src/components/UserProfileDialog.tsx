@@ -21,6 +21,8 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
   const [fullName, setFullName] = useState("");
   const [nickname, setNickname] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState("");
   const [bankAccountNumber, setBankAccountNumber] = useState("");
   const [bankName, setBankName] = useState("");
 
@@ -29,6 +31,14 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
       fetchUserProfile();
     }
   }, [open, user]);
+
+  useEffect(() => {
+    if (avatarFile) {
+      const objectUrl = URL.createObjectURL(avatarFile);
+      setAvatarPreview(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+  }, [avatarFile]);
 
   const fetchUserProfile = async () => {
     if (!user) return;
@@ -45,6 +55,7 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
       if (data) {
         setFullName(data.full_name || "");
         setAvatarUrl(data.avatar_url || "");
+        setAvatarPreview(data.avatar_url || "");
         setNickname(data.nickname || "");
         setBankAccountNumber(data.bank_account_number || "");
         setBankName(data.bank_name || "");
@@ -57,6 +68,21 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
     }
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("Kích thước ảnh không được vượt quá 2MB");
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        toast.error("Vui lòng chọn file ảnh");
+        return;
+      }
+      setAvatarFile(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
@@ -66,11 +92,42 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
 
     setLoading(true);
     try {
+      let newAvatarUrl = avatarUrl;
+
+      // Upload avatar if new file selected
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+        // Delete old avatar if exists
+        if (avatarUrl) {
+          const oldPath = avatarUrl.split('/avatars/')[1];
+          if (oldPath) {
+            await supabase.storage.from('avatars').remove([oldPath]);
+          }
+        }
+
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, avatarFile, {
+            cacheControl: '3600',
+            upsert: true
+          });
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(fileName);
+
+        newAvatarUrl = publicUrl;
+      }
+
       const { error } = await supabase
         .from("profiles")
         .update({
           full_name: fullName,
-          avatar_url: avatarUrl,
+          avatar_url: newAvatarUrl,
           nickname: nickname,
           bank_account_number: bankAccountNumber,
           bank_name: bankName,
@@ -81,6 +138,7 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
       if (error) throw error;
 
       toast.success("Cập nhật thông tin thành công!");
+      setAvatarFile(null);
       onProfileUpdated();
       onOpenChange(false);
     } catch (error: any) {
@@ -108,21 +166,39 @@ const UserProfileDialog = ({ open, onOpenChange, onProfileUpdated }: UserProfile
           <form onSubmit={handleSubmit} className="space-y-3 py-2">
             <div className="flex flex-col items-center gap-3">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={avatarUrl} alt="Avatar" />
+                <AvatarImage src={avatarPreview || avatarUrl} alt="Avatar" />
                 <AvatarFallback>
                   <User className="h-10 w-10 text-muted-foreground" />
                 </AvatarFallback>
               </Avatar>
               <div className="w-full space-y-1.5">
-                <Label htmlFor="avatar-url" className="text-sm">URL Avatar</Label>
-                <Input
-                  id="avatar-url"
-                  type="url"
-                  placeholder="https://example.com/avatar.jpg"
-                  value={avatarUrl}
-                  onChange={(e) => setAvatarUrl(e.target.value)}
-                  className="h-9 text-sm placeholder:italic placeholder:text-muted-foreground"
-                />
+                <Label htmlFor="avatar-file" className="text-sm">Ảnh đại diện</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="avatar-file"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="h-9 text-sm"
+                  />
+                  {avatarFile && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setAvatarFile(null);
+                        setAvatarPreview(avatarUrl);
+                      }}
+                      className="h-9"
+                    >
+                      Hủy
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Kích thước tối đa: 2MB. Định dạng: JPG, PNG, GIF
+                </p>
               </div>
             </div>
 
