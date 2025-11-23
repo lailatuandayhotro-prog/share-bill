@@ -24,6 +24,7 @@ interface BulkAddParticipantsDialogProps {
   onOpenChange: (open: boolean) => void;
   selectedExpenseIds: string[];
   members: Member[];
+  currentUserId: string;
   onComplete: () => void;
 }
 
@@ -32,6 +33,7 @@ export function BulkAddParticipantsDialog({
   onOpenChange,
   selectedExpenseIds,
   members,
+  currentUserId,
   onComplete,
 }: BulkAddParticipantsDialogProps) {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
@@ -61,14 +63,20 @@ export function BulkAddParticipantsDialog({
     try {
       // Process each expense
       for (const expenseId of selectedExpenseIds) {
-        // Get the expense details
+        // Verify that the current user is the creator of this expense
         const { data: expense, error: expenseError } = await supabase
           .from("expenses")
-          .select("amount")
+          .select("amount, paid_by")
           .eq("id", expenseId)
           .single();
 
         if (expenseError) throw expenseError;
+
+        // Skip if the current user is not the creator
+        if (expense.paid_by !== currentUserId) {
+          console.log(`Skipping expense ${expenseId} - not created by current user`);
+          continue;
+        }
 
         // Get existing participants
         const { data: existingParticipants, error: participantsError } = await supabase
@@ -118,7 +126,7 @@ export function BulkAddParticipantsDialog({
       }
 
       toast.success(
-        `Đã thêm ${selectedMembers.length} thành viên vào ${selectedExpenseIds.length} chi phí`
+        `Đã thêm ${selectedMembers.length} thành viên vào các chi phí của bạn`
       );
       onComplete();
       onOpenChange(false);
@@ -136,7 +144,7 @@ export function BulkAddParticipantsDialog({
         <DialogHeader>
           <DialogTitle>Thêm người tham gia</DialogTitle>
           <DialogDescription>
-            Thêm thành viên vào {selectedExpenseIds.length} chi phí đã chọn
+            Thêm thành viên vào {selectedExpenseIds.length} chi phí của bạn đã chọn
           </DialogDescription>
         </DialogHeader>
 
